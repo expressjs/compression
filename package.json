@@ -1,0 +1,34 @@
+{
+  "name": "compression",
+  "description": "Compression middleware for connect and node.js",
+  "version": "1.0.0",
+  "author": {
+    "name": "Jonathan Ong",
+    "email": "me@jongleberry.com",
+    "url": "http://jongleberry.com",
+    "twitter": "https://twitter.com/jongleberry"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/expressjs/compression.git"
+  },
+  "bugs": {
+    "mail": "me@jongleberry.com",
+    "url": "https://github.com/expressjs/compression/issues"
+  },
+  "dependencies": {
+    "bytes": "0.2.1",
+    "negotiator": "0.3.0",
+    "compressible": "1.0.0"
+  },
+  "devDependencies": {
+    "supertest": "*",
+    "connect": "*",
+    "mocha": "*",
+    "should": "*"
+  },
+  "scripts": {
+    "test": "make test"
+  }
+}
