@@ -42,7 +42,7 @@ exports.filter = function(req, res){
  *  replace the default logic of:
  *
  *     exports.filter = function(req, res){
- *       return /json|text|javascript/.test(res.getHeader('Content-Type'));
+ *       return compressible(res.getHeader('Content-Type'));
  *     };
  *
  * Threshold:
