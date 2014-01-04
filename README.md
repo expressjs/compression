@@ -23,7 +23,7 @@ app.use(compress)
 
 In addition to `zlib` options, additional options are:
 
-- `threshold` <1kb> - only compress the response if the byte size is at or above a threshold
+- `threshold` `<1kb>` - only compress the response if the byte size is at or above a threshold
 - `filter` - a filter callback function
 
 ## License
