@@ -114,9 +114,9 @@ module.exports = function compress(options) {
 
     res.end = function(chunk, encoding){
       if (chunk) {
-        if (!this.headerSent && getSize(chunk) < threshold) compress = false;
+        if (!this.headersSent && getSize(chunk) < threshold) compress = false;
         this.write(chunk, encoding);
-      } else if (!this.headerSent) {
+      } else if (!this.headersSent) {
         // response size === 0
         compress = false;
       }
