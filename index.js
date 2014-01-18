@@ -153,7 +153,7 @@ module.exports = function compress(options) {
       // compression method
       var method = new Negotiator(req).preferredEncoding(['gzip', 'deflate', 'identity']);
       // negotiation failed
-      if (method === 'identity') return writeHead.apply(res, arguments);
+      if (!method || method === 'identity') return writeHead.apply(res, arguments);
 
       // compression stream
       stream = exports.methods[method](options);
