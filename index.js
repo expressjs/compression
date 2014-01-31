@@ -160,7 +160,10 @@ module.exports = function compress(options) {
 
       // overwrite the flush method
       res.flush = function(){
-        stream.flush();
+        var ws = stream._writableState;
+        if (ws.ended || ws.ending) return;
+        stream._opts.flush = zlib.Z_PARTIAL_FLUSH;
+        stream.flush(zlib.Z_PARTIAL_FLUSH);
       }
 
       // header fields
