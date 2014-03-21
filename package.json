@@ -20,7 +20,7 @@
   "dependencies": {
     "bytes": "0.2.1",
     "negotiator": "0.4.2",
-    "compressible": "1.0.0"
+    "compressible": "1.0.1"
   },
   "devDependencies": {
     "supertest": "*",
