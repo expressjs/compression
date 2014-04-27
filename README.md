@@ -25,7 +25,7 @@ app.use(compress({
 #### Options
 
 - `threshold` `<1kb>` - response is only compressed if the byte size is at or above this threshold.
-- `filter` - a filtering callback function. Uses [Compressible](expressjs/compressible) by default.
+- `filter` - a filtering callback function. Uses [Compressible](https://github.com/expressjs/compressible) by default.
 
 In addition to these, [zlib](http://nodejs.org/api/zlib.html) options may be passed in to the options object.
 
