@@ -1,5 +1,5 @@
 /*!
- * Connect - compress
+ * Expressjs | Connect - compress
  * Copyright(c) 2010 Sencha Inc.
  * Copyright(c) 2011 TJ Holowaychuk
  * MIT Licensed
@@ -32,39 +32,12 @@ exports.filter = function(req, res){
 };
 
 /**
- * Compress:
+ * Compress response data with gzip / deflate.
  *
- * Compress response data with gzip/deflate.
- *
- * Filter:
- *
- *  A `filter` callback function may be passed to
- *  replace the default logic of:
- *
- *     exports.filter = function(req, res){
- *       return compressible(res.getHeader('Content-Type'));
- *     };
- *
- * Threshold:
- *
- *  Only compress the response if the byte size is at or above a threshold.
- *  Always compress while streaming.
- *
- *   - `threshold` - string representation of size or bytes as an integer.
- *
- * Options:
- *
- *  All remaining options are passed to the gzip/deflate
- *  creation functions. Consult node's docs for additional details.
- *
- *   - `chunkSize` (default: 16*1024)
- *   - `windowBits`
- *   - `level`: 0-9 where 0 is no compression, and 9 is slow but best compression
- *   - `memLevel`: 1-9 low is slower but uses less memory, high is fast but uses more
- *   - `strategy`: compression strategy
+ * See README.md for documentation of options.
  *
  * @param {Object} options
- * @return {Function}
+ * @return {Function} middleware
  * @api public
  */
 
@@ -89,7 +62,7 @@ module.exports = function compress(options) {
       , compress = true
       , stream;
 
-    // see #724
+    // see #8
     req.on('close', function(){
       res.write = res.end = function(){};
     });

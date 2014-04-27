@@ -1,30 +1,33 @@
-# compression [![Build Status](https://travis-ci.org/expressjs/compression.png)](https://travis-ci.org/expressjs/compression)
+# compression [![Build Status](https://travis-ci.org/expressjs/compression.svg)](https://travis-ci.org/expressjs/compression) [![NPM version](https://badge.fury.io/js/compression.svg)](http://badge.fury.io/js/compression)
 
-Connect's compress middleware as its own module. Works with and without Connect.
-
-```js
-var compress = require('compression')()
-
-http.createServer(function (req, res) {
-  compress(req, res, function (err) {
-    if (err) throw err
-
-    res.end('hello world')
-  })
-})
-
-var app = require('connect')()
-app.use(compress)
-```
+Node.js compression middleware.
 
 ## API
 
-### var middleware = compress([options])
+```js
+var express  = require('express')
+var compress = require('compression')
 
-In addition to `zlib` options, additional options are:
+var app = express()
+app.use(compress())
+```
 
-- `threshold` `<1kb>` - only compress the response if the byte size is at or above a threshold
-- `filter` - a filter callback function
+### compress(options)
+
+Returns the compression middleware using the given `options`.
+
+```js
+app.use(compress({
+  threshhold: 512
+}))
+```
+
+#### Options
+
+- `threshold` `<1kb>` - response is only compressed if the byte size is at or above this threshold.
+- `filter` - a filtering callback function. Uses [Compressible](expressjs/compressible) by default.
+
+In addition to these, [zlib](http://nodejs.org/api/zlib.html) options may be passed in to the options object.
 
 ## License
 
