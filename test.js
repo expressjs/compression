@@ -26,6 +26,20 @@ app2.use('/response/large', function(req, res){
   res.end(new Buffer(2048));
 });
 
+app2.use('/response/writehead/object', function(req, res){
+  res.setHeader('Content-Type', 'text/plain');
+  res.writeHead(200, {'Content-Length': '2048', 'X-Custom': 'header'});
+  res.write(new Buffer(2048));
+  res.end();
+});
+
+app2.use('/response/writehead/array', function(req, res){
+  res.setHeader('Content-Type', 'text/plain');
+  res.writeHead(200, [['Content-Length', '2048'], ['X-Custom', 'array']]);
+  res.write(new Buffer(2048));
+  res.end();
+});
+
 app2.use('/stream/small/length', function(req, res){
   res.setHeader('Content-Type', 'text/plain');
   res.setHeader('Content-Length', '1');
@@ -129,6 +143,33 @@ describe('compress()', function(){
       done()
     });
   })
+
+  describe('writehead', function(){
+    it('should support headers object', function(done){
+      request(app2)
+      .get('/response/writehead/object')
+      .set('Accept-Encoding', 'gzip')
+      .expect('X-Custom', 'header')
+      .expect('Content-Encoding', 'gzip', function(err, res){
+        if (err) return done(err);
+        assert.equal(res.headers['content-length'], undefined);
+        done();
+      });
+    })
+
+    it('support headers array', function(done){
+      request(app2)
+      .get('/response/writehead/array')
+      .set('Accept-Encoding', 'gzip')
+      .expect('X-Custom', 'array')
+      .expect('Content-Encoding', 'gzip', function(err, res){
+        if (err) return done(err);
+        assert.equal(res.headers['content-length'], undefined);
+        done();
+      });
+    })
+
+  });
 
   describe('threshold', function(){
     it('should not compress responses below the threshold size', function(done){

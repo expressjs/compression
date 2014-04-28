@@ -99,8 +99,11 @@ module.exports = function compress(options) {
     };
 
     res.writeHead = function(){
+      // set headers from args
+      var args = setWriteHeadHeaders.apply(this, arguments);
+
       // default request filter
-      if (!filter(req, res)) return writeHead.apply(res, arguments);
+      if (!filter(req, res)) return writeHead.apply(res, args);
 
       // vary
       var vary = res.getHeader('Vary');
@@ -110,23 +113,23 @@ module.exports = function compress(options) {
         res.setHeader('Vary', vary + ', Accept-Encoding');
       }
 
-      if (!compress) return writeHead.apply(res, arguments);
+      if (!compress) return writeHead.apply(res, args);
 
       var encoding = res.getHeader('Content-Encoding') || 'identity';
 
       // already encoded
-      if ('identity' != encoding) return writeHead.apply(res, arguments);
+      if ('identity' != encoding) return writeHead.apply(res, args);
 
       // SHOULD use identity
-      if (!accept) return writeHead.apply(res, arguments);
+      if (!accept) return writeHead.apply(res, args);
 
       // head
-      if ('HEAD' == req.method) return writeHead.apply(res, arguments);
+      if ('HEAD' == req.method) return writeHead.apply(res, args);
 
       // compression method
       var method = new Negotiator(req).preferredEncoding(['gzip', 'deflate', 'identity']);
       // negotiation failed
-      if (!method || method === 'identity') return writeHead.apply(res, arguments);
+      if (!method || method === 'identity') return writeHead.apply(res, args);
 
       // compression stream
       stream = exports.methods[method](options);
@@ -153,7 +156,7 @@ module.exports = function compress(options) {
         res.emit('drain');
       });
 
-      writeHead.apply(res, arguments);
+      writeHead.apply(res, args);
     };
 
     next();
@@ -167,3 +170,28 @@ function getSize(chunk) {
 }
 
 function noop(){}
+
+function setWriteHeadHeaders() {
+  var headerIndex = typeof arguments[1] === 'string'
+    ? 2
+    : 1;
+
+  var headers = arguments[headerIndex];
+
+  // the following block is from node.js core
+  if (Array.isArray(headers)) {
+    // handle array case
+    for (var i = 0, len = headers.length; i < len; ++i) {
+      this.setHeader(headers[i][0], headers[i][1]);
+    }
+  } else if (headers) {
+    // handle object case
+    var keys = Object.keys(headers);
+    for (var i = 0; i < keys.length; i++) {
+      var k = keys[i];
+      if (k) this.setHeader(k, headers[k]);
+    }
+  }
+
+  return Array.prototype.slice.call(arguments, 0, headerIndex);
+}
