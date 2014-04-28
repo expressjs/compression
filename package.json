@@ -18,7 +18,7 @@
     "url": "https://github.com/expressjs/compression/issues"
   },
   "dependencies": {
-    "bytes": "0.2.1",
+    "bytes": "0.3.0",
     "negotiator": "0.4.2",
     "compressible": "1.0.1"
   },
