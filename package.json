@@ -19,7 +19,7 @@
   },
   "dependencies": {
     "bytes": "0.3.0",
-    "negotiator": "0.4.2",
+    "negotiator": "0.4.3",
     "compressible": "1.0.1"
   },
   "devDependencies": {
