@@ -32,6 +32,6 @@
     "test": "mocha --require should --reporter spec"
   },
   "engines": {
-    "node": ">= 0.10"
+    "node": ">= 0.8"
   }
 }

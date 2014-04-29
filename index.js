@@ -73,7 +73,7 @@ module.exports = function compress(options) {
     // proxy
 
     res.write = function(chunk, encoding){
-      if (!this.headersSent) {
+      if (!this._header) {
         // if content-length is set and is lower
         // than the threshold, don't compress
         var length = res.getHeader('content-length');
@@ -87,9 +87,9 @@ module.exports = function compress(options) {
 
     res.end = function(chunk, encoding){
       if (chunk) {
-        if (!this.headersSent && getSize(chunk) < threshold) compress = false;
+        if (!this._header && getSize(chunk) < threshold) compress = false;
         this.write(chunk, encoding);
-      } else if (!this.headersSent) {
+      } else if (!this._header) {
         // response size === 0
         compress = false;
       }
