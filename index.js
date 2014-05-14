@@ -12,6 +12,7 @@
 var zlib = require('zlib');
 var bytes = require('bytes');
 var Negotiator = require('negotiator');
+var onHeaders = require('on-headers');
 var compressible = require('compressible');
 
 /**
@@ -56,7 +57,6 @@ module.exports = function compress(options) {
 
   return function compress(req, res, next){
     var accept = req.headers['accept-encoding']
-      , writeHead = res.writeHead
       , write = res.write
       , end = res.end
       , compress = true
@@ -98,12 +98,9 @@ module.exports = function compress(options) {
         : end.call(res);
     };
 
-    res.writeHead = function(){
-      // set headers from args
-      var args = setWriteHeadHeaders.apply(this, arguments);
-
+    onHeaders(res, function(){
       // default request filter
-      if (!filter(req, res)) return writeHead.apply(res, args);
+      if (!filter(req, res)) return;
 
       // vary
       var vary = res.getHeader('Vary');
@@ -113,23 +110,23 @@ module.exports = function compress(options) {
         res.setHeader('Vary', vary + ', Accept-Encoding');
       }
 
-      if (!compress) return writeHead.apply(res, args);
+      if (!compress) return;
 
       var encoding = res.getHeader('Content-Encoding') || 'identity';
 
       // already encoded
-      if ('identity' != encoding) return writeHead.apply(res, args);
+      if ('identity' != encoding) return;
 
       // SHOULD use identity
-      if (!accept) return writeHead.apply(res, args);
+      if (!accept) return;
 
       // head
-      if ('HEAD' == req.method) return writeHead.apply(res, args);
+      if ('HEAD' == req.method) return;
 
       // compression method
       var method = new Negotiator(req).preferredEncoding(['gzip', 'deflate', 'identity']);
       // negotiation failed
-      if (!method || method === 'identity') return writeHead.apply(res, args);
+      if (!method || method === 'identity') return;
 
       // compression stream
       stream = exports.methods[method](options);
@@ -155,9 +152,7 @@ module.exports = function compress(options) {
       stream.on('drain', function() {
         res.emit('drain');
       });
-
-      writeHead.apply(res, args);
-    };
+    });
 
     next();
   };
@@ -170,28 +165,3 @@ function getSize(chunk) {
 }
 
 function noop(){}
-
-function setWriteHeadHeaders() {
-  var headerIndex = typeof arguments[1] === 'string'
-    ? 2
-    : 1;
-
-  var headers = arguments[headerIndex];
-
-  // the following block is from node.js core
-  if (Array.isArray(headers)) {
-    // handle array case
-    for (var i = 0, len = headers.length; i < len; ++i) {
-      this.setHeader(headers[i][0], headers[i][1]);
-    }
-  } else if (headers) {
-    // handle object case
-    var keys = Object.keys(headers);
-    for (var i = 0; i < keys.length; i++) {
-      var k = keys[i];
-      if (k) this.setHeader(k, headers[k]);
-    }
-  }
-
-  return Array.prototype.slice.call(arguments, 0, headerIndex);
-}

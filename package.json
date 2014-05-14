@@ -25,8 +25,9 @@
   },
   "dependencies": {
     "bytes": "1.0.0",
+    "compressible": "1.0.1",
     "negotiator": "0.4.3",
-    "compressible": "1.0.1"
+    "on-headers": "0.0.0"
   },
   "devDependencies": {
     "supertest": "*",

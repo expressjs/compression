@@ -1,6 +1,7 @@
 unreleased
 ==========
 
+ * use `on-headers` to handle header checking
  * deps: bytes@1.0.0
 
 1.0.2 / 2014-04-29
