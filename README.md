@@ -18,7 +18,7 @@ Returns the compression middleware using the given `options`.
 
 ```js
 app.use(compress({
-  threshhold: 512
+  threshold: 512
 }))
 ```
 
