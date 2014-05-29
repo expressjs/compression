@@ -1,5 +1,5 @@
 /*!
- * Expressjs | Connect - compress
+ * compression
  * Copyright(c) 2010 Sencha Inc.
  * Copyright(c) 2011 TJ Holowaychuk
  * MIT Licensed
@@ -42,7 +42,7 @@ exports.filter = function(req, res){
  * @api public
  */
 
-module.exports = function compress(options) {
+module.exports = function compression(options) {
   options = options || {};
   var filter = options.filter || exports.filter;
   var threshold;
@@ -55,7 +55,7 @@ module.exports = function compress(options) {
     threshold = options.threshold || 1024
   }
 
-  return function compress(req, res, next){
+  return function compression(req, res, next){
     var accept = req.headers['accept-encoding']
       , write = res.write
       , end = res.end
