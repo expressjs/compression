@@ -30,15 +30,18 @@
     "on-headers": "0.0.0"
   },
   "devDependencies": {
+    "istanbul": "0.2.10",
     "supertest": "*",
     "connect": "*",
     "mocha": "*",
     "should": "*"
   },
-  "scripts": {
-    "test": "mocha --require should --reporter spec"
-  },
   "engines": {
-    "node": ">= 0.8"
+    "node": ">= 0.8.0"
+  },
+  "scripts": {
+    "test": "mocha --reporter dot",
+    "test-cov": "istanbul cover node_modules/mocha/bin/_mocha -- --reporter dot",
+    "test-travis": "istanbul cover node_modules/mocha/bin/_mocha --report lcovonly -- --reporter spec"
   }
 }

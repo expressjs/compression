@@ -1,6 +1,7 @@
 var assert = require('assert');
 var connect = require('connect');
 var request = require('supertest');
+var should = require('should');
 
 var compress = require('./');
 

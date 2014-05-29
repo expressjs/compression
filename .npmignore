@@ -1,1 +1,3 @@
+coverage/
+.travis.yml
 test.js
