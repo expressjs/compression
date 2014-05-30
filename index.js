@@ -10,8 +10,8 @@
  */
 
 var zlib = require('zlib');
+var accepts = require('accepts');
 var bytes = require('bytes');
-var Negotiator = require('negotiator');
 var onHeaders = require('on-headers');
 var compressible = require('compressible');
 
@@ -56,8 +56,7 @@ module.exports = function compression(options) {
   }
 
   return function compression(req, res, next){
-    var accept = req.headers['accept-encoding']
-      , write = res.write
+    var write = res.write
       , end = res.end
       , compress = true
       , stream;
@@ -117,14 +116,13 @@ module.exports = function compression(options) {
       // already encoded
       if ('identity' != encoding) return;
 
-      // SHOULD use identity
-      if (!accept) return;
-
       // head
       if ('HEAD' == req.method) return;
 
       // compression method
-      var method = new Negotiator(req).preferredEncoding(['gzip', 'deflate', 'identity']);
+      var accept = accepts(req);
+      var method = accept.encodings(['gzip', 'deflate', 'identity']);
+
       // negotiation failed
       if (!method || method === 'identity') return;
 
