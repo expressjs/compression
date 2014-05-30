@@ -67,6 +67,20 @@ app2.use('/image', function(req, res){
   res.end();
 });
 
+app2.use('/vary', function(req, res){
+  res.setHeader('Vary', 'User-Agent');
+  res.setHeader('Content-Type', 'text/plain');
+  res.write('a');
+  res.end();
+});
+
+app2.use('/vary-double', function(req, res){
+  res.setHeader('Vary', 'User-Agent, Accept-Encoding');
+  res.setHeader('Content-Type', 'text/plain');
+  res.write('a');
+  res.end();
+});
+
 describe('compress()', function(){
   it('should gzip files', function(done){
     request(app)
@@ -111,6 +125,20 @@ describe('compress()', function(){
     .get('/package.json')
     .set('Accept-Encoding', 'gzip')
     .expect('Vary', 'Accept-Encoding', done);
+  })
+
+  it('should append to Vary', function(done){
+    request(app2)
+    .get('/vary')
+    .set('Accept-Encoding', 'gzip')
+    .expect('Vary', 'User-Agent, Accept-Encoding', done);
+  })
+
+  it('should not double-append to Vary', function(done){
+    request(app2)
+    .get('/vary-double')
+    .set('Accept-Encoding', 'gzip')
+    .expect('Vary', 'User-Agent, Accept-Encoding', done);
   })
 
   it('should set Vary even if Accept-Encoding is not set', function(done){
