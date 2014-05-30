@@ -2,6 +2,7 @@
 
 [![NPM version](https://badge.fury.io/js/compression.svg)](http://badge.fury.io/js/compression)
 [![Build Status](https://travis-ci.org/expressjs/compression.svg?branch=master)](https://travis-ci.org/expressjs/compression)
+[![Coverage Status](https://img.shields.io/coveralls/expressjs/compression.svg?branch=master)](https://coveralls.io/r/expressjs/compression)
 
 Node.js compression middleware.
 
