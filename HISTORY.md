@@ -1,6 +1,7 @@
-unreleased
-==========
+1.0.3 / 2014-05-29
+==================
 
+ * use `accepts` for negotiation
  * use `on-headers` to handle header checking
  * deps: bytes@1.0.0
 
