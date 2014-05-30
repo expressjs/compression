@@ -3,14 +3,14 @@ var connect = require('connect');
 var request = require('supertest');
 var should = require('should');
 
-var compress = require('./');
+var compress = require('..');
 
 var app = connect();
 app.use(compress({
   threshold: 0
 }));
 
-app.use(connect.static(__dirname));
+app.use(connect.static(__dirname + '/..'));
 
 var app2 = connect();
 app2.use(compress({
