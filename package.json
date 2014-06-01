@@ -30,7 +30,6 @@
     "on-headers": "0.0.0"
   },
   "devDependencies": {
-    "connect": "2",
     "istanbul": "0.2.10",
     "mocha": "~1.20.0",
     "supertest": "~0.13.0",
