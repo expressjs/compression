@@ -230,10 +230,34 @@ describe('compress()', function(){
       .expect(200, done)
     })
 
-    // If anyone knows how to test if the flush works...
-    // it('should flush the response', function (done) {
+    it('should flush the response', function (done) {
+      var server = createServer({ threshold: '1kb' }, function (req, res) {
+        res.setHeader('Content-Type', 'text/plain')
+        res.setHeader('Content-Length', '2048')
+        res.write(new Buffer(1024))
+        res.flush()
+        setTimeout(function(){
+          res.end(new Buffer(1024))
+        }, 10)
+      })
 
-    // })
+      request(server)
+      .get('/')
+      .set('Accept-Encoding', 'gzip')
+      .end(function(){})
+      .request()
+      .on('response', function (res) {
+        var chunks = 0
+        res.headers['content-encoding'].should.equal('gzip')
+        res.on('data', function (chunk) {
+          chunks++
+        })
+        res.on('end', function () {
+          chunks.should.equal(2)
+          done()
+        })
+      })
+    })
   })
 })
 
