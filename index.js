@@ -57,7 +57,8 @@ module.exports = function compression(options) {
 
   return function compression(req, res, next){
     var write = res.write
-      , end = res.end
+    var on = res.on
+    var end = res.end
       , compress = true
       , stream;
 
@@ -96,6 +97,14 @@ module.exports = function compression(options) {
         ? stream.end()
         : end.call(res);
     };
+
+    res.on = function(type, listener){
+      if (!stream || type !== 'drain') {
+        return on.call(this, type, listener)
+      }
+
+      return stream.on(type, listener)
+    }
 
     onHeaders(res, function(){
       // default request filter
@@ -140,15 +149,17 @@ module.exports = function compression(options) {
 
       // compression
       stream.on('data', function(chunk){
-        write.call(res, chunk);
+        if (write.call(res, chunk) === false) {
+          stream.pause()
+        }
       });
 
       stream.on('end', function(){
         end.call(res);
       });
 
-      stream.on('drain', function() {
-        res.emit('drain');
+      on.call(res, 'drain', function() {
+        stream.resume()
       });
     });
 

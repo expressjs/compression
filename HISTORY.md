@@ -1,3 +1,8 @@
+unreleased
+==========
+
+ * fix back-pressure behavior
+
 1.0.3 / 2014-05-29
 ==================
 

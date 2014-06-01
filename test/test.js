@@ -1,3 +1,4 @@
+var crypto = require('crypto');
 var http = require('http');
 var request = require('supertest');
 var should = require('should');
@@ -133,6 +134,55 @@ describe('compress()', function(){
     })
   })
 
+  it('should back-pressure', function(done){
+    var buf
+    var client
+    var resp
+    var server = createServer({ threshold: 0 }, function (req, res) {
+      resp = res
+      res.setHeader('Content-Type', 'text/plain')
+      res.write('start')
+      pressure()
+    })
+    var wait = 2
+
+    crypto.pseudoRandomBytes(1024 * 128, function(err, chunk){
+      buf = chunk
+      pressure()
+    })
+
+    function complete(){
+      if (--wait === 0) done()
+    }
+
+    function pressure(){
+      if (!buf || !resp || !client) return
+
+      while (resp.write(buf) !== false) {
+        resp.flush()
+      }
+
+      resp.on('drain', function(){
+        resp.write('end')
+        resp.end()
+      })
+      resp.on('finish', complete)
+      client.resume()
+    }
+
+    request(server)
+    .get('/')
+    .request()
+    .on('response', function (res) {
+      client = res
+      res.headers['content-encoding'].should.equal('gzip')
+      res.pause()
+      res.on('end', complete)
+      pressure()
+    })
+    .end()
+  })
+
   describe('threshold', function(){
     it('should not compress responses below the threshold size', function(done){
       var server = createServer({ threshold: '1kb' }, function (req, res) {
@@ -222,6 +272,7 @@ describe('compress()', function(){
         res.statusCode = typeof res.flush === 'function'
           ? 200
           : 500
+        res.flush()
         res.end()
       })
 
