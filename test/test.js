@@ -231,32 +231,100 @@ describe('compress()', function(){
     })
 
     it('should flush the response', function (done) {
-      var server = createServer({ threshold: '1kb' }, function (req, res) {
+      var chunks = 0
+      var resp
+      var server = createServer({ threshold: 0 }, function (req, res) {
+        resp = res
         res.setHeader('Content-Type', 'text/plain')
         res.setHeader('Content-Length', '2048')
-        res.write(new Buffer(1024))
-        res.flush()
-        setTimeout(function(){
-          res.end(new Buffer(1024))
-        }, 10)
+        write()
       })
+
+      function write() {
+        chunks++
+        if (chunks === 2) return resp.end()
+        if (chunks > 2) return chunks--
+        resp.write(new Buffer(1024))
+        resp.flush()
+      }
 
       request(server)
       .get('/')
       .set('Accept-Encoding', 'gzip')
-      .end(function(){})
       .request()
       .on('response', function (res) {
-        var chunks = 0
         res.headers['content-encoding'].should.equal('gzip')
-        res.on('data', function (chunk) {
-          chunks++
-        })
-        res.on('end', function () {
+        res.on('data', write)
+        res.on('end', function(){
           chunks.should.equal(2)
           done()
         })
       })
+      .end()
+    })
+
+    it('should flush small chunks for gzip', function (done) {
+      var chunks = 0
+      var resp
+      var server = createServer({ threshold: 0 }, function (req, res) {
+        resp = res
+        res.setHeader('Content-Type', 'text/plain')
+        write()
+      })
+
+      function write() {
+        chunks++
+        if (chunks === 20) return resp.end()
+        if (chunks > 20) return chunks--
+        resp.write('..')
+        resp.flush()
+      }
+
+      request(server)
+      .get('/')
+      .set('Accept-Encoding', 'gzip')
+      .request()
+      .on('response', function (res) {
+        res.headers['content-encoding'].should.equal('gzip')
+        res.on('data', write)
+        res.on('end', function(){
+          chunks.should.equal(20)
+          done()
+        })
+      })
+      .end()
+    })
+
+    it('should flush small chunks for deflate', function (done) {
+      var chunks = 0
+      var resp
+      var server = createServer({ threshold: 0 }, function (req, res) {
+        resp = res
+        res.setHeader('Content-Type', 'text/plain')
+        write()
+      })
+
+      function write() {
+        chunks++
+        if (chunks === 20) return resp.end()
+        if (chunks > 20) return chunks--
+        resp.write('..')
+        resp.flush()
+      }
+
+      request(server)
+      .get('/')
+      .set('Accept-Encoding', 'deflate')
+      .request()
+      .on('response', function (res) {
+        res.headers['content-encoding'].should.equal('deflate')
+        res.on('data', write)
+        res.on('end', function(){
+          chunks.should.equal(20)
+          done()
+        })
+      })
+      .end()
     })
   })
 })
