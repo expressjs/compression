@@ -1,5 +1,5 @@
-unreleased
-==========
+1.0.4 / 2014-06-03
+==================
 
  * fix adding `Vary` when value stored as array
  * fix back-pressure behavior
