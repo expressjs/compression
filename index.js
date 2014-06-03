@@ -120,12 +120,7 @@ module.exports = function compression(options) {
       if (!filter(req, res)) return;
 
       // vary
-      var vary = res.getHeader('Vary');
-      if (!vary) {
-        res.setHeader('Vary', 'Accept-Encoding');
-      } else if (!~vary.indexOf('Accept-Encoding')) {
-        res.setHeader('Vary', vary + ', Accept-Encoding');
-      }
+      vary(res, 'Accept-Encoding')
 
       if (!compress) return;
 
@@ -177,3 +172,29 @@ module.exports = function compression(options) {
 };
 
 function noop(){}
+
+/**
+ * Add val to Vary header
+ */
+
+function vary(res, val) {
+  var header = res.getHeader('Vary') || ''
+  var headers = Array.isArray(header)
+    ? header.join(', ')
+    : header
+
+  // enumerate current values
+  var vals = headers.toLowerCase().split(/ *, */)
+
+  if (vals.indexOf(val.toLowerCase()) !== -1) {
+    // already set
+    return
+  }
+
+  // append value (in existing format)
+  header = headers
+    ? headers + ', ' + val
+    : val
+
+  res.setHeader('Vary', header)
+}

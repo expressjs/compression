@@ -1,6 +1,7 @@
 unreleased
 ==========
 
+ * fix adding `Vary` when value stored as array
  * fix back-pressure behavior
  * fix length check for `res.end`
 
