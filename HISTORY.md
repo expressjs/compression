@@ -2,6 +2,7 @@ unreleased
 ==========
 
  * fix back-pressure behavior
+ * fix length check for `res.end`
 
 1.0.3 / 2014-05-29
 ==================

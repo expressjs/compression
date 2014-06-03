@@ -86,13 +86,22 @@ module.exports = function compression(options) {
     };
 
     res.end = function(chunk, encoding){
+      var len
+
       if (chunk) {
-        if (!this._header && getSize(chunk) < threshold) compress = false;
-        this.write(chunk, encoding);
-      } else if (!this._header) {
-        // response size === 0
-        compress = false;
+        len = Buffer.isBuffer(chunk)
+          ? chunk.length
+          : Buffer.byteLength(chunk, encoding)
       }
+
+      if (!this._header) {
+        compress = len && len >= threshold
+      }
+
+      if (chunk) {
+        this.write(chunk, encoding);
+      }
+
       return stream
         ? stream.end()
         : end.call(res);
@@ -166,11 +175,5 @@ module.exports = function compression(options) {
     next();
   };
 };
-
-function getSize(chunk) {
-  return Buffer.isBuffer(chunk)
-    ? chunk.length
-    : Buffer.byteLength(chunk);
-}
 
 function noop(){}

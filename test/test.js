@@ -264,6 +264,24 @@ describe('compress()', function(){
       .set('Accept-Encoding', 'gzip')
       .expect('Content-Encoding', 'gzip', done)
     })
+
+    // res.end(str, encoding) broken in node.js 0.8
+    var run = /^v0\.8\./.test(process.version) ? it.skip : it
+    run('should handle writing hex data', function(done){
+      var server = createServer({ threshold: 6 }, function (req, res) {
+        res.setHeader('Content-Type', 'text/plain')
+        res.end('2e2e2e2e', 'hex')
+      })
+
+      request(server)
+      .get('/')
+      .set('Accept-Encoding', 'gzip')
+      .expect(200, '....', function (err, res) {
+        if (err) return done(err)
+        res.headers.should.not.have.property('content-encoding')
+        done()
+      })
+    })
   })
 
   describe('res.flush()', function () {
