@@ -14,6 +14,7 @@ var accepts = require('accepts');
 var bytes = require('bytes');
 var onHeaders = require('on-headers');
 var compressible = require('compressible');
+var vary = require('vary');
 
 /**
  * Supported content-encoding methods.
@@ -196,29 +197,3 @@ function addListeners(stream, on, listeners) {
 }
 
 function noop(){}
-
-/**
- * Add val to Vary header
- */
-
-function vary(res, val) {
-  var header = res.getHeader('Vary') || ''
-  var headers = Array.isArray(header)
-    ? header.join(', ')
-    : header
-
-  // enumerate current values
-  var vals = headers.toLowerCase().split(/ *, */)
-
-  if (vals.indexOf(val.toLowerCase()) !== -1) {
-    // already set
-    return
-  }
-
-  // append value (in existing format)
-  header = headers
-    ? headers + ', ' + val
-    : val
-
-  res.setHeader('Vary', header)
-}

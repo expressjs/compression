@@ -77,48 +77,6 @@ describe('compress()', function(){
     .expect('Vary', 'Accept-Encoding', done)
   })
 
-  it('should append to Vary', function(done){
-    var server = createServer({ threshold: 0 }, function (req, res) {
-      res.setHeader('Content-Type', 'text/plain')
-      res.setHeader('Vary', 'User-Agent')
-      res.end('hello, world')
-    })
-
-    request(server)
-    .get('/')
-    .set('Accept-Encoding', 'gzip')
-    .expect('Content-Encoding', 'gzip')
-    .expect('Vary', 'User-Agent, Accept-Encoding', done)
-  })
-
-  it('should append to Vary when array', function(done){
-    var server = createServer({ threshold: 0 }, function (req, res) {
-      res.setHeader('Content-Type', 'text/plain')
-      res.setHeader('Vary', ['User-Agent', 'Origin'])
-      res.end('hello, world')
-    })
-
-    request(server)
-    .get('/')
-    .set('Accept-Encoding', 'gzip')
-    .expect('Content-Encoding', 'gzip')
-    .expect('Vary', 'User-Agent, Origin, Accept-Encoding', done)
-  })
-
-  it('should not double-append to Vary', function(done){
-    var server = createServer({ threshold: 0 }, function (req, res) {
-      res.setHeader('Content-Type', 'text/plain')
-      res.setHeader('Vary', 'Accept-Encoding, User-Agent')
-      res.end('hello, world')
-    })
-
-    request(server)
-    .get('/')
-    .set('Accept-Encoding', 'gzip')
-    .expect('Content-Encoding', 'gzip')
-    .expect('Vary', 'Accept-Encoding, User-Agent', done)
-  })
-
   it('should set Vary even if Accept-Encoding is not set', function(done){
     var server = createServer({ threshold: 1000 }, function (req, res) {
       res.setHeader('Content-Type', 'text/plain')
