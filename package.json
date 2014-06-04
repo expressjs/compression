@@ -26,7 +26,7 @@
   "dependencies": {
     "accepts": "1.0.2",
     "bytes": "1.0.0",
-    "compressible": "1.0.1",
+    "compressible": "1.1.0",
     "on-headers": "0.0.0"
   },
   "devDependencies": {
