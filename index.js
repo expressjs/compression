@@ -56,11 +56,12 @@ module.exports = function compression(options) {
   }
 
   return function compression(req, res, next){
+    var compress = true
+    var listeners = []
     var write = res.write
     var on = res.on
     var end = res.end
-      , compress = true
-      , stream;
+    var stream
 
     // see #8
     req.on('close', function(){
@@ -108,39 +109,52 @@ module.exports = function compression(options) {
     };
 
     res.on = function(type, listener){
-      if (!stream || type !== 'drain') {
+      if (!listeners || type !== 'drain') {
         return on.call(this, type, listener)
       }
 
-      return stream.on(type, listener)
+      if (stream) {
+        return stream.on(type, listener)
+      }
+
+      // buffer listeners for future stream
+      listeners.push([type, listener])
+
+      return this
+    }
+
+    function nocompress(){
+      addListeners(res, on, listeners)
+      listeners = null
     }
 
     onHeaders(res, function(){
       // default request filter
-      if (!filter(req, res)) return;
+      if (!filter(req, res)) return nocompress()
 
       // vary
       vary(res, 'Accept-Encoding')
 
-      if (!compress) return;
+      if (!compress) return nocompress()
 
       var encoding = res.getHeader('Content-Encoding') || 'identity';
 
       // already encoded
-      if ('identity' != encoding) return;
+      if ('identity' !== encoding) return nocompress()
 
       // head
-      if ('HEAD' == req.method) return;
+      if ('HEAD' === req.method) return nocompress()
 
       // compression method
       var accept = accepts(req);
       var method = accept.encodings(['gzip', 'deflate', 'identity']);
 
       // negotiation failed
-      if (!method || method === 'identity') return;
+      if (!method || method === 'identity') nocompress()
 
       // compression stream
       stream = exports.methods[method](options);
+      addListeners(stream, stream.on, listeners)
 
       // overwrite the flush method
       res.flush = function(){
@@ -170,6 +184,16 @@ module.exports = function compression(options) {
     next();
   };
 };
+
+/**
+ * Add bufferred listeners to stream
+ */
+
+function addListeners(stream, on, listeners) {
+  for (var i = 0; i < listeners.length; i++) {
+    on.apply(stream, listeners[i])
+  }
+}
 
 function noop(){}
 

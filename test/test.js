@@ -134,12 +134,16 @@ describe('compress()', function(){
     })
   })
 
-  it('should back-pressure', function(done){
+  it('should back-pressure when compressed', function(done){
     var buf
     var client
+    var drained = false
     var resp
     var server = createServer({ threshold: 0 }, function (req, res) {
       resp = res
+      res.on('drain', function(){
+        drained = true
+      })
       res.setHeader('Content-Type', 'text/plain')
       res.write('start')
       pressure()
@@ -152,7 +156,9 @@ describe('compress()', function(){
     })
 
     function complete(){
-      if (--wait === 0) done()
+      if (--wait !== 0) return
+      drained.should.be.true
+      done()
     }
 
     function pressure(){
@@ -176,6 +182,61 @@ describe('compress()', function(){
     .on('response', function (res) {
       client = res
       res.headers['content-encoding'].should.equal('gzip')
+      res.pause()
+      res.on('end', complete)
+      pressure()
+    })
+    .end()
+  })
+
+  it('should back-pressure when uncompressed', function(done){
+    var buf
+    var client
+    var drained = false
+    var resp
+    var server = createServer({ filter: function(){ return false } }, function (req, res) {
+      resp = res
+      res.on('drain', function(){
+        drained = true
+      })
+      res.setHeader('Content-Type', 'text/plain')
+      res.write('start')
+      pressure()
+    })
+    var wait = 2
+
+    crypto.pseudoRandomBytes(1024 * 128, function(err, chunk){
+      buf = chunk
+      pressure()
+    })
+
+    function complete(){
+      if (--wait !== 0) return
+      drained.should.be.true
+      done()
+    }
+
+    function pressure(){
+      if (!buf || !resp || !client) return
+
+      while (resp.write(buf) !== false) {
+        resp.flush()
+      }
+
+      resp.on('drain', function(){
+        resp.write('end')
+        resp.end()
+      })
+      resp.on('finish', complete)
+      client.resume()
+    }
+
+    request(server)
+    .get('/')
+    .request()
+    .on('response', function (res) {
+      client = res
+      res.headers.should.not.have.property('content-encoding')
       res.pause()
       res.on('end', complete)
       pressure()
