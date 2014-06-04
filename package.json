@@ -15,14 +15,7 @@
     }
   ],
   "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/expressjs/compression.git"
-  },
-  "bugs": {
-    "mail": "me@jongleberry.com",
-    "url": "https://github.com/expressjs/compression/issues"
-  },
+  "repository": "expressjs/compression",
   "dependencies": {
     "accepts": "1.0.2",
     "bytes": "1.0.0",
