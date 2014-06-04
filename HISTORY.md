@@ -1,5 +1,5 @@
-unreleased
-==========
+1.0.5 / 2014-06-03
+==================
 
  * fix listeners for delayed stream creation
    - fixes regression for certain `stream.pipe(res)` situations

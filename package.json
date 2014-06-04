@@ -1,7 +1,7 @@
 {
   "name": "compression",
   "description": "Compression middleware for connect and node.js",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "author": {
     "name": "Jonathan Ong",
     "email": "me@jongleberry.com",
