@@ -150,7 +150,7 @@ module.exports = function compression(options) {
       var method = accept.encodings(['gzip', 'deflate', 'identity']);
 
       // negotiation failed
-      if (!method || method === 'identity') nocompress()
+      if (!method || method === 'identity') return nocompress()
 
       // compression stream
       stream = exports.methods[method](options);

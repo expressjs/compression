@@ -34,6 +34,22 @@ describe('compress()', function(){
     })
   })
 
+  it('should skip unknown accept-encoding', function(done){
+    var server = createServer({ threshold: 0 }, function (req, res) {
+      res.setHeader('Content-Type', 'text/plain')
+      res.end('hello, world')
+    })
+
+    request(server)
+    .get('/')
+    .set('Accept-Encoding', 'bogus')
+    .end(function (err, res) {
+      if (err) return done(err)
+      res.headers.should.not.have.property('content-encoding')
+      done()
+    })
+  })
+
   it('should set Vary', function(done){
     var server = createServer({ threshold: 0 }, function (req, res) {
       res.setHeader('Content-Type', 'text/plain')
