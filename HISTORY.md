@@ -1,5 +1,5 @@
-unreleased
-==========
+1.0.6 / 2014-06-03
+==================
 
  * fix regression when negotiation fails
 
