@@ -1,7 +1,7 @@
 unreleased
 ==========
 
- * use vary module
+ * use vary module for better `Vary` behavior
  * deps: compressible@1.1.0
 
 1.0.6 / 2014-06-03
