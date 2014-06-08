@@ -10,18 +10,18 @@ Node.js compression middleware.
 
 ```js
 var express  = require('express')
-var compress = require('compression')
+var compression = require('compression')
 
 var app = express()
-app.use(compress())
+app.use(compression())
 ```
 
-### compress(options)
+### compression(options)
 
 Returns the compression middleware using the given `options`.
 
 ```js
-app.use(compress({
+app.use(compression({
   threshold: 512
 }))
 ```
