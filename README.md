@@ -9,7 +9,7 @@ Node.js compression middleware.
 ## API
 
 ```js
-var express  = require('express')
+var express     = require('express')
 var compression = require('compression')
 
 var app = express()
