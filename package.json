@@ -2,17 +2,9 @@
   "name": "compression",
   "description": "Compression middleware for connect and node.js",
   "version": "1.0.6",
-  "author": {
-    "name": "Jonathan Ong",
-    "email": "me@jongleberry.com",
-    "url": "http://jongleberry.com",
-    "twitter": "https://twitter.com/jongleberry"
-  },
+  "author": "Jonathan Ong <me@jongleberry.com> (http://jongleberry.com)",
   "contributors": [
-    {
-      "name": "Douglas Christopher Wilson",
-      "email": "doug@somethingdoug.com"
-    }
+    "Douglas Christopher Wilson <doug@somethingdoug.com>"
   ],
   "license": "MIT",
   "repository": "expressjs/compression",
