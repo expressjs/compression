@@ -1,5 +1,5 @@
-unreleased
-==========
+1.0.7 / 2014-06-11
+==================
 
  * use vary module for better `Vary` behavior
  * deps: accepts@1.0.3
