@@ -2,6 +2,7 @@ unreleased
 ==========
 
  * use vary module for better `Vary` behavior
+ * deps: accepts@1.0.3
  * deps: compressible@1.1.0
 
 1.0.6 / 2014-06-03
