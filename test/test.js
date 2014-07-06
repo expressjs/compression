@@ -108,6 +108,18 @@ describe('compress()', function(){
     })
   })
 
+  it('should set Vary for HEAD request', function(done){
+    var server = createServer({ threshold: 0 }, function (req, res) {
+      res.setHeader('Content-Type', 'text/plain')
+      res.end('hello, world')
+    })
+
+    request(server)
+    .head('/')
+    .set('Accept-Encoding', 'gzip')
+    .expect('Vary', 'Accept-Encoding', done)
+  })
+
   it('should transfer chunked', function(done){
     var server = createServer({ threshold: 0 }, function (req, res) {
       res.setHeader('Content-Type', 'text/plain')
