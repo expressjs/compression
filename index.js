@@ -2,6 +2,7 @@
  * compression
  * Copyright(c) 2010 Sencha Inc.
  * Copyright(c) 2011 TJ Holowaychuk
+ * Copyright(c) 2014 Jonathan Ong
  * MIT Licensed
  */
 
@@ -43,8 +44,6 @@ exports.filter = function filter(req, res) {
 
 /**
  * Compress response data with gzip / deflate.
- *
- * See README.md for documentation of options.
  *
  * @param {Object} options
  * @return {Function} middleware
