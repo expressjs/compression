@@ -1,5 +1,5 @@
-unreleased
-==========
+1.0.9 / 2014-07-20
+==================
 
   * Add `debug` messages
   * deps: accepts@~1.0.7
