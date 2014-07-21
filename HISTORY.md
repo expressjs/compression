@@ -1,3 +1,9 @@
+unreleased
+==========
+
+  * deps: accepts@~1.0.7
+    - deps: negotiator@0.4.7
+
 1.0.8 / 2014-06-20
 ==================
 
