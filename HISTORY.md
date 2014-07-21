@@ -1,6 +1,7 @@
 unreleased
 ==========
 
+  * Add `debug` messages
   * deps: accepts@~1.0.7
     - deps: negotiator@0.4.7
 

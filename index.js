@@ -12,6 +12,7 @@
 var zlib = require('zlib');
 var accepts = require('accepts');
 var bytes = require('bytes');
+var debug = require('debug')('compression')
 var onHeaders = require('on-headers');
 var compressible = require('compressible');
 var vary = require('vary');
@@ -29,8 +30,15 @@ exports.methods = {
  * Default filter function.
  */
 
-exports.filter = function(req, res){
-  return compressible(res.getHeader('Content-Type'));
+exports.filter = function filter(req, res) {
+  var type = res.getHeader('Content-Type')
+
+  if (type === undefined || !compressible(type)) {
+    debug('%s not compressible', type)
+    return false
+  }
+
+  return true
 };
 
 /**
@@ -78,8 +86,8 @@ module.exports = function compression(options) {
       if (!this._header) {
         // if content-length is set and is lower
         // than the threshold, don't compress
-        var length = res.getHeader('content-length');
-        if (!isNaN(length) && length < threshold) compress = false;
+        var len = Number(res.getHeader('Content-Length'))
+        checkthreshold(len)
         this._implicitHeader();
       }
       return stream
@@ -97,7 +105,7 @@ module.exports = function compression(options) {
       }
 
       if (!this._header) {
-        compress = len && len >= threshold
+        checkthreshold(len)
       }
 
       if (chunk) {
@@ -124,36 +132,60 @@ module.exports = function compression(options) {
       return this
     }
 
-    function nocompress(){
+    function checkthreshold(len) {
+      if (compress && len < threshold) {
+        debug('size below threshold')
+        compress = false
+      }
+    }
+
+    function nocompress(msg) {
+      debug('no compression' + (msg ? ': ' + msg : ''))
       addListeners(res, on, listeners)
       listeners = null
     }
 
     onHeaders(res, function(){
-      // default request filter
-      if (!filter(req, res)) return nocompress()
+      // determine if request is filtered
+      if (!filter(req, res)) {
+        nocompress('filtered')
+        return
+      }
 
       // vary
       vary(res, 'Accept-Encoding')
 
-      if (!compress) return nocompress()
+      if (!compress) {
+        nocompress()
+        return
+      }
 
       var encoding = res.getHeader('Content-Encoding') || 'identity';
 
       // already encoded
-      if ('identity' !== encoding) return nocompress()
+      if ('identity' !== encoding) {
+        nocompress('already encoded')
+        return
+      }
 
       // head
-      if ('HEAD' === req.method) return nocompress()
+      if ('HEAD' === req.method) {
+        nocompress('HEAD request')
+        return
+      }
 
       // compression method
       var accept = accepts(req);
       var method = accept.encodings(['gzip', 'deflate', 'identity']);
 
       // negotiation failed
-      if (!method || method === 'identity') return nocompress()
+      if (!method || method === 'identity') {
+        nocompress('not acceptable')
+        return
+      }
 
       // compression stream
+      debug('%s compression', method)
       stream = exports.methods[method](options);
       addListeners(stream, stream.on, listeners)
 
