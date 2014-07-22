@@ -1,3 +1,4 @@
+var bytes = require('bytes');
 var crypto = require('crypto');
 var http = require('http');
 var request = require('supertest');
@@ -273,6 +274,52 @@ describe('compress()', function(){
       pressure()
     })
     .end()
+  })
+
+  it('should transfer large bodies', function (done) {
+    var len = bytes('1mb')
+    var buf = new Buffer(len)
+    var server = createServer({ threshold: 0 }, function (req, res) {
+      res.setHeader('Content-Type', 'text/plain')
+      res.end(buf)
+    })
+
+    buf.fill('.')
+
+    request(server)
+    .get('/')
+    .set('Accept-Encoding', 'gzip')
+    .expect('Transfer-Encoding', 'chunked')
+    .expect('Content-Encoding', 'gzip', function (err, res) {
+      if (err) return done(err)
+      should(res.text).equal(buf.toString())
+      res.text.length.should.equal(len)
+      done()
+    })
+  })
+
+  it('should transfer large bodies with multiple writes', function (done) {
+    var len = bytes('40kb')
+    var buf = new Buffer(len)
+    var server = createServer({ threshold: 0 }, function (req, res) {
+      res.setHeader('Content-Type', 'text/plain')
+      res.write(buf)
+      res.write(buf)
+      res.write(buf)
+      res.end(buf)
+    })
+
+    buf.fill('.')
+
+    request(server)
+    .get('/')
+    .set('Accept-Encoding', 'gzip')
+    .expect('Transfer-Encoding', 'chunked')
+    .expect('Content-Encoding', 'gzip', function (err, res) {
+      if (err) return done(err)
+      res.text.length.should.equal(len * 4)
+      done()
+    })
   })
 
   describe('threshold', function(){
