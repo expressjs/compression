@@ -1,5 +1,5 @@
-unreleased
-==========
+1.0.10 / 2014-08-05
+===================
 
   * deps: compressible@~1.1.1
     - Fix upper-case Content-Type characters prevent compression
