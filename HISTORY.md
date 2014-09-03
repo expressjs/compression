@@ -3,6 +3,7 @@ unreleased
 
   * deps: accepts@~1.1.0
   * deps: compressible@~2.0.0
+  * deps: debug@~2.0.0
 
 1.0.11 / 2014-08-10
 ===================

@@ -12,7 +12,7 @@
     "accepts": "~1.1.0",
     "bytes": "1.0.0",
     "compressible": "~2.0.0",
-    "debug": "1.0.4",
+    "debug": "~2.0.0",
     "on-headers": "~1.0.0",
     "vary": "~1.0.0"
   },
