@@ -17,11 +17,7 @@ $ npm install compression
 ## API
 
 ```js
-var express     = require('express')
 var compression = require('compression')
-
-var app = express()
-app.use(compression())
 ```
 
 ### compression(options)
@@ -47,6 +43,23 @@ This module adds a `res.flush()` method to force the partially-compressed
 response to be flushed to the client.
 
 ## Examples
+
+### express/connect
+
+When using this module with express or connect, simply `app.use` the module as
+high as you like. Requests that pass through the middleware will be compressed.
+
+```js
+var compression = require('compression')
+var express = require('express')
+
+var app = express()
+
+// compress all requests
+app.use(compression())
+
+// add alll routes
+```
 
 ### Server-Sent Events
 
