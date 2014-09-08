@@ -1,5 +1,5 @@
-unreleased
-==========
+1.1.0 / 2014-09-07
+==================
 
   * deps: accepts@~1.1.0
   * deps: compressible@~2.0.0
