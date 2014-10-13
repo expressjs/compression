@@ -4,6 +4,8 @@ unreleased
   * deps: accepts@~1.1.1
     - deps: mime-types@~2.0.2
     - deps: negotiator@0.4.8
+  * deps: compressible@~2.0.1
+    - deps: mime-db@1.x
 
 1.1.0 / 2014-09-07
 ==================
