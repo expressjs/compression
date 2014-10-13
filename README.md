@@ -109,7 +109,7 @@ app.get('/events', function (req, res) {
 [travis-url]: https://travis-ci.org/expressjs/compression
 [coveralls-image]: https://img.shields.io/coveralls/expressjs/compression.svg?style=flat
 [coveralls-url]: https://coveralls.io/r/expressjs/compression?branch=master
-[downloads-image]: http://img.shields.io/npm/dm/compression.svg?style=flat
+[downloads-image]: https://img.shields.io/npm/dm/compression.svg?style=flat
 [downloads-url]: https://npmjs.org/package/compression
 [gratipay-image]: https://img.shields.io/gratipay/dougwilson.svg?style=flat
 [gratipay-url]: https://www.gratipay.com/dougwilson/
