@@ -85,7 +85,7 @@ app.get('/events', function (req, res) {
   res.setHeader('Content-Type', 'text/event-stream')
   res.setHeader('Cache-Control', 'no-cache')
 
-  // send a ping approx eveny 2 seconds
+  // send a ping approx every 2 seconds
   var timer = setInterval(function () {
     res.write('data: ping\n\n')
 
