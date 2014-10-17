@@ -1,3 +1,9 @@
+unreleased
+==========
+
+  * deps: debug@~2.1.0
+    - Implement `DEBUG_FD` env variable support
+
 1.1.2 / 2014-10-15
 ==================
 
