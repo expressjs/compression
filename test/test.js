@@ -1,8 +1,8 @@
+var assert = require('assert')
 var bytes = require('bytes');
 var crypto = require('crypto');
 var http = require('http');
 var request = require('supertest');
-var should = require('should');
 
 var compress = require('..');
 
@@ -28,11 +28,8 @@ describe('compress()', function(){
     request(server)
     .head('/')
     .set('Accept-Encoding', 'gzip')
-    .end(function (err, res) {
-      if (err) return done(err)
-      res.headers.should.not.have.property('content-encoding')
-      done()
-    })
+    .expect(shouldNotHaveHeader('Content-Encoding'))
+    .expect(200, done)
   })
 
   it('should skip unknown accept-encoding', function(done){
@@ -44,11 +41,8 @@ describe('compress()', function(){
     request(server)
     .get('/')
     .set('Accept-Encoding', 'bogus')
-    .end(function (err, res) {
-      if (err) return done(err)
-      res.headers.should.not.have.property('content-encoding')
-      done()
-    })
+    .expect(shouldNotHaveHeader('Content-Encoding'))
+    .expect(200, done)
   })
 
   it('should skip if content-encoding already set', function(done){
@@ -87,11 +81,8 @@ describe('compress()', function(){
     request(server)
     .get('/')
     .expect('Vary', 'Accept-Encoding')
-    .end(function (err, res) {
-      if (err) return done(err)
-      res.headers.should.not.have.property('content-encoding')
-      done()
-    })
+    .expect(shouldNotHaveHeader('Content-Encoding'))
+    .expect(200, done)
   })
 
   it('should not set Vary if Content-Type does not pass filter', function(done){
@@ -102,11 +93,8 @@ describe('compress()', function(){
 
     request(server)
     .get('/')
-    .end(function (err, res) {
-      if (err) return done(err)
-      res.headers.should.not.have.property('vary')
-      done()
-    })
+    .expect(shouldNotHaveHeader('Vary'))
+    .expect(200, done)
   })
 
   it('should set Vary for HEAD request', function(done){
@@ -142,11 +130,8 @@ describe('compress()', function(){
     request(server)
     .get('/')
     .expect('Content-Encoding', 'gzip')
-    .end(function (err, res) {
-      if (err) return done(err)
-      res.headers.should.not.have.property('content-length')
-      done()
-    })
+    .expect(shouldNotHaveHeader('Content-Length'))
+    .expect(200, done)
   })
 
   it('should allow writing after close', function(done){
@@ -189,7 +174,7 @@ describe('compress()', function(){
 
     function complete(){
       if (--wait !== 0) return
-      drained.should.be.true
+      assert.ok(drained)
       done()
     }
 
@@ -213,7 +198,7 @@ describe('compress()', function(){
     .request()
     .on('response', function (res) {
       client = res
-      res.headers['content-encoding'].should.equal('gzip')
+      assert.equal(res.headers['content-encoding'], 'gzip')
       res.pause()
       res.on('end', complete)
       pressure()
@@ -244,7 +229,7 @@ describe('compress()', function(){
 
     function complete(){
       if (--wait !== 0) return
-      drained.should.be.true
+      assert.ok(drained)
       done()
     }
 
@@ -268,7 +253,7 @@ describe('compress()', function(){
     .request()
     .on('response', function (res) {
       client = res
-      res.headers.should.not.have.property('content-encoding')
+      shouldNotHaveHeader('Content-Encoding')(res)
       res.pause()
       res.on('end', complete)
       pressure()
@@ -290,12 +275,9 @@ describe('compress()', function(){
     .get('/')
     .set('Accept-Encoding', 'gzip')
     .expect('Transfer-Encoding', 'chunked')
-    .expect('Content-Encoding', 'gzip', function (err, res) {
-      if (err) return done(err)
-      should(res.text).equal(buf.toString())
-      res.text.length.should.equal(len)
-      done()
-    })
+    .expect('Content-Encoding', 'gzip')
+    .expect(shouldHaveBodyLength(len))
+    .expect(200, buf.toString(), done)
   })
 
   it('should transfer large bodies with multiple writes', function (done) {
@@ -315,11 +297,9 @@ describe('compress()', function(){
     .get('/')
     .set('Accept-Encoding', 'gzip')
     .expect('Transfer-Encoding', 'chunked')
-    .expect('Content-Encoding', 'gzip', function (err, res) {
-      if (err) return done(err)
-      res.text.length.should.equal(len * 4)
-      done()
-    })
+    .expect('Content-Encoding', 'gzip')
+    .expect(shouldHaveBodyLength(len * 4))
+    .expect(200, done)
   })
 
   describe('threshold', function(){
@@ -333,11 +313,8 @@ describe('compress()', function(){
       request(server)
       .get('/')
       .set('Accept-Encoding', 'gzip')
-      .end(function(err, res){
-        if (err) return done(err)
-        res.headers.should.not.have.property('content-encoding')
-        done()
-      })
+      .expect(shouldNotHaveHeader('Content-Encoding'))
+      .expect(200, done)
     })
 
     it('should compress responses above the threshold size', function(done){
@@ -381,11 +358,8 @@ describe('compress()', function(){
       request(server)
       .get('/')
       .set('Accept-Encoding', 'gzip')
-      .end(function(err, res){
-        if (err) return done(err)
-        res.headers.should.not.have.property('content-encoding')
-        done()
-      })
+      .expect(shouldNotHaveHeader('Content-Encoding'))
+      .expect(200, done)
     })
 
     it('should compress when streaming and content-length is larger than threshold', function(done){
@@ -415,11 +389,8 @@ describe('compress()', function(){
       request(server)
       .get('/')
       .set('Accept-Encoding', 'gzip')
-      .expect(200, '....', function (err, res) {
-        if (err) return done(err)
-        res.headers.should.not.have.property('content-encoding')
-        done()
-      })
+      .expect(shouldNotHaveHeader('Content-Encoding'))
+      .expect(200, '....', done)
     })
   })
 
@@ -461,10 +432,10 @@ describe('compress()', function(){
       .set('Accept-Encoding', 'gzip')
       .request()
       .on('response', function (res) {
-        res.headers['content-encoding'].should.equal('gzip')
+        assert.equal(res.headers['content-encoding'], 'gzip')
         res.on('data', write)
         res.on('end', function(){
-          chunks.should.equal(2)
+          assert.equal(chunks, 2)
           done()
         })
       })
@@ -493,10 +464,10 @@ describe('compress()', function(){
       .set('Accept-Encoding', 'gzip')
       .request()
       .on('response', function (res) {
-        res.headers['content-encoding'].should.equal('gzip')
+        assert.equal(res.headers['content-encoding'], 'gzip')
         res.on('data', write)
         res.on('end', function(){
-          chunks.should.equal(20)
+          assert.equal(chunks, 20)
           done()
         })
       })
@@ -525,10 +496,10 @@ describe('compress()', function(){
       .set('Accept-Encoding', 'deflate')
       .request()
       .on('response', function (res) {
-        res.headers['content-encoding'].should.equal('deflate')
+        assert.equal(res.headers['content-encoding'], 'deflate')
         res.on('data', write)
         res.on('end', function(){
-          chunks.should.equal(20)
+          assert.equal(chunks, 20)
           done()
         })
       })
@@ -550,4 +521,16 @@ function createServer(opts, fn) {
       fn(req, res)
     })
   })
+}
+
+function shouldHaveBodyLength(length) {
+  return function (res) {
+    assert.equal(res.text.length, length, 'should have body length of ' + length)
+  }
+}
+
+function shouldNotHaveHeader(header) {
+  return function (res) {
+    assert.ok(!(header.toLowerCase() in res.headers), 'should not have header ' + header)
+  }
 }
