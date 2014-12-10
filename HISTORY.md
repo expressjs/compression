@@ -1,5 +1,5 @@
-unreleased
-==========
+1.2.2 / 2014-12-10
+==================
 
   * Fix `.end` to only proxy to `.end`
     - Fixes an issue with Node.js 0.11.14
