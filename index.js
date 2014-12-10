@@ -105,16 +105,14 @@ module.exports = function compression(options) {
       }
 
       if (!this._header) {
+        len = Number(this.getHeader('Content-Length')) || len
         checkthreshold(len)
-      }
-
-      if (chunk) {
-        this.write(chunk, encoding);
+        this._implicitHeader()
       }
 
       return stream
-        ? stream.end()
-        : end.call(res);
+        ? stream.end(chunk, encoding)
+        : end.call(res, chunk, encoding)
     };
 
     res.on = function(type, listener){
