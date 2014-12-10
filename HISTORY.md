@@ -3,6 +3,8 @@ unreleased
 
   * Fix `.end` to only proxy to `.end`
     - Fixes an issue with Node.js 0.11.14
+  * deps: accepts@~1.1.4
+    - deps: mime-types@~2.0.4
 
 1.2.1 / 2014-11-23
 ==================
