@@ -9,51 +9,35 @@
 
 /**
  * Module dependencies.
+ * @private
  */
 
-var zlib = require('zlib');
-var accepts = require('accepts');
-var bytes = require('bytes');
+var accepts = require('accepts')
+var bytes = require('bytes')
+var compressible = require('compressible')
 var debug = require('debug')('compression')
-var onHeaders = require('on-headers');
-var compressible = require('compressible');
-var vary = require('vary');
+var onHeaders = require('on-headers')
+var vary = require('vary')
+var zlib = require('zlib')
 
 /**
- * Supported content-encoding methods.
+ * Module exports.
  */
 
-exports.methods = {
-    gzip: zlib.createGzip
-  , deflate: zlib.createDeflate
-};
-
-/**
- * Default filter function.
- */
-
-exports.filter = function filter(req, res) {
-  var type = res.getHeader('Content-Type')
-
-  if (type === undefined || !compressible(type)) {
-    debug('%s not compressible', type)
-    return false
-  }
-
-  return true
-};
+module.exports = compression
 
 /**
  * Compress response data with gzip / deflate.
  *
  * @param {Object} options
  * @return {Function} middleware
- * @api public
+ * @public
  */
 
-module.exports = function compression(options) {
+function compression(options) {
   options = options || {};
-  var filter = options.filter || exports.filter;
+
+  var filter = options.filter || shouldCompress
   var threshold;
 
   if (false === options.threshold || 0 === options.threshold) {
@@ -173,8 +157,8 @@ module.exports = function compression(options) {
       }
 
       // compression method
-      var accept = accepts(req);
-      var method = accept.encodings(['gzip', 'deflate', 'identity']);
+      var accept = accepts(req)
+      var method = accept.encoding(['gzip', 'deflate', 'identity'])
 
       // negotiation failed
       if (!method || method === 'identity') {
@@ -184,7 +168,11 @@ module.exports = function compression(options) {
 
       // compression stream
       debug('%s compression', method)
-      stream = exports.methods[method](options);
+      stream = method === 'gzip'
+        ? zlib.createGzip(options)
+        : zlib.createDeflate(options)
+
+      // add bufferred listeners to stream
       addListeners(stream, stream.on, listeners)
 
       // overwrite the flush method
@@ -214,10 +202,11 @@ module.exports = function compression(options) {
 
     next();
   };
-};
+}
 
 /**
  * Add bufferred listeners to stream
+ * @private
  */
 
 function addListeners(stream, on, listeners) {
@@ -226,4 +215,25 @@ function addListeners(stream, on, listeners) {
   }
 }
 
+/**
+ * No-operation function
+ * @private
+ */
+
 function noop(){}
+
+/**
+ * Default filter function.
+ * @private
+ */
+
+function shouldCompress(req, res) {
+  var type = res.getHeader('Content-Type')
+
+  if (type === undefined || !compressible(type)) {
+    debug('%s not compressible', type)
+    return false
+  }
+
+  return true
+}
