@@ -4,9 +4,9 @@ var crypto = require('crypto');
 var http = require('http');
 var request = require('supertest');
 
-var compress = require('..');
+var compression = require('..');
 
-describe('compress()', function(){
+describe('compression()', function(){
   it('should gzip files', function(done){
     var server = createServer({ threshold: 0 }, function (req, res) {
       res.setHeader('Content-Type', 'text/plain')
@@ -509,9 +509,9 @@ describe('compress()', function(){
 })
 
 function createServer(opts, fn) {
-  var _compress = compress(opts)
+  var _compression = compression(opts)
   return http.createServer(function (req, res) {
-    _compress(req, res, function (err) {
+    _compression(req, res, function (err) {
       if (err) {
         res.statusCode = err.status || 500
         res.end(err.message)
