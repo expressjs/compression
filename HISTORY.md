@@ -1,5 +1,5 @@
-unreleased
-==========
+1.3.0 / 2014-12-30
+==================
 
   * Export the default `filter` function for wrapping
   * deps: accepts@~1.2.2
