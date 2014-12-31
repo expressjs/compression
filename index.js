@@ -35,17 +35,15 @@ module.exports = compression
  */
 
 function compression(options) {
-  options = options || {};
+  var opts = options || {}
 
-  var filter = options.filter || shouldCompress
-  var threshold;
+  var filter = opts.filter || shouldCompress
+  var threshold = typeof opts.threshold === 'string'
+    ? bytes(opts.threshold)
+    : opts.threshold
 
-  if (false === options.threshold || 0 === options.threshold) {
-    threshold = 0
-  } else if ('string' === typeof options.threshold) {
-    threshold = bytes(options.threshold)
-  } else {
-    threshold = options.threshold || 1024
+  if (threshold == null) {
+    threshold = 1024
   }
 
   return function compression(req, res, next){
@@ -169,8 +167,8 @@ function compression(options) {
       // compression stream
       debug('%s compression', method)
       stream = method === 'gzip'
-        ? zlib.createGzip(options)
-        : zlib.createDeflate(options)
+        ? zlib.createGzip(opts)
+        : zlib.createDeflate(opts)
 
       // add bufferred listeners to stream
       addListeners(stream, stream.on, listeners)
