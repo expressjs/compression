@@ -32,10 +32,25 @@ app.use(compression({
 
 #### Options
 
-- `threshold` `<1kb>` - response is only compressed if the byte size is at or above this threshold.
-- `filter` - a filtering callback function. Uses [Compressible](https://github.com/expressjs/compressible) by default.
+`compression()` accepts these properties in the options object. In addition to
+those listed below, [zlib](http://nodejs.org/api/zlib.html) options may be
+passed in to the options object.
 
-In addition to these, [zlib](http://nodejs.org/api/zlib.html) options may be passed in to the options object.
+##### filter
+
+A function to decide if the response should be considered for compression.
+This function is called as `filter(req, res)` and is expected to return
+`true` to consider the response for compression, or `false` to not compress
+the response.
+
+The default filter function uses the [compressible](https://www.npmjs.com/package/compressible)
+module to determine if `res.getHeader('Content-Type')` is compressible.
+
+##### threshold
+
+The byte threshold for the response body size before compression is considered
+for the response, defaults to `1kb`. This is a number of bytes, any string
+accepted by the [bytes](https://www.npmjs.com/package/bytes) module, or `false`.
 
 ### res.flush
 
