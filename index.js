@@ -57,7 +57,7 @@ function compression(options) {
 
     // see #8
     req.on('close', function(){
-      res.write = res.end = function(){};
+      res.write = res.end = noop
     });
 
     // flush is noop by default
