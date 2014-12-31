@@ -25,6 +25,7 @@ var zlib = require('zlib')
  */
 
 module.exports = compression
+module.exports.filter = shouldCompress
 
 /**
  * Compress response data with gzip / deflate.

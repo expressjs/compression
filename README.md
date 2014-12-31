@@ -52,6 +52,25 @@ The byte threshold for the response body size before compression is considered
 for the response, defaults to `1kb`. This is a number of bytes, any string
 accepted by the [bytes](https://www.npmjs.com/package/bytes) module, or `false`.
 
+#### .filter
+
+The default `filter` function. This is used to construct a custom filter
+function that is an extension of the default function.
+
+```js
+app.use(compression({filter: shouldCompress}))
+
+function shouldCompress(req, res) {
+  if (req.headers['x-no-compression']) {
+    // don't compress responses with this request header
+    return false
+  }
+
+  // fallback to standard filter function
+  return compression.filter(req, res)
+}
+```
+
 ### res.flush
 
 This module adds a `res.flush()` method to force the partially-compressed

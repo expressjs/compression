@@ -394,6 +394,44 @@ describe('compression()', function(){
     })
   })
 
+  describe('.filter', function () {
+    it('should be a function', function () {
+      assert.equal(typeof compression.filter, 'function')
+    })
+
+    it('should return false on empty response', function (done) {
+      var server = http.createServer(function (req, res) {
+        res.end(String(compression.filter(req, res)))
+      })
+
+      request(server)
+      .get('/')
+      .expect(200, 'false', done)
+    })
+
+    it('should return true for "text/plain"', function (done) {
+      var server = http.createServer(function (req, res) {
+        res.setHeader('Content-Type', 'text/plain')
+        res.end(String(compression.filter(req, res)))
+      })
+
+      request(server)
+      .get('/')
+      .expect(200, 'true', done)
+    })
+
+    it('should return false for "application/x-bogus"', function (done) {
+      var server = http.createServer(function (req, res) {
+        res.setHeader('Content-Type', 'application/x-bogus')
+        res.end(String(compression.filter(req, res)))
+      })
+
+      request(server)
+      .get('/')
+      .expect(200, 'false', done)
+    })
+  })
+
   describe('res.flush()', function () {
     it('should always be present', function (done) {
       var server = createServer(null, function (req, res) {
