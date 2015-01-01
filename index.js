@@ -39,6 +39,7 @@ function compression(options) {
   var opts = options || {}
 
   var filter = opts.filter || shouldCompress
+  var available = opts.available || ['gzip', 'deflate', 'identity']
   var threshold = typeof opts.threshold === 'string'
     ? bytes(opts.threshold)
     : opts.threshold
@@ -157,7 +158,7 @@ function compression(options) {
 
       // compression method
       var accept = accepts(req)
-      var method = accept.encoding(['gzip', 'deflate', 'identity'])
+      var method = accept.encoding(available)
 
       // negotiation failed
       if (!method || method === 'identity') {

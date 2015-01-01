@@ -46,6 +46,14 @@ the response.
 The default filter function uses the [compressible](https://www.npmjs.com/package/compressible)
 module to determine if `res.getHeader('Content-Type')` is compressible.
 
+##### available
+
+The set of encodings to make available for responses.  This is an array of
+strings passed to the `encoding` function of the [accepts](https://www.npmjs.com/package/accepts)
+module to determine the method of compression used.
+
+The default `available` array is `['gzip', 'deflate', 'identity']`.
+
 ##### threshold
 
 The byte threshold for the response body size before compression is considered
