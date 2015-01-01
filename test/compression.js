@@ -544,6 +544,45 @@ describe('compression()', function(){
       .end()
     })
   })
+
+  describe('available', function () {
+    it('should limit the encodings used', function(done){
+      var server = createServer({ available: ['gzip'], threshold: 0 }, function (req, res) {
+        res.setHeader('Content-Type', 'text/plain')
+        res.end('hello, world')
+      })
+
+      request(server)
+      .get('/')
+      .set('Accept-Encoding', 'deflate;q=1.000, gzip;q=0.001')
+      .expect('Content-Encoding', 'gzip', done)
+    })
+
+    it('should prevent compression if no encoding available', function(done){
+      var server = createServer({ available: ['gzip'], threshold: 0 }, function (req, res) {
+        res.setHeader('Content-Type', 'text/plain')
+        res.end('hello, world')
+      })
+
+      request(server)
+      .get('/')
+      .set('Accept-Encoding', 'deflate')
+      .expect(shouldNotHaveHeader('Content-Encoding'))
+      .expect(200, done)
+    })
+
+    it('should not prevent available encodings from being used', function(done){
+      var server = createServer({ available: ['deflate'], threshold: 0 }, function (req, res) {
+        res.setHeader('Content-Type', 'text/plain')
+        res.end('hello, world')
+      })
+
+      request(server)
+      .get('/')
+      .set('Accept-Encoding', 'deflate')
+      .expect('Content-Encoding', 'deflate', done)
+    })
+  })
 })
 
 function createServer(opts, fn) {
