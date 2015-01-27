@@ -166,10 +166,15 @@ function compression(options) {
       }
 
       // compression stream
+      if (method === 'gzip') {
+        stream = zlib.createGzip(opts)
+      } else if (method === 'deflate') {
+        stream = zlib.createDeflate(opts)
+      } else {
+        nocompress('not acceptable')
+        return
+      }
       debug('%s compression', method)
-      stream = method === 'gzip'
-        ? zlib.createGzip(opts)
-        : zlib.createDeflate(opts)
 
       // add bufferred listeners to stream
       addListeners(stream, stream.on, listeners)
