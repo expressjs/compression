@@ -127,6 +127,12 @@ function compression(options) {
     }
 
     onHeaders(res, function(){
+      // user opts out of compression
+      if (res.compress === false) {
+        nocompress('out-out')
+        return
+      }
+      
       // determine if request is filtered
       if (!filter(req, res)) {
         nocompress('filtered')

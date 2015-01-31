@@ -76,6 +76,11 @@ function shouldCompress(req, res) {
 This module adds a `res.flush()` method to force the partially-compressed
 response to be flushed to the client.
 
+### res.compress = false
+
+If you'd like to opt out of compression for a particular request for whatever reason,
+set `res.compress = false` and this middleware will be skipped.
+
 ## Examples
 
 ### express/connect
