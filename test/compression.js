@@ -432,6 +432,25 @@ describe('compression()', function(){
     })
   })
 
+  describe('res.compress = false', function () {
+    it('should opt out of compression', function (done) {
+      var server = createServer({ threshold: 0 }, function (req, res) {
+        res.compress = false
+        res.setHeader('Content-Type', 'text/plain')
+        res.end('abcdefg')
+      })
+
+      request(server)
+      .get('/')
+      .expect('abcdefg')
+      .expect(200, function (err, res) {
+        assert.ifError(err)
+        assert(!('content-encoding' in res.headers))
+        done()
+      })
+    })
+  })
+
   describe('res.flush()', function () {
     it('should always be present', function (done) {
       var server = createServer(null, function (req, res) {
