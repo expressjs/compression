@@ -20,15 +20,9 @@ $ npm install compression
 var compression = require('compression')
 ```
 
-### compression(options)
+### compression([options])
 
 Returns the compression middleware using the given `options`.
-
-```js
-app.use(compression({
-  threshold: 512
-}))
-```
 
 #### Options
 
