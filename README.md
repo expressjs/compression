@@ -46,6 +46,30 @@ the response.
 The default filter function uses the [compressible](https://www.npmjs.com/package/compressible)
 module to determine if `res.getHeader('Content-Type')` is compressible.
 
+##### level
+
+The level of zlib compression to apply to responses. A higher level will result
+in better compression, but will take longer to complete. A lower level will
+result in less compression, but will be much faster.
+
+This is an integer in the range of `0` (no compression) to `9` (maximum
+compression). The special value `-1` can be used to mean the "default
+compression level".
+
+  - `-1` Default compression level (also `zlib.Z_DEFAULT_COMPRESSION`).
+  - `0` No compression (also `zlib.Z_NO_COMPRESSION`).
+  - `1` Fastest compression (also `zlib.Z_BEST_SPEED`).
+  - `2`
+  - `3`
+  - `4`
+  - `5`
+  - `6`
+  - `7`
+  - `8`
+  - `9` Best compression (also `zlib.Z_BEST_COMPRESSION`).
+
+**Note** in the list above, `zlib` is from `zlib = require('zlib')`.
+
 ##### threshold
 
 The byte threshold for the response body size before compression is considered
