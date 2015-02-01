@@ -35,6 +35,13 @@ Returns the compression middleware using the given `options`.
 those listed below, [zlib](http://nodejs.org/api/zlib.html) options may be
 passed in to the options object.
 
+##### chunkSize
+
+The default value is `zlib.Z_DEFAULT_CHUNK`, or `16384`.
+
+See [Node.js documentation](http://nodejs.org/api/zlib.html#zlib_memory_usage_tuning)
+regarding the usage.
+
 ##### filter
 
 A function to decide if the response should be considered for compression.
@@ -67,6 +74,41 @@ compression level".
   - `8`
   - `9` Best compression (also `zlib.Z_BEST_COMPRESSION`).
 
+The default value is `zlib.Z_DEFAULT_COMPRESSION`, or `-1`.
+
+**Note** in the list above, `zlib` is from `zlib = require('zlib')`.
+
+##### memLevel
+
+This specifies how much memory should be allocated for the internal compression
+state and is an integer in the range of `1` (minimum level) and `9` (maximum
+level).
+
+The default value is `zlib.Z_DEFAULT_MEMLEVEL`, or `8`.
+
+See [Node.js documentation](http://nodejs.org/api/zlib.html#zlib_memory_usage_tuning)
+regarding the usage.
+
+##### strategy
+
+This is used to tune the compression algorithm. This value only affects the
+compression ratio, not the correctness of the compressed output, even if it
+is not set appropriately.
+
+  - `zlib.Z_DEFAULT_STRATEGY` Use for normal data.
+  - `zlib.Z_FILTERED` Use for data produced by a filter (or predictor).
+    Filtered data consists mostly of small values with a somewhat random
+    distribution. In this case, the compression algorithm is tuned to
+    compress them better. The effect is to force more Huffman coding and less
+    string matching; it is somewhat intermediate between `zlib.Z_DEFAULT_STRATEGY`
+    and `zlib.Z_HUFFMAN_ONLY`.
+  - `zlib.Z_FIXED` Use to prevent the use of dynamic Huffman codes, allowing
+    for a simpler decoder for special applications.
+  - `zlib.Z_HUFFMAN_ONLY` Use to force Huffman encoding only (no string match).
+  - `zlib.Z_RLE` Use to limit match distances to one (run-length encoding).
+    This is designed to be almost as fast as `zlib.Z_HUFFMAN_ONLY`, but give
+    better compression for PNG image data.
+
 **Note** in the list above, `zlib` is from `zlib = require('zlib')`.
 
 ##### threshold
@@ -74,6 +116,13 @@ compression level".
 The byte threshold for the response body size before compression is considered
 for the response, defaults to `1kb`. This is a number of bytes, any string
 accepted by the [bytes](https://www.npmjs.com/package/bytes) module, or `false`.
+
+##### windowBits
+
+The default value is `zlib.Z_DEFAULT_WINDOWBITS`, or `15`.
+
+See [Node.js documentation](http://nodejs.org/api/zlib.html#zlib_memory_usage_tuning)
+regarding the usage.
 
 #### .filter
 
