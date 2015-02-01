@@ -8,6 +8,11 @@
 
 Node.js compression middleware.
 
+The following compression codings are supported:
+
+  - deflate
+  - gzip
+
 ## Install
 
 ```bash
