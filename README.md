@@ -92,7 +92,7 @@ var app = express()
 // compress all requests
 app.use(compression())
 
-// add alll routes
+// add all routes
 ```
 
 ### Server-Sent Events
