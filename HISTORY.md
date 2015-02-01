@@ -1,5 +1,5 @@
-unreleased
-==========
+1.4.0 / 2015-02-01
+==================
 
   * Prefer `gzip` over `deflate` on the server
     - Not all clients agree on what "deflate" coding means
