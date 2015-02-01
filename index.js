@@ -159,6 +159,11 @@ function compression(options) {
       var accept = accepts(req)
       var method = accept.encoding(['gzip', 'deflate', 'identity'])
 
+      // we really don't prefer deflate
+      if (method === 'deflate' && accept.encoding(['gzip'])) {
+        method = accept.encoding(['gzip', 'identity'])
+      }
+
       // negotiation failed
       if (!method || method === 'identity') {
         nocompress('not acceptable')

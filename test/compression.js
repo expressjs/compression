@@ -7,18 +7,6 @@ var request = require('supertest');
 var compression = require('..');
 
 describe('compression()', function(){
-  it('should gzip files', function(done){
-    var server = createServer({ threshold: 0 }, function (req, res) {
-      res.setHeader('Content-Type', 'text/plain')
-      res.end('hello, world')
-    })
-
-    request(server)
-    .get('/')
-    .set('Accept-Encoding', 'gzip')
-    .expect('Content-Encoding', 'gzip', done)
-  })
-
   it('should skip HEAD', function(done){
     var server = createServer({ threshold: 0 }, function (req, res) {
       res.setHeader('Content-Type', 'text/plain')
@@ -391,6 +379,62 @@ describe('compression()', function(){
       .set('Accept-Encoding', 'gzip')
       .expect(shouldNotHaveHeader('Content-Encoding'))
       .expect(200, '....', done)
+    })
+  })
+
+  describe('when "Accept-Encoding: gzip"', function () {
+    it('should respond with gzip', function (done) {
+      var server = createServer({ threshold: 0 }, function (req, res) {
+        res.setHeader('Content-Type', 'text/plain')
+        res.end('hello, world')
+      })
+
+      request(server)
+      .get('/')
+      .set('Accept-Encoding', 'gzip')
+      .expect('Content-Encoding', 'gzip', done)
+    })
+  })
+
+  describe('when "Accept-Encoding: deflate"', function () {
+    it('should respond with deflate', function (done) {
+      var server = createServer({ threshold: 0 }, function (req, res) {
+        res.setHeader('Content-Type', 'text/plain')
+        res.end('hello, world')
+      })
+
+      request(server)
+      .get('/')
+      .set('Accept-Encoding', 'deflate')
+      .expect('Content-Encoding', 'deflate', done)
+    })
+  })
+
+  describe('when "Accept-Encoding: gzip, deflate"', function () {
+    it('should respond with gzip', function (done) {
+      var server = createServer({ threshold: 0 }, function (req, res) {
+        res.setHeader('Content-Type', 'text/plain')
+        res.end('hello, world')
+      })
+
+      request(server)
+      .get('/')
+      .set('Accept-Encoding', 'gzip, deflate')
+      .expect('Content-Encoding', 'gzip', done)
+    })
+  })
+
+  describe('when "Accept-Encoding: deflate, gzip"', function () {
+    it('should respond with gzip', function (done) {
+      var server = createServer({ threshold: 0 }, function (req, res) {
+        res.setHeader('Content-Type', 'text/plain')
+        res.end('hello, world')
+      })
+
+      request(server)
+      .get('/')
+      .set('Accept-Encoding', 'deflate, gzip')
+      .expect('Content-Encoding', 'gzip', done)
     })
   })
 

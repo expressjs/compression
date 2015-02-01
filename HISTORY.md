@@ -1,3 +1,9 @@
+unreleased
+==========
+
+  * Prefer `gzip` over `deflate` on the server
+    - Not all clients agree on what "deflate" coding means
+
 1.3.1 / 2015-01-31
 ==================
 
