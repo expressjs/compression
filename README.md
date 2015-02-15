@@ -60,7 +60,8 @@ result in less compression, but will be much faster.
 
 This is an integer in the range of `0` (no compression) to `9` (maximum
 compression). The special value `-1` can be used to mean the "default
-compression level".
+compression level", which is a default compromise between speed and
+compression (currently equivalent to level 6).
 
   - `-1` Default compression level (also `zlib.Z_DEFAULT_COMPRESSION`).
   - `0` No compression (also `zlib.Z_NO_COMPRESSION`).
@@ -69,7 +70,7 @@ compression level".
   - `3`
   - `4`
   - `5`
-  - `6`
+  - `6` (currently what `zlib.Z_DEFAULT_COMPRESSION` points to).
   - `7`
   - `8`
   - `9` Best compression (also `zlib.Z_BEST_COMPRESSION`).
