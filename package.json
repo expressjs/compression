@@ -9,7 +9,7 @@
   "license": "MIT",
   "repository": "expressjs/compression",
   "dependencies": {
-    "accepts": "~1.2.3",
+    "accepts": "~1.2.4",
     "bytes": "1.0.0",
     "compressible": "~2.0.2",
     "debug": "~2.1.1",
