@@ -122,6 +122,20 @@ describe('compression()', function(){
     .expect(200, done)
   })
 
+  it('should work with encoding arguments', function (done) {
+    var server = createServer({ threshold: 0 }, function (req, res) {
+      res.setHeader('Content-Type', 'text/plain')
+      res.write('hello, ', 'utf8')
+      res.end('world', 'utf8')
+    })
+
+    request(server)
+    .get('/')
+    .set('Accept-Encoding', 'gzip')
+    .expect('Transfer-Encoding', 'chunked')
+    .expect(200, 'hello, world', done)
+  })
+
   it('should allow writing after close', function(done){
     // UGH
     var server = createServer({ threshold: 0 }, function (req, res) {

@@ -1,6 +1,8 @@
 unreleased
 ==========
 
+  * Fix error when code calls `res.end(str, encoding)`
+    - Specific to Node.js 0.8
   * deps: debug@~2.1.2
     - deps: ms@0.7.0
 
