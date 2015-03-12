@@ -1,5 +1,5 @@
-unreleased
-==========
+1.4.2 / 2015-03-11
+==================
 
   * Fix error when code calls `res.end(str, encoding)`
     - Specific to Node.js 0.8
