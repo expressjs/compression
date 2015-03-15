@@ -3,6 +3,9 @@ unreleased
 
   * deps: accepts@~1.2.5
     - deps: mime-types@~2.0.10
+  * deps: debug@~2.1.3
+    - Fix high intensity foreground color for bold
+    - deps: ms@0.7.0
 
 1.4.2 / 2015-03-11
 ==================
