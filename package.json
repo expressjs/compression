@@ -17,7 +17,7 @@
     "vary": "~1.0.0"
   },
   "devDependencies": {
-    "istanbul": "0.3.7",
+    "istanbul": "0.3.9",
     "mocha": "2.2.1",
     "supertest": "~0.15.0"
   },
