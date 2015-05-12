@@ -4,6 +4,8 @@ unreleased
   * deps: accepts@~1.2.7
     - deps: mime-types@~2.0.11
     - deps: negotiator@0.5.3
+  * deps: debug@~2.2.0
+    - deps: ms@0.7.1
 
 1.4.3 / 2015-03-14
 ==================
