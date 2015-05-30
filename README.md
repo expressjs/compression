@@ -118,6 +118,11 @@ The byte threshold for the response body size before compression is considered
 for the response, defaults to `1kb`. This is a number of bytes, any string
 accepted by the [bytes](https://www.npmjs.com/package/bytes) module, or `false`.
 
+**Note** this is only an advisory setting; if the response size cannot be determined
+at the time the response headers are written, then it is assumed the response is
+_over_ the threshold. To guarantee the response size can be determined, be sure
+set a `Content-Length` response header.
+
 ##### windowBits
 
 The default value is `zlib.Z_DEFAULT_WINDOWBITS`, or `15`.
