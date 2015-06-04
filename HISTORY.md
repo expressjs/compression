@@ -3,6 +3,9 @@ unreleased
 
   * deps: accepts@~1.2.10
     - deps: mime-types@~2.1.2
+  * deps: compressible@~2.0.4
+    - deps: mime-db@'>= 1.14.0 < 2'
+    - perf: enable strict mode
 
 1.5.0 / 2015-06-09
 ==================
