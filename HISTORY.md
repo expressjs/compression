@@ -12,6 +12,7 @@ unreleased
     - deps: mime-db@'>= 1.13.0 < 2'
     - perf: hoist regex declaration
     - perf: use regex to extract mime
+  * perf: enable strict mode
 
 1.4.4 / 2015-05-11
 ==================
