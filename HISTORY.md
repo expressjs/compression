@@ -1,3 +1,13 @@
+unreleased
+==========
+
+  * deps: accepts@~1.2.9
+    - deps: mime-types@~2.1.1
+    - perf: avoid argument reassignment & argument slice
+    - perf: avoid negotiator recursive construction
+    - perf: enable strict mode
+    - perf: remove unnecessary bitwise operator
+
 1.4.4 / 2015-05-11
 ==================
 
