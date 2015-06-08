@@ -7,6 +7,11 @@ unreleased
     - perf: avoid negotiator recursive construction
     - perf: enable strict mode
     - perf: remove unnecessary bitwise operator
+  * deps: compressible@~2.0.3
+    - Fix regex fallback to work if type exists, but is undefined
+    - deps: mime-db@'>= 1.13.0 < 2'
+    - perf: hoist regex declaration
+    - perf: use regex to extract mime
 
 1.4.4 / 2015-05-11
 ==================
