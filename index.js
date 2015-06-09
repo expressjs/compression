@@ -40,10 +40,9 @@ module.exports.filter = shouldCompress
 function compression(options) {
   var opts = options || {}
 
+  // options
   var filter = opts.filter || shouldCompress
-  var threshold = typeof opts.threshold === 'string'
-    ? bytes(opts.threshold)
-    : opts.threshold
+  var threshold = bytes.parse(opts.threshold)
 
   if (threshold == null) {
     threshold = 1024

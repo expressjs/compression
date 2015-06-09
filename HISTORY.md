@@ -7,6 +7,9 @@ unreleased
     - perf: avoid negotiator recursive construction
     - perf: enable strict mode
     - perf: remove unnecessary bitwise operator
+  * deps: bytes@2.1.0
+    - Slight optimizations
+    - Units no longer case sensitive when parsing
   * deps: compressible@~2.0.3
     - Fix regex fallback to work if type exists, but is undefined
     - deps: mime-db@'>= 1.13.0 < 2'
