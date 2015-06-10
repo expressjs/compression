@@ -1,5 +1,5 @@
-unreleased
-==========
+1.5.0 / 2015-06-09
+==================
 
   * Fix return value from `.end` and `.write` after end
   * Improve detection of zero-length body without `Content-Length`
