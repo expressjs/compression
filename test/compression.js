@@ -395,6 +395,19 @@ describe('compression()', function(){
       .expect(200, '....', done)
     })
 
+    it('should consider res.end() as 0 length', function(done){
+      var server = createServer({ threshold: 1 }, function (req, res) {
+        res.setHeader('Content-Type', 'text/plain')
+        res.end()
+      })
+
+      request(server)
+      .get('/')
+      .set('Accept-Encoding', 'gzip')
+      .expect(shouldNotHaveHeader('Content-Encoding'))
+      .expect(200, '', done)
+    })
+
     it('should work with res.end(null)', function (done) {
       var server = createServer({ threshold: 1000 }, function (req, res) {
         res.setHeader('Content-Type', 'text/plain')
@@ -404,6 +417,7 @@ describe('compression()', function(){
       request(server)
       .get('/')
       .set('Accept-Encoding', 'gzip')
+      .expect(shouldNotHaveHeader('Content-Encoding'))
       .expect(200, '', done)
     })
   })

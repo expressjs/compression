@@ -1,6 +1,7 @@
 unreleased
 ==========
 
+  * Improve detection of zero-length body without `Content-Length`
   * deps: accepts@~1.2.9
     - deps: mime-types@~2.1.1
     - perf: avoid argument reassignment & argument slice

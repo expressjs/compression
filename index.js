@@ -217,7 +217,7 @@ function addListeners(stream, on, listeners) {
 
 function chunkLength(chunk, encoding) {
   if (!chunk) {
-    return
+    return 0
   }
 
   return !Buffer.isBuffer(chunk)
