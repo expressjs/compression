@@ -49,7 +49,7 @@ function compression(options) {
   }
 
   return function compression(req, res, next){
-    var compress = true
+    var length
     var listeners = []
     var write = res.write
     var on = res.on
@@ -68,34 +68,26 @@ function compression(options) {
 
     res.write = function(chunk, encoding){
       if (!this._header) {
-        // if content-length is set and is lower
-        // than the threshold, don't compress
-        var len = Number(res.getHeader('Content-Length'))
-        checkthreshold(len)
-        this._implicitHeader();
+        this._implicitHeader()
       }
+
       return stream
         ? stream.write(new Buffer(chunk, encoding))
-        : write.call(res, chunk, encoding);
+        : write.call(this, chunk, encoding)
     };
 
     res.end = function(chunk, encoding){
-      var len
-
-      if (chunk) {
-        len = Buffer.isBuffer(chunk)
-          ? chunk.length
-          : Buffer.byteLength(chunk, encoding)
-      }
-
       if (!this._header) {
-        len = Number(this.getHeader('Content-Length')) || len
-        checkthreshold(len)
+        // estimate the length
+        if (!this.getHeader('Content-Length')) {
+          length = chunkLength(chunk, encoding)
+        }
+
         this._implicitHeader()
       }
 
       if (!stream) {
-        return end.call(res, chunk, encoding)
+        return end.call(this, chunk, encoding)
       }
 
       // write Buffer for Node.js 0.8
@@ -119,15 +111,8 @@ function compression(options) {
       return this
     }
 
-    function checkthreshold(len) {
-      if (compress && len < threshold) {
-        debug('size below threshold')
-        compress = false
-      }
-    }
-
     function nocompress(msg) {
-      debug('no compression' + (msg ? ': ' + msg : ''))
+      debug('no compression: %s', msg)
       addListeners(res, on, listeners)
       listeners = null
     }
@@ -142,8 +127,9 @@ function compression(options) {
       // vary
       vary(res, 'Accept-Encoding')
 
-      if (!compress) {
-        nocompress()
+      // content-length below threshold
+      if (Number(res.getHeader('Content-Length')) < threshold || length < threshold) {
+        nocompress('size below threshold')
         return
       }
 
@@ -223,6 +209,20 @@ function addListeners(stream, on, listeners) {
   for (var i = 0; i < listeners.length; i++) {
     on.apply(stream, listeners[i])
   }
+}
+
+/**
+ * Get the length of a given chunk
+ */
+
+function chunkLength(chunk, encoding) {
+  if (!chunk) {
+    return
+  }
+
+  return !Buffer.isBuffer(chunk)
+    ? Buffer.byteLength(chunk, encoding)
+    : chunk.length
 }
 
 /**
