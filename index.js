@@ -57,8 +57,12 @@ function compression(options) {
     var end = res.end
     var stream
 
-    // flush is noop by default
-    res.flush = noop;
+    // flush
+    res.flush = function flush() {
+      if (stream) {
+        stream.flush()
+      }
+    }
 
     // proxy
 
@@ -178,11 +182,6 @@ function compression(options) {
       // add bufferred listeners to stream
       addListeners(stream, stream.on, listeners)
 
-      // overwrite the flush method
-      res.flush = function(){
-        stream.flush();
-      }
-
       // header fields
       res.setHeader('Content-Encoding', method);
       res.removeHeader('Content-Length');
@@ -231,13 +230,6 @@ function chunkLength(chunk, encoding) {
     ? Buffer.byteLength(chunk, encoding)
     : chunk.length
 }
-
-/**
- * No-operation function
- * @private
- */
-
-function noop(){}
 
 /**
  * Default filter function.

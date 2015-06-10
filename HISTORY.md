@@ -18,6 +18,7 @@ unreleased
     - perf: hoist regex declaration
     - perf: use regex to extract mime
   * perf: enable strict mode
+  * perf: remove flush reassignment
   * perf: simplify threshold detection
 
 1.4.4 / 2015-05-11
