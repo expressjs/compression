@@ -434,6 +434,20 @@ describe('compression()', function(){
       .set('Accept-Encoding', 'gzip')
       .expect('Content-Encoding', 'gzip', done)
     })
+
+    it('should return false writing after end', function (done) {
+      var server = createServer({ threshold: 0 }, function (req, res) {
+        res.setHeader('Content-Type', 'text/plain')
+        res.end('hello, world')
+        assert.ok(res.write() === false)
+        assert.ok(res.end() === false)
+      })
+
+      request(server)
+      .get('/')
+      .set('Accept-Encoding', 'gzip')
+      .expect('Content-Encoding', 'gzip', done)
+    })
   })
 
   describe('when "Accept-Encoding: deflate"', function () {
