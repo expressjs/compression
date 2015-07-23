@@ -140,7 +140,7 @@ describe('compression()', function(){
     // UGH
     var server = createServer({ threshold: 0 }, function (req, res) {
       res.setHeader('Content-Type', 'text/plain')
-      res.on('close', function () {
+      res.once('close', function () {
         res.write('hello, ')
         res.end('world')
         done()
