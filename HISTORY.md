@@ -1,3 +1,11 @@
+unreleased
+==========
+
+  * deps: vary@~1.0.1
+    - Fix setting empty header from empty `field`
+    - perf: enable strict mode
+    - perf: remove argument reassignments
+
 1.5.1 / 2015-07-05
 ==================
 

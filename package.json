@@ -14,7 +14,7 @@
     "compressible": "~2.0.4",
     "debug": "~2.2.0",
     "on-headers": "~1.0.0",
-    "vary": "~1.0.0"
+    "vary": "~1.0.1"
   },
   "devDependencies": {
     "istanbul": "0.3.17",
