@@ -1,6 +1,8 @@
 unreleased
 ==========
 
+  * deps: accepts@~1.2.12
+    - deps: mime-types@~2.1.4
   * deps: compressible@~2.0.5
     - deps: mime-db@'>= 1.16.0 < 2'
   * deps: vary@~1.0.1
