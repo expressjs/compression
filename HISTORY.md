@@ -1,6 +1,8 @@
 unreleased
 ==========
 
+  * deps: compressible@~2.0.5
+    - deps: mime-db@'>= 1.16.0 < 2'
   * deps: vary@~1.0.1
     - Fix setting empty header from empty `field`
     - perf: enable strict mode
