@@ -30,6 +30,11 @@ module.exports = compression
 module.exports.filter = shouldCompress
 
 /**
+ * Regex to match no-transform directive in a cache-control header
+ */
+var NO_TRANSFORM_REGEX = /(?:^|,)\s*?no-transform\s*?(?:,|$)/
+
+/**
  * Compress response data with gzip / deflate.
  *
  * @param {Object} options
@@ -134,6 +139,18 @@ function compression(options) {
         nocompress('filtered')
         return
       }
+
+      // Don't compress for Cache-Control: no-transform
+      // https://tools.ietf.org/html/rfc7234#section-5.2.1.6
+      var cacheControl = res.getHeader('Cache-Control')
+      if (cacheControl) {
+        var noTransform = NO_TRANSFORM_REGEX.test(cacheControl)
+        if (noTransform) {
+          nocompress('no-transform')
+          return
+        }
+      }
+
 
       // vary
       vary(res, 'Accept-Encoding')
