@@ -492,6 +492,38 @@ describe('compression()', function(){
     })
   })
 
+  describe('when "Cache-Control: no-transform" response header', function () {
+    it('should not compress response', function (done) {
+      var server = createServer({ threshold: 0 }, function (req, res) {
+        res.setHeader('Cache-Control', 'no-transform')
+        res.setHeader('Content-Type', 'text/plain')
+        res.end('hello, world')
+      })
+
+      request(server)
+      .get('/')
+      .set('Accept-Encoding', 'gzip')
+      .expect('Cache-Control', 'no-transform')
+      .expect(shouldNotHaveHeader('Content-Encoding'))
+      .expect(200, 'hello, world', done)
+    })
+
+    it('should not set Vary headerh', function (done) {
+      var server = createServer({ threshold: 0 }, function (req, res) {
+        res.setHeader('Cache-Control', 'no-transform')
+        res.setHeader('Content-Type', 'text/plain')
+        res.end('hello, world')
+      })
+
+      request(server)
+      .get('/')
+      .set('Accept-Encoding', 'gzip')
+      .expect('Cache-Control', 'no-transform')
+      .expect(shouldNotHaveHeader('Vary'))
+      .expect(200, done)
+    })
+  })
+
   describe('.filter', function () {
     it('should be a function', function () {
       assert.equal(typeof compression.filter, 'function')

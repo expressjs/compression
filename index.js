@@ -30,6 +30,13 @@ module.exports = compression
 module.exports.filter = shouldCompress
 
 /**
+ * Module variables.
+ * @private
+ */
+
+var cacheControlNoTransformRegExp = /(?:^|,)\s*?no-transform\s*?(?:,|$)/
+
+/**
  * Compress response data with gzip / deflate.
  *
  * @param {Object} options
@@ -132,6 +139,12 @@ function compression(options) {
       // determine if request is filtered
       if (!filter(req, res)) {
         nocompress('filtered')
+        return
+      }
+
+      // determine if the entity should be transformed
+      if (!shouldTransform(req, res)) {
+        nocompress('no transform')
         return
       }
 
@@ -245,4 +258,18 @@ function shouldCompress(req, res) {
   }
 
   return true
+}
+
+/**
+ * Determine if the entity should be transformed.
+ * @private
+ */
+
+function shouldTransform(req, res) {
+  var cacheControl = res.getHeader('Cache-Control')
+
+  // Don't compress for Cache-Control: no-transform
+  // https://tools.ietf.org/html/rfc7234#section-5.2.2.4
+  return !cacheControl
+    || !cacheControlNoTransformRegExp.test(cacheControl)
 }

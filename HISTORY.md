@@ -1,6 +1,7 @@
 unreleased
 ==========
 
+  * Skip compression when response has `Cache-Control: no-transform`
   * deps: accepts@~1.3.0
     - deps: mime-types@~2.1.7
     - deps: negotiator@0.6.0
