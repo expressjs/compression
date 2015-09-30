@@ -9,6 +9,8 @@ unreleased
     - deps: mime-db@'>= 1.19.0 < 2'
   * deps: on-headers@~1.0.1
     - perf: enable strict mode
+  * deps: vary@~1.1.0
+    - Only accept valid field names in the `field` argument
 
 1.5.2 / 2015-07-30
 ==================
