@@ -13,7 +13,7 @@
     "bytes": "2.1.0",
     "compressible": "~2.0.6",
     "debug": "~2.2.0",
-    "on-headers": "~1.0.0",
+    "on-headers": "~1.0.1",
     "vary": "~1.0.1"
   },
   "devDependencies": {

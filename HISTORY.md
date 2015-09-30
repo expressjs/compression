@@ -7,6 +7,8 @@ unreleased
     - deps: negotiator@0.6.0
   * deps: compressible@~2.0.6
     - deps: mime-db@'>= 1.19.0 < 2'
+  * deps: on-headers@~1.0.1
+    - perf: enable strict mode
 
 1.5.2 / 2015-07-30
 ==================
