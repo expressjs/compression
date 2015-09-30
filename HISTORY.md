@@ -1,5 +1,5 @@
-unreleased
-==========
+1.6.0 / 2015-09-29
+==================
 
   * Skip compression when response has `Cache-Control: no-transform`
   * deps: accepts@~1.3.0
