@@ -20,6 +20,52 @@ describe('compression()', function(){
     .expect(200, done)
   })
 
+  describe("Cache-Control", function() {
+
+    [
+      'no-transform',
+      'public, no-transform',
+      'no-transform, private',
+      'no-transform , max-age=1000',
+      'max-age=1000 , no-transform'
+    ].forEach(function(headerValue) {
+      it('should skip Cache-Control: ' + headerValue, function(done){
+        var server = createServer({ threshold: 0 }, function (req, res) {
+          res.setHeader('Content-Type', 'text/plain')
+          res.setHeader('Cache-Control', headerValue)
+          res.end('hello, world')
+        })
+
+        request(server)
+        .get('/')
+        .set('Accept-Encoding', 'gzip')
+        .expect(shouldNotHaveHeader('Content-Encoding'))
+        .expect(200, done)
+      })
+    });
+
+    [
+      'not-no-transform',
+      'public',
+      'no-transform-thingy'
+    ].forEach(function(headerValue) {
+      it('should not skip Cache-Control: ' + headerValue, function(done){
+        var server = createServer({ threshold: 0 }, function (req, res) {
+          res.setHeader('Content-Type', 'text/plain')
+          res.setHeader('Cache-Control', headerValue)
+          res.end('hello, world')
+        })
+
+        request(server)
+        .get('/')
+        .set('Accept-Encoding', 'gzip')
+        .expect('Content-Encoding', 'gzip')
+        .expect(200, done)
+      })
+    });
+
+  })
+
   it('should skip unknown accept-encoding', function(done){
     var server = createServer({ threshold: 0 }, function (req, res) {
       res.setHeader('Content-Type', 'text/plain')
