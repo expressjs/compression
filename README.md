@@ -196,7 +196,8 @@ function shouldCompress (req, res) {
 ### res.flush
 
 This module adds a `res.flush()` method to force the partially-compressed
-response to be flushed to the client.
+response to be flushed to the client. This function accepts a callback which gets
+invoked when the response has been flushed to the client
 
 ## Examples
 
