@@ -65,9 +65,9 @@ function compression(options) {
     var stream
 
     // flush
-    res.flush = function flush() {
+    res.flush = function flush(cb) {
       if (stream) {
-        stream.flush()
+        stream.flush(cb)
       }
     }
 
