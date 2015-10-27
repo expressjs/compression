@@ -173,15 +173,16 @@ function compression(options) {
 
       // compression method
       var accept = accepts(req)
-      var method = null;
+      var method = null
+      var acceptableEncodings = ['gzip', 'deflate', 'identity']
 
       // If we support a custom encoding and a custom encoding was requested
       if (opts.compressor) {
-        method = accept.encoding(Object.keys(opts.compressor));
+        method = accept.encoding(Object.keys(opts.compressor).concat(acceptableEncodings))
       }
 
       if (!method) {
-        method = accept.encoding(['gzip', 'deflate', 'identity']);
+        method = accept.encoding(acceptableEncodings)
       }
 
       // we really don't prefer deflate
