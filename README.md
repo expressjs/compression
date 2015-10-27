@@ -143,8 +143,8 @@ Allows you to specify your own compression stream for a given Content-Encoding.
 ```js
 var opts = {
   compressor: {
-    brotli: brotliStreamEncoder,
-    bingo: bingoStreamEncoder,
+    br: brotliStreamEncoder,
+    lzma: lzmaStreamEncoder,
   },
 };
 ```
