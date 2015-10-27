@@ -178,7 +178,9 @@ function compression(options) {
       // If we support a custom encoding and a custom encoding was requested
       if (opts.compressor) {
         method = accept.encoding(Object.keys(opts.compressor));
-      } else {
+      }
+
+      if (!method) {
         method = accept.encoding(['gzip', 'deflate', 'identity']);
       }
 

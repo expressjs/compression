@@ -491,6 +491,29 @@ describe('compression()', function(){
       .set('Accept-Encoding', 'deflate, gzip')
       .expect('Content-Encoding', 'gzip', done)
     })
+
+    it('should respond with gzip even when a custom compressor is specified', function (done) {
+       var compressor = through(function (d) {
+        this.queue(d)
+      }, function () {
+        this.queue(null)
+      })
+      var opts = {
+        threshold: 0,
+        compressor: {
+          'bingo': compressor
+        }
+      }
+      var server = createServer(opts, function (req, res) {
+        res.setHeader('Content-Type', 'text/plain')
+        res.end('hello, world')
+      })
+
+      request(server)
+      .get('/')
+      .set('Accept-Encoding', 'gzip, deflate')
+      .expect('Content-Encoding', 'gzip', done)
+    })
   })
 
   describe('when "Accept-Encoding: custom"', function () {
