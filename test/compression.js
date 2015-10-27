@@ -3,6 +3,7 @@ var bytes = require('bytes');
 var crypto = require('crypto');
 var http = require('http');
 var request = require('supertest');
+var through = require('through');
 
 var compression = require('..');
 
@@ -489,6 +490,44 @@ describe('compression()', function(){
       .get('/')
       .set('Accept-Encoding', 'deflate, gzip')
       .expect('Content-Encoding', 'gzip', done)
+    })
+  })
+
+  describe('when "Accept-Encoding: custom"', function () {
+    it('should not use content encoding without a custom compressor function', function (done) {
+      var server = createServer({ threshold: 0 }, function (req, res) {
+        res.setHeader('Content-Type', 'text/plain')
+        res.end('hello, world')
+      })
+
+      request(server)
+      .get('/')
+      .set('Accept-Encoding', 'custom')
+      .expect(shouldNotHaveHeader('Content-Encoding'))
+      .expect(200, 'hello, world', done)
+    })
+
+    it('should use content encoding with a custom compressor function', function (done) {
+      var compressor = through(function (d) {
+        this.queue(d)
+      }, function () {
+        this.queue(null)
+      })
+      var opts = {
+        threshold: 0,
+        compressor: {
+          'bingo': compressor
+        }
+      }
+      var server = createServer(opts, function (req, res) {
+        res.setHeader('Content-Type', 'text/plain')
+        res.end('hello, world')
+      })
+
+      request(server)
+      .get('/')
+      .set('Accept-Encoding', 'bingo, gzip')
+      .expect('Content-Encoding', 'bingo', done)
     })
   })
 
