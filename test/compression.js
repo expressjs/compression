@@ -492,7 +492,7 @@ describe('compression()', function(){
       .expect('Content-Encoding', 'gzip', done)
     })
 
-    it('should respond with gzip even when a custom compressor is specified', function (done) {
+    it('should respond with gzip even when a custom compressor is specified but not requested', function (done) {
        var compressor = through(function (d) {
         this.queue(d)
       }, function () {
