@@ -532,7 +532,7 @@ describe('compression()', function(){
 
     it('should use content encoding with a custom compressor function', function (done) {
       var compressor = through(function (d) {
-        this.queue(d)
+        this.queue(d.toString().split('').reverse().join(''))
       }, function () {
         this.queue(null)
       })
@@ -550,7 +550,8 @@ describe('compression()', function(){
       request(server)
       .get('/')
       .set('Accept-Encoding', 'bingo, gzip')
-      .expect('Content-Encoding', 'bingo', done)
+      .expect('Content-Encoding', 'bingo')
+      .expect(200, 'dlrow ,olleh', done)
     })
   })
 
