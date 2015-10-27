@@ -530,16 +530,19 @@ describe('compression()', function(){
       .expect(200, 'hello, world', done)
     })
 
+    function queueReverseBuf (d) {
+      this.queue(d.toString().split('').reverse().join(''))
+    }
+
+    function queueNull () {
+      this.queue(null)
+    }
+
     it('should use content encoding with a custom compressor function', function (done) {
-      var compressor = through(function (d) {
-        this.queue(d.toString().split('').reverse().join(''))
-      }, function () {
-        this.queue(null)
-      })
       var opts = {
         threshold: 0,
         compressor: {
-          'bingo': compressor
+          'bingo': through(queueReverseBuf, queueNull),
         }
       }
       var server = createServer(opts, function (req, res) {
@@ -552,6 +555,24 @@ describe('compression()', function(){
       .set('Accept-Encoding', 'bingo, gzip')
       .expect('Content-Encoding', 'bingo')
       .expect(200, 'dlrow ,olleh', done)
+    })
+
+    it('should obey q= priorities', function (done) {
+      var opts = {
+        threshold: 0,
+        compressor: {
+          'bingo': through(queueReverseBuf, queueNull),
+        }
+      }
+      var server = createServer(opts, function (req, res) {
+        res.setHeader('Content-Type', 'text/plain')
+        res.end('hello, world')
+      })
+
+      request(server)
+      .get('/')
+      .set('Accept-Encoding', 'bingo;q=0.001, gzip')
+      .expect('Content-Encoding', 'gzip', done)
     })
   })
 
