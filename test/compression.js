@@ -479,6 +479,14 @@ describe('compression()', function(){
     })
   })
 
+  function createCompressor () {
+    return through(function (d) {
+      this.queue(d.toString().split('').reverse().join(''))
+    }, function () {
+      this.queue(null)
+    })
+  }
+
   describe('when "Accept-Encoding: deflate, gzip"', function () {
     it('should respond with gzip', function (done) {
       var server = createServer({ threshold: 0 }, function (req, res) {
@@ -493,15 +501,10 @@ describe('compression()', function(){
     })
 
     it('should respond with gzip even when a custom compressor is specified but not requested', function (done) {
-       var compressor = through(function (d) {
-        this.queue(d)
-      }, function () {
-        this.queue(null)
-      })
       var opts = {
         threshold: 0,
         compressor: {
-          'bingo': compressor
+          'bingo': createCompressor
         }
       }
       var server = createServer(opts, function (req, res) {
@@ -530,19 +533,11 @@ describe('compression()', function(){
       .expect(200, 'hello, world', done)
     })
 
-    function queueReverseBuf (d) {
-      this.queue(d.toString().split('').reverse().join(''))
-    }
-
-    function queueNull () {
-      this.queue(null)
-    }
-
     it('should use content encoding with a custom compressor function', function (done) {
       var opts = {
         threshold: 0,
         compressor: {
-          'bingo': through(queueReverseBuf, queueNull),
+          'bingo': createCompressor
         }
       }
       var server = createServer(opts, function (req, res) {
@@ -561,7 +556,7 @@ describe('compression()', function(){
       var opts = {
         threshold: 0,
         compressor: {
-          'bingo': through(queueReverseBuf, queueNull),
+          'bingo': createCompressor
         }
       }
       var server = createServer(opts, function (req, res) {

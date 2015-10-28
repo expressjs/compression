@@ -203,7 +203,7 @@ function compression(options) {
       } else if (method === 'deflate') {
         stream = zlib.createDeflate(opts)
       } else if (opts.compressor && method in opts.compressor) {
-        stream = opts.compressor[method]
+        stream = opts.compressor[method](opts)
       }
 
       // add bufferred listeners to stream
