@@ -173,7 +173,17 @@ function compression(options) {
 
       // compression method
       var accept = accepts(req)
-      var method = accept.encoding(['gzip', 'deflate', 'identity'])
+      var method = null
+      var acceptableEncodings = ['gzip', 'deflate', 'identity']
+
+      // If we support a custom encoding and a custom encoding was requested
+      if (opts.compressor) {
+        method = accept.encoding(Object.keys(opts.compressor).concat(acceptableEncodings))
+      }
+
+      if (!method) {
+        method = accept.encoding(acceptableEncodings)
+      }
 
       // we really don't prefer deflate
       if (method === 'deflate' && accept.encoding(['gzip'])) {
@@ -188,9 +198,13 @@ function compression(options) {
 
       // compression stream
       debug('%s compression', method)
-      stream = method === 'gzip'
-        ? zlib.createGzip(opts)
-        : zlib.createDeflate(opts)
+      if (method === 'gzip') {
+        stream = zlib.createGzip(opts)
+      } else if (method === 'deflate') {
+        stream = zlib.createDeflate(opts)
+      } else if (opts.compressor && method in opts.compressor) {
+        stream = opts.compressor[method](opts)
+      }
 
       // add bufferred listeners to stream
       addListeners(stream, stream.on, listeners)

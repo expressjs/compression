@@ -3,6 +3,7 @@ var bytes = require('bytes');
 var crypto = require('crypto');
 var http = require('http');
 var request = require('supertest');
+var through = require('through');
 
 var compression = require('..');
 
@@ -478,6 +479,14 @@ describe('compression()', function(){
     })
   })
 
+  function createCompressor () {
+    return through(function (d) {
+      this.queue(d.toString().split('').reverse().join(''))
+    }, function () {
+      this.queue(null)
+    })
+  }
+
   describe('when "Accept-Encoding: deflate, gzip"', function () {
     it('should respond with gzip', function (done) {
       var server = createServer({ threshold: 0 }, function (req, res) {
@@ -488,6 +497,76 @@ describe('compression()', function(){
       request(server)
       .get('/')
       .set('Accept-Encoding', 'deflate, gzip')
+      .expect('Content-Encoding', 'gzip', done)
+    })
+
+    it('should respond with gzip even when a custom compressor is specified but not requested', function (done) {
+      var opts = {
+        threshold: 0,
+        compressor: {
+          'bingo': createCompressor
+        }
+      }
+      var server = createServer(opts, function (req, res) {
+        res.setHeader('Content-Type', 'text/plain')
+        res.end('hello, world')
+      })
+
+      request(server)
+      .get('/')
+      .set('Accept-Encoding', 'gzip, deflate')
+      .expect('Content-Encoding', 'gzip', done)
+    })
+  })
+
+  describe('when "Accept-Encoding: custom"', function () {
+    it('should not use content encoding without a custom compressor function', function (done) {
+      var server = createServer({ threshold: 0 }, function (req, res) {
+        res.setHeader('Content-Type', 'text/plain')
+        res.end('hello, world')
+      })
+
+      request(server)
+      .get('/')
+      .set('Accept-Encoding', 'custom')
+      .expect(shouldNotHaveHeader('Content-Encoding'))
+      .expect(200, 'hello, world', done)
+    })
+
+    it('should use content encoding with a custom compressor function', function (done) {
+      var opts = {
+        threshold: 0,
+        compressor: {
+          'bingo': createCompressor
+        }
+      }
+      var server = createServer(opts, function (req, res) {
+        res.setHeader('Content-Type', 'text/plain')
+        res.end('hello, world')
+      })
+
+      request(server)
+      .get('/')
+      .set('Accept-Encoding', 'bingo, gzip')
+      .expect('Content-Encoding', 'bingo')
+      .expect(200, 'dlrow ,olleh', done)
+    })
+
+    it('should obey q= priorities', function (done) {
+      var opts = {
+        threshold: 0,
+        compressor: {
+          'bingo': createCompressor
+        }
+      }
+      var server = createServer(opts, function (req, res) {
+        res.setHeader('Content-Type', 'text/plain')
+        res.end('hello, world')
+      })
+
+      request(server)
+      .get('/')
+      .set('Accept-Encoding', 'bingo;q=0.001, gzip')
       .expect('Content-Encoding', 'gzip', done)
     })
   })

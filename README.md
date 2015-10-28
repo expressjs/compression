@@ -136,6 +136,28 @@ The default value is `zlib.Z_DEFAULT_WINDOWBITS`, or `15`.
 See [Node.js documentation](http://nodejs.org/api/zlib.html#zlib_memory_usage_tuning)
 regarding the usage.
 
+##### compressor
+
+Allows you to specify your own compression stream for a given Content-Encoding.
+
+```js
+var opts = {
+  compressor: {
+    br: brotliStreamEncoder,
+    lzma: lzmaStreamEncoder,
+  },
+};
+```
+
+Where the custom compressor is a function that returns effectively a transform
+stream. ex:
+
+```js
+function brotliStreamEncoder (opts) {
+  return brotli.compressStream(opts);
+};
+```
+
 #### .filter
 
 The default `filter` function. This is used to construct a custom filter
