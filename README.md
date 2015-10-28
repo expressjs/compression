@@ -149,6 +149,15 @@ var opts = {
 };
 ```
 
+Where the custom compressor is a function that returns effectively a transform
+stream. ex:
+
+```js
+function brotliStreamEncoder (opts) {
+  return brotli.compressStream(opts);
+};
+```
+
 #### .filter
 
 The default `filter` function. This is used to construct a custom filter
