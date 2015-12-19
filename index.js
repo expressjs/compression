@@ -192,7 +192,7 @@ function compression(options) {
         ? zlib.createGzip(opts)
         : zlib.createDeflate(opts)
 
-      // add bufferred listeners to stream
+      // add buffered listeners to stream
       addListeners(stream, stream.on, listeners)
 
       // header fields
