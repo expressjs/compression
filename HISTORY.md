@@ -2,6 +2,8 @@ unreleased
 ==========
 
   * deps: bytes@2.2.0
+  * deps: compressible@~2.0.7
+    - deps: mime-db@'>= 1.21.0 < 2'
 
 1.6.0 / 2015-09-29
 ==================
