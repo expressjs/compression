@@ -1,5 +1,5 @@
-unreleased
-==========
+1.6.1 / 2016-01-19
+==================
 
   * deps: bytes@2.2.0
   * deps: compressible@~2.0.7

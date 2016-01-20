@@ -1,7 +1,7 @@
 {
   "name": "compression",
   "description": "Node.js compression middleware",
-  "version": "1.6.0",
+  "version": "1.6.1",
   "contributors": [
     "Douglas Christopher Wilson <doug@somethingdoug.com>",
     "Jonathan Ong <me@jongleberry.com> (http://jongleberry.com)"
