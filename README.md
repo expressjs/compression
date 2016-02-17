@@ -12,6 +12,7 @@ The following compression codings are supported:
 
   - deflate
   - gzip
+  - brotli
 
 ## Install
 
@@ -135,6 +136,16 @@ The default value is `zlib.Z_DEFAULT_WINDOWBITS`, or `15`.
 
 See [Node.js documentation](http://nodejs.org/api/zlib.html#zlib_memory_usage_tuning)
 regarding the usage.
+
+##### brotli
+
+To control the parameters of the brotli algorithm, pass in child object at the key
+`brotli` with one or more of the following brotli algorithm parameters: `lgblock`,
+`lgwin`, `mode`, or `quality`.
+
+Note that unlike the standard brotli library, which defaults to quality 11, this
+library defaults to quality 4, which is [generally more appropriate for dynamic
+content](https://blogs.akamai.com/2016/02/understanding-brotlis-potential.html).
 
 #### .filter
 

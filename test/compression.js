@@ -2,6 +2,8 @@ var assert = require('assert')
 var bytes = require('bytes');
 var crypto = require('crypto');
 var http = require('http');
+var iltorb = require('iltorb');
+var streamBuffers = require('stream-buffers');
 var request = require('supertest');
 
 var compression = require('..');
@@ -489,6 +491,76 @@ describe('compression()', function(){
       .get('/')
       .set('Accept-Encoding', 'deflate, gzip')
       .expect('Content-Encoding', 'gzip', done)
+    })
+  })
+
+  describe('when "Accept-Encoding: deflate, gzip, br"', function () {
+    it('should respond with brotli', function (done) {
+      var server = createServer({ threshold: 0 }, function (req, res) {
+        res.setHeader('Content-Type', 'text/plain')
+        res.end('hello, world')
+      })
+
+      request(server)
+      .get('/')
+      .set('Accept-Encoding', 'deflate, gzip, br')
+      .expect('Content-Encoding', 'br', done)
+    })
+  })
+
+  describe('when "Accept-Encoding: br"', function () {
+    it('should respond with brotli', function (done) {
+      var server = createServer({ threshold: 0 }, function (req, res) {
+        res.setHeader('Content-Type', 'text/plain')
+        res.end('hello, world')
+      })
+
+      request(server)
+      .get('/')
+      .set('Accept-Encoding', 'br')
+      .expect('Content-Encoding', 'br', done)
+    })
+
+    it('should have a correctly encoded brotli response', function (done) {
+      var server = createServer({ threshold: 0 }, function (req, res) {
+        res.setHeader('Content-Type', 'text/plain')
+        res.end('hello, world')
+      })
+
+      var stream = new streamBuffers.WritableStreamBuffer()
+
+      request(server)
+      .get('/')
+      .set('Accept-Encoding', 'br')
+      .pipe(stream)
+
+      stream.on('finish', function () {
+        assert.equal('hello, world', iltorb.decompressSync(stream.getContents()).toString('utf-8'))
+        done()
+      })
+    })
+
+    it('should apply the brotli parameters from options', function (done) {
+      var server = createServer({ threshold: 0 , brotli: { quality: 11 } }, function (req, res) {
+        res.setHeader('Content-Type', 'text/plain')
+        res.end('hello, world')
+      })
+
+      var stream = new streamBuffers.WritableStreamBuffer()
+
+      request(server)
+      .get('/')
+      .set('Accept-Encoding', 'br')
+      .pipe(stream)
+
+      stream.on('finish', function () {
+        // check to make sure that the response buffer is byte-for-byte equivalent to calling
+        // brotli directly with the same quality parameter.
+        var responseBuffer = stream.getContents()
+        var referenceBuffer = iltorb.compressSync(new Buffer('hello, world', 'utf-8'), { quality: 11 })
+        assert.equal(0, responseBuffer.compare(referenceBuffer));
+        done()
+      })
     })
   })
 

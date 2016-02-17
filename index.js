@@ -18,6 +18,7 @@ var accepts = require('accepts')
 var bytes = require('bytes')
 var compressible = require('compressible')
 var debug = require('debug')('compression')
+var iltorb = require('iltorb')
 var onHeaders = require('on-headers')
 var vary = require('vary')
 var zlib = require('zlib')
@@ -35,6 +36,10 @@ module.exports.filter = shouldCompress
  */
 
 var cacheControlNoTransformRegExp = /(?:^|,)\s*?no-transform\s*?(?:,|$)/
+// according to https://blogs.akamai.com/2016/02/understanding-brotlis-potential.html , brotli:4
+// is slightly faster than gzip with somewhat better compression; good default if we don't want to
+// worry about compression runtime being slower than gzip
+var BROTLI_DEFAULT_QUALITY = 4
 
 /**
  * Compress response data with gzip / deflate.
@@ -54,6 +59,9 @@ function compression(options) {
   if (threshold == null) {
     threshold = 1024
   }
+
+  var brotliOpts = opts.brotli || {}
+  brotliOpts.quality = brotliOpts.quality || BROTLI_DEFAULT_QUALITY
 
   return function compression(req, res, next){
     var ended = false
@@ -173,12 +181,12 @@ function compression(options) {
 
       // compression method
       var accept = accepts(req)
-      var method = accept.encoding(['gzip', 'deflate', 'identity'])
-
-      // we really don't prefer deflate
-      if (method === 'deflate' && accept.encoding(['gzip'])) {
-        method = accept.encoding(['gzip', 'identity'])
-      }
+      // send in each compression method separately to ignore client preference and
+      // instead enforce server preference
+      var method = accept.encoding('br')
+        || accept.encoding('gzip')
+        || accept.encoding('deflate')
+        || accept.encoding('identity');
 
       // negotiation failed
       if (!method || method === 'identity') {
@@ -188,9 +196,17 @@ function compression(options) {
 
       // compression stream
       debug('%s compression', method)
-      stream = method === 'gzip'
-        ? zlib.createGzip(opts)
-        : zlib.createDeflate(opts)
+      switch (method) {
+        case 'br':
+          stream = iltorb.compressStream(brotliOpts)
+          break
+        case 'gzip':
+          stream = zlib.createGzip(opts)
+          break
+        case 'deflate':
+          stream = zlib.createDeflate(opts)
+          break
+      }
 
       // add buffered listeners to stream
       addListeners(stream, stream.on, listeners)
