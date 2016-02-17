@@ -579,6 +579,20 @@ describe('compression()', function () {
       .expect(200, done)
     })
 
+    it('should have a res.flushCompression() alias', function (done) {
+      var server = createServer(null, function (req, res) {
+        res.statusCode = res.flush === res.flushCompression
+          ? 200
+          : 500
+        res.flushCompression()
+        res.end()
+      })
+
+      request(server)
+      .get('/')
+      .expect(200, done)
+    })
+
     it('should flush the response', function (done) {
       var chunks = 0
       var resp
