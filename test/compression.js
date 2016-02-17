@@ -558,7 +558,7 @@ describe('compression()', function(){
         // brotli directly with the same quality parameter.
         var responseBuffer = stream.getContents()
         var referenceBuffer = iltorb.compressSync(new Buffer('hello, world', 'utf-8'), { quality: 11 })
-        assert.equal(0, responseBuffer.compare(referenceBuffer));
+        assert.equal(responseBuffer.toString('hex'), referenceBuffer.toString('hex'));
         done()
       })
     })
