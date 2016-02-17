@@ -160,6 +160,20 @@ function shouldCompress(req, res) {
 This module adds a `res.flush()` method to force the partially-compressed
 response to be flushed to the client.
 
+### res.flushCompression
+
+This is an alias for the `res.flush()` method that is added by this module.
+
+This supports use such as:
+
+```javascript
+// Not going to write again for a while.  If compression middleware is
+// installed let's tell it to flush what we've got through to the client.
+if (res.flushCompression) {
+    res.flushCompression();
+}
+```
+
 ## Examples
 
 ### express/connect
