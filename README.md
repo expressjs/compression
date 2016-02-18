@@ -24,6 +24,9 @@ The following coding is planned but not yet supported:
 
 ## Install
 
+You must first install `node`, `npm`, and [the node native build
+toolchain](https://github.com/nodejs/node-gyp#installation).
+
 ```bash
 $ npm install squash
 ```
