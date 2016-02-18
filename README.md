@@ -1,4 +1,4 @@
-# compression
+# squash
 
 [![NPM Version][npm-image]][npm-url]
 [![NPM Downloads][downloads-image]][downloads-url]
@@ -6,7 +6,11 @@
 [![Test Coverage][coveralls-image]][coveralls-url]
 [![Gratipay][gratipay-image]][gratipay-url]
 
-Node.js compression middleware.
+Node.js compression middleware with modern codings like brotli and zopfli.
+
+**Note:** this project was forked from `compression`, the standard Express/Connect
+compression middleware, and it stands on the shoulders of that impressive
+project.
 
 The following compression codings are supported:
 
@@ -14,21 +18,25 @@ The following compression codings are supported:
   - gzip
   - brotli
 
+The following coding is planned but not yet supported:
+
+  - zopfli
+
 ## Install
 
 ```bash
-$ npm install compression
+$ npm install squash
 ```
 
 ## API
 
 ```js
-var compression = require('compression')
+var squash = require('squash')
 ```
 
-### compression([options])
+### squash([options])
 
-Returns the compression middleware using the given `options`. The middleware
+Returns the squash middleware using the given `options`. The middleware
 will attempt to compress response bodies for all request that traverse through
 the middleware, based on the given `options`.
 
@@ -38,16 +46,12 @@ as compressing will transform the body.
 
 #### Options
 
-`compression()` accepts these properties in the options object. In addition to
-those listed below, [zlib](http://nodejs.org/api/zlib.html) options may be
-passed in to the options object.
+`squash()` accepts these properties in the options object.
 
-##### chunkSize
-
-The default value is `zlib.Z_DEFAULT_CHUNK`, or `16384`.
-
-See [Node.js documentation](http://nodejs.org/api/zlib.html#zlib_memory_usage_tuning)
-regarding the usage.
+Note that `squash` options are backward-compatible with `compression`, but
+we have also moved all of the gzip/deflate/zlib-specific parameters
+into a sub-object called `zlib`. If you use `zlib` parameters at the root level
+of options in `squash`, you will get a deprecation warning.
 
 ##### filter
 
@@ -59,7 +63,75 @@ the response.
 The default filter function uses the [compressible](https://www.npmjs.com/package/compressible)
 module to determine if `res.getHeader('Content-Type')` is compressible.
 
-##### level
+##### cache
+
+A function to decide if the compressed response should be cached for later use.
+This function is called as `cache(req, res)` and is expected to return `true` if
+the compressed response should be cached and `false` if the response should not
+be cached. Note that `squash` uses ETags to ensure that a cache entry is appropriate
+to return, so it will **never** cache a response that does not include an `ETag`,
+even if the cache function returns `true`.
+
+When a response is cached, it will be asynchronously re-encoded at the highest
+quality level available for the compression algorithm in question (zopfli for
+gzip and deflate, and brotli quality 11 for brotli). These quality levels are generally
+not acceptable for use when responding to a request in real-time because they
+are too CPU-intensive, but they can be performed in the background so that
+subsequent requests get the highest compression levels available.
+
+By default, `squash` caches any response that has an `ETag` header associated with
+it, which means it should work out of the box with `express.static`, caching static
+files with the highest available compression. If you serve a large number of dynamic
+files with ETags, you may want to have your cache function restrict caching to your
+static file directory so as to avoid thrashing the cache and wasting CPU time on
+expensive compressions.
+
+##### cacheSize
+
+The approximate size, in bytes, of the cache. This is a number of bytes, any string
+accepted by the [bytes](https://www.npmjs.com/package/bytes) module, or `false`
+to indicate no caching. The default `cacheSize` is `128mb`.
+
+The size includes space for the URL of the cached resources and the compressed bytes
+of the responses. It does not, however, include overhead for JavaScript objects,
+so the actual total amount of memory taken up by the cache will be somewhat larger
+than `cacheSize` in practice.
+
+When deciding how large to make your cache, remember that every cached resource
+in your app may have as many as three compressed entries: one each for gzip,
+deflate, and brotli.
+
+##### threshold
+
+The byte threshold for the response body size before compression is considered
+for the response, defaults to `1kb`. This is a number of bytes, any string
+accepted by the [bytes](https://www.npmjs.com/package/bytes) module, or `false`.
+
+**Note** this is only an advisory setting; if the response size cannot be determined
+at the time the response headers are written, then it is assumed the response is
+_over_ the threshold. To guarantee the response size can be determined, be sure
+set a `Content-Length` response header.
+
+##### zlib
+
+There is a sub-object of the options object called `zlib` which contains all of
+the parameters related to `gzip` and `deflate`. In addition to
+those listed below, [zlib](http://nodejs.org/api/zlib.html) options may be
+passed in to the `zlib` sub-object.
+
+Also note that to temporarily preserve backwards compatibility with `compression`,
+all of these `zlib` parameters can be included at the root level of the options
+object. However, having `zlib` parameters at the root level is deprecated, and we
+plan to remove it soon.
+
+##### zlib.chunkSize
+
+The default value is `zlib.Z_DEFAULT_CHUNK`, or `16384`.
+
+See [Node.js documentation](http://nodejs.org/api/zlib.html#zlib_memory_usage_tuning)
+regarding the usage.
+
+##### zlib.level
 
 The level of zlib compression to apply to responses. A higher level will result
 in better compression, but will take longer to complete. A lower level will
@@ -86,7 +158,7 @@ The default value is `zlib.Z_DEFAULT_COMPRESSION`, or `-1`.
 
 **Note** in the list above, `zlib` is from `zlib = require('zlib')`.
 
-##### memLevel
+##### zlib.memLevel
 
 This specifies how much memory should be allocated for the internal compression
 state and is an integer in the range of `1` (minimum level) and `9` (maximum
@@ -97,7 +169,7 @@ The default value is `zlib.Z_DEFAULT_MEMLEVEL`, or `8`.
 See [Node.js documentation](http://nodejs.org/api/zlib.html#zlib_memory_usage_tuning)
 regarding the usage.
 
-##### strategy
+##### zlib.strategy
 
 This is used to tune the compression algorithm. This value only affects the
 compression ratio, not the correctness of the compressed output, even if it
@@ -119,18 +191,7 @@ is not set appropriately.
 
 **Note** in the list above, `zlib` is from `zlib = require('zlib')`.
 
-##### threshold
-
-The byte threshold for the response body size before compression is considered
-for the response, defaults to `1kb`. This is a number of bytes, any string
-accepted by the [bytes](https://www.npmjs.com/package/bytes) module, or `false`.
-
-**Note** this is only an advisory setting; if the response size cannot be determined
-at the time the response headers are written, then it is assumed the response is
-_over_ the threshold. To guarantee the response size can be determined, be sure
-set a `Content-Length` response header.
-
-##### windowBits
+##### zlib.windowBits
 
 The default value is `zlib.Z_DEFAULT_WINDOWBITS`, or `15`.
 

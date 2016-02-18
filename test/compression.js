@@ -5,6 +5,7 @@ var http = require('http');
 var iltorb = require('iltorb');
 var streamBuffers = require('stream-buffers');
 var request = require('supertest');
+var zlib = require('zlib');
 
 var compression = require('..');
 
@@ -556,10 +557,188 @@ describe('compression()', function(){
       stream.on('finish', function () {
         // check to make sure that the response buffer is byte-for-byte equivalent to calling
         // brotli directly with the same quality parameter.
-        var responseBuffer = stream.getContents()
-        var referenceBuffer = iltorb.compressSync(new Buffer('hello, world', 'utf-8'), { quality: 11 })
-        assert.equal(responseBuffer.toString('hex'), referenceBuffer.toString('hex'));
+        assertBuffersEqual(
+          stream.getContents(),
+          iltorb.compressSync(new Buffer('hello, world', 'utf-8'), { quality: 11 }));
         done()
+      })
+    })
+  })
+
+  describe('when caching is turned on', function () {
+    it('should cache a compressed response with the same ETag', function (done) {
+      var count = 0;
+      var server = createServer({ threshold: 0 }, function (req, res) {
+        res.setHeader('Content-Type', 'text/plain')
+        res.setHeader('ETag', '12345')
+        res.end('hello, world #' + count)
+        count++
+      })
+
+      request(server)
+      .get('/')
+      .set('Accept-Encoding', 'gzip')
+      .expect('hello, world #0', function () {
+        request(server)
+        .get('/')
+        .set('Accept-Encoding', 'gzip')
+        .expect('hello, world #0', done)
+      })
+    })
+
+    it('should not cache when the cache function returns false', function (done) {
+      var count = 0;
+      var server = createServer({ threshold: 0, cache: function(req, res) { return false; } }, function (req, res) {
+        res.setHeader('Content-Type', 'text/plain')
+        res.setHeader('ETag', '12345')
+        res.end('hello, world #' + count)
+        count++
+      })
+
+      request(server)
+      .get('/')
+      .set('Accept-Encoding', 'gzip')
+      .expect('hello, world #0', function () {
+        request(server)
+        .get('/')
+        .set('Accept-Encoding', 'gzip')
+        .expect('hello, world #1', done)
+      })
+    })
+
+    it('should not get a cached compressed response for a different ETag', function (done) {
+      var count = 0;
+      var server = createServer({ threshold: 0 }, function (req, res) {
+        res.setHeader('Content-Type', 'text/plain')
+        res.setHeader('ETag', count.toString())
+        res.end('hello, world #' + count)
+        count++
+      })
+
+      request(server)
+      .get('/')
+      .set('Accept-Encoding', 'gzip')
+      .expect('hello, world #0', function () {
+        request(server)
+        .get('/')
+        .set('Accept-Encoding', 'gzip')
+        .expect('hello, world #1', done)
+      })
+    })
+
+    it('should not cache when there is no ETag', function (done) {
+      var count = 0;
+      var server = createServer({ threshold: 0 }, function (req, res) {
+        res.setHeader('Content-Type', 'text/plain')
+        res.end('hello, world #' + count)
+        count++
+      })
+
+      request(server)
+      .get('/')
+      .set('Accept-Encoding', 'gzip')
+      .expect('hello, world #0', function () {
+        request(server)
+        .get('/')
+        .set('Accept-Encoding', 'gzip')
+        .expect('hello, world #1', done)
+      })
+    })
+
+    it('should not cache when caching is disabled', function (done) {
+      var count = 0;
+      var server = createServer({ threshold: 0, cacheSize: false }, function (req, res) {
+        res.setHeader('Content-Type', 'text/plain')
+        res.setHeader('ETag', '12345')
+        res.end('hello, world #' + count)
+        count++
+      })
+
+      request(server)
+      .get('/')
+      .set('Accept-Encoding', 'gzip')
+      .expect('hello, world #0', function () {
+        request(server)
+        .get('/')
+        .set('Accept-Encoding', 'gzip')
+        .expect('hello, world #1', done)
+      })
+    })
+
+    it('should evict from the cache when over the limit', function (done) {
+      var etag = 'a', count = 0;
+      var server = createServer({ threshold: 0, cacheSize: 40 }, function (req, res) {
+        res.setHeader('Content-Type', 'text/plain')
+        res.setHeader('ETag', etag)
+        res.end('hello, world #' + count)
+      })
+
+      request(server)
+      .get('/')
+      .set('Accept-Encoding', 'gzip')
+      .expect('hello, world #0', function () {
+        etag = 'b'
+        count = 1
+        request(server)
+        .get('/')
+        .set('Accept-Encoding', 'gzip')
+        .expect('hello, world #1', function () {
+          etag = 'b'
+          count = 2
+          request(server)
+          .get('/')
+          .set('Accept-Encoding', 'gzip')
+          .expect('hello, world #1', function () {
+            etag = 'a'
+            count = 3
+            request(server)
+            .get('/')
+            .set('Accept-Encoding', 'gzip')
+            .expect('hello, world #3', done)
+          })
+        })
+      })
+    })
+
+    it('should evict the oldest representation from the cache when over the limit', function (done) {
+      var etag = 'a', count = 0;
+      var server = createServer({ threshold: 0, cacheSize: 80 }, function (req, res) {
+        res.setHeader('Content-Type', 'text/plain')
+        res.setHeader('ETag', etag)
+        res.end('hello, world #' + count)
+      })
+
+      request(server)
+      .get('/')
+      .set('Accept-Encoding', 'gzip')
+      .expect('hello, world #0', function () {
+        etag = 'b'
+        count = 1
+        request(server)
+        .get('/')
+        .set('Accept-Encoding', 'gzip')
+        .expect('hello, world #1', function () {
+          etag = 'c'
+          count = 2
+          request(server)
+          .get('/')
+          .set('Accept-Encoding', 'gzip')
+          .expect('hello, world #2', function () {
+            etag = 'b'
+            count = 3
+            request(server)
+            .get('/')
+            .set('Accept-Encoding', 'gzip')
+            .expect('hello, world #1', function () {
+              etag = 'a'
+              count = 4
+              request(server)
+              .get('/')
+              .set('Accept-Encoding', 'gzip')
+              .expect('hello, world #4', done)
+            })
+          })
+        })
       })
     })
   })
@@ -773,4 +952,8 @@ function shouldNotHaveHeader(header) {
   return function (res) {
     assert.ok(!(header.toLowerCase() in res.headers), 'should not have header ' + header)
   }
+}
+
+function assertBuffersEqual(buffer1, buffer2) {
+  assert.equal(buffer1.toString('hex'), buffer2.toString('hex'));
 }

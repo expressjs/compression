@@ -14,6 +14,7 @@
     "compressible": "~2.0.7",
     "debug": "~2.2.0",
     "iltorb": "^1.0.9",
+    "lru-cache": "^4.0.0",
     "on-headers": "~1.0.1",
     "vary": "~1.1.0"
   },

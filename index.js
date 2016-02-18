@@ -19,7 +19,9 @@ var bytes = require('bytes')
 var compressible = require('compressible')
 var debug = require('debug')('compression')
 var iltorb = require('iltorb')
+var lruCache = require('lru-cache')
 var onHeaders = require('on-headers')
+var Transform = require('stream').Transform
 var vary = require('vary')
 var zlib = require('zlib')
 
@@ -62,6 +64,17 @@ function compression(options) {
 
   var brotliOpts = opts.brotli || {}
   brotliOpts.quality = brotliOpts.quality || BROTLI_DEFAULT_QUALITY
+
+  var zlibOpts = opts.zlib || {}
+  var zlibOptNames = ['flush', 'chunkSize', 'windowBits', 'level', 'memLevel', 'strategy', 'dictionary']
+  zlibOptNames.forEach(function (option) {
+      zlibOpts[option] = zlibOpts[option] || opts[option];
+    })
+
+  if (!opts.hasOwnProperty('cacheSize')) opts.cacheSize = '128mB'
+  var cache = opts.cacheSize ? createCache(bytes(opts.cacheSize.toString())) : null;
+
+  var shouldCache = opts.cache || function () { return true; }
 
   return function compression(req, res, next){
     var ended = false
@@ -194,18 +207,59 @@ function compression(options) {
         return
       }
 
-      // compression stream
-      debug('%s compression', method)
-      switch (method) {
-        case 'br':
-          stream = iltorb.compressStream(brotliOpts)
-          break
-        case 'gzip':
-          stream = zlib.createGzip(opts)
-          break
-        case 'deflate':
-          stream = zlib.createDeflate(opts)
-          break
+      // do we have this coding/url/etag combo in the cache?
+      var etag = res.getHeader('ETag') || null;
+      var cacheable = cache && shouldCache(req, res) && etag && res.statusCode >= 200 && res.statusCode < 300
+      if (cacheable) {
+        var buffer = cache.lookup(method, req.url, etag)
+        if (buffer) {
+          // the rest of the code expects a transform stream, so
+          // make a trivial transform stream that just ignores its input
+          stream = new Transform({
+            transform: function (chunk, encoding, callback) {
+              if (!this.ended) {
+                this.push(buffer)
+                this.push(null)
+                this.ended = true
+              }
+              callback()
+            },
+            flush: function (callback) {
+              // if there was no data sent in, transform was never called
+              this._transform(null, null, callback)
+            }
+          })
+        }
+      }
+
+      // if stream is not assigned, we got a cache miss and need to compress
+      // the result
+      if (!stream) {
+        // compression stream
+        debug('%s compression', method)
+        switch (method) {
+          case 'br':
+            stream = iltorb.compressStream(brotliOpts)
+            break
+          case 'gzip':
+            stream = zlib.createGzip(zlibOpts)
+            break
+          case 'deflate':
+            stream = zlib.createDeflate(zlibOpts)
+            break
+        }
+
+        // if it is cacheable, let's keep hold of the compressed chunks and cache
+        // them once the compression stream ends.
+        if (cacheable) {
+          var chunks = [];
+          stream.on('data', function (chunk){
+            chunks.push(chunk)
+          })
+          stream.on('end', function () {
+            cache.add(method, req.url, etag, Buffer.concat(chunks))
+          })
+        }
       }
 
       // add buffered listeners to stream
@@ -288,4 +342,47 @@ function shouldTransform(req, res) {
   // https://tools.ietf.org/html/rfc7234#section-5.2.2.4
   return !cacheControl
     || !cacheControlNoTransformRegExp.test(cacheControl)
+}
+
+function createCache(size) {
+  var index = {}
+  var lru = lruCache({
+    max: size,
+    length: function (item, key) { return item.buffer.length + item.coding.length + 2 * (item.url.length + item.etag.length) },
+    dispose: function (key, item) {
+      // remove this particular representation (by etag)
+      delete index[item.coding][item.url][item.etag]
+
+      // if there are no more representations of the url left, remove the
+      // entry for the url.
+      if (Object.keys(index[item.coding][item.url]).length === 0) {
+        delete index[item.coding][item.url]
+      }
+    }
+  })
+
+  return {
+    add: function (coding, url, etag, buffer) {
+      var item = {
+        coding: coding,
+        url: url,
+        etag: etag,
+        buffer: buffer
+      }
+      var key = {}
+
+      index[coding] = index[coding] || {}
+      index[coding][url] = index[coding][url] || {}
+      index[coding][url][etag] = key
+
+      lru.set(key, item)
+    },
+
+    lookup: function (coding, url, etag) {
+      if (index[coding] && index[coding][url] && index[coding][url][etag]) {
+        return lru.get(index[coding][url][etag]).buffer
+      }
+      return null;
+    }
+  }
 }
