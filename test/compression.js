@@ -43,9 +43,7 @@ describe('compression()', function(){
       res.end('hello, world')
     })
 
-    request(server)
-    .get('/')
-    .set('Accept-Encoding', 'gzip')
+    gzipRequest(server)
     .expect('Content-Encoding', 'x-custom')
     .expect(200, 'hello, world', done)
   })
@@ -56,9 +54,7 @@ describe('compression()', function(){
       res.end('hello, world')
     })
 
-    request(server)
-    .get('/')
-    .set('Accept-Encoding', 'gzip')
+    gzipRequest(server)
     .expect('Content-Encoding', 'gzip')
     .expect('Vary', 'Accept-Encoding', done)
   })
@@ -106,9 +102,7 @@ describe('compression()', function(){
       res.end('hello, world')
     })
 
-    request(server)
-    .get('/')
-    .set('Accept-Encoding', 'gzip')
+    gzipRequest(server)
     .expect('Transfer-Encoding', 'chunked', done)
   })
 
@@ -132,9 +126,7 @@ describe('compression()', function(){
       res.end('world', 'utf8')
     })
 
-    request(server)
-    .get('/')
-    .set('Accept-Encoding', 'gzip')
+    gzipRequest(server)
     .expect('Transfer-Encoding', 'chunked')
     .expect(200, 'hello, world', done)
   })
@@ -276,9 +268,7 @@ describe('compression()', function(){
 
     buf.fill('.')
 
-    request(server)
-    .get('/')
-    .set('Accept-Encoding', 'gzip')
+    gzipRequest(server)
     .expect('Transfer-Encoding', 'chunked')
     .expect('Content-Encoding', 'gzip')
     .expect(shouldHaveBodyLength(len))
@@ -298,9 +288,7 @@ describe('compression()', function(){
 
     buf.fill('.')
 
-    request(server)
-    .get('/')
-    .set('Accept-Encoding', 'gzip')
+    gzipRequest(server)
     .expect('Transfer-Encoding', 'chunked')
     .expect('Content-Encoding', 'gzip')
     .expect(shouldHaveBodyLength(len * 4))
@@ -315,9 +303,7 @@ describe('compression()', function(){
         res.end('hello, world')
       })
 
-      request(server)
-      .get('/')
-      .set('Accept-Encoding', 'gzip')
+      gzipRequest(server)
       .expect(shouldNotHaveHeader('Content-Encoding'))
       .expect(200, done)
     })
@@ -329,10 +315,7 @@ describe('compression()', function(){
         res.end(new Buffer(2048))
       })
 
-      request(server)
-      .get('/')
-      .set('Accept-Encoding', 'gzip')
-      .expect('Content-Encoding', 'gzip', done)
+      gzipRequest(server).expect('Content-Encoding', 'gzip', done)
     })
 
     it('should compress when streaming without a content-length', function(done){
@@ -344,10 +327,7 @@ describe('compression()', function(){
         }, 10)
       })
 
-      request(server)
-      .get('/')
-      .set('Accept-Encoding', 'gzip')
-      .expect('Content-Encoding', 'gzip', done)
+      gzipRequest(server).expect('Content-Encoding', 'gzip', done)
     })
 
     it('should not compress when streaming and content-length is lower than threshold', function(done){
@@ -360,9 +340,7 @@ describe('compression()', function(){
         }, 10)
       })
 
-      request(server)
-      .get('/')
-      .set('Accept-Encoding', 'gzip')
+      gzipRequest(server)
       .expect(shouldNotHaveHeader('Content-Encoding'))
       .expect(200, done)
     })
@@ -377,10 +355,7 @@ describe('compression()', function(){
         }, 10)
       })
 
-      request(server)
-      .get('/')
-      .set('Accept-Encoding', 'gzip')
-      .expect('Content-Encoding', 'gzip', done)
+      gzipRequest(server).expect('Content-Encoding', 'gzip', done)
     })
 
     // res.end(str, encoding) broken in node.js 0.8
@@ -391,9 +366,7 @@ describe('compression()', function(){
         res.end('2e2e2e2e', 'hex')
       })
 
-      request(server)
-      .get('/')
-      .set('Accept-Encoding', 'gzip')
+      gzipRequest(server)
       .expect(shouldNotHaveHeader('Content-Encoding'))
       .expect(200, '....', done)
     })
@@ -404,9 +377,7 @@ describe('compression()', function(){
         res.end()
       })
 
-      request(server)
-      .get('/')
-      .set('Accept-Encoding', 'gzip')
+      gzipRequest(server)
       .expect(shouldNotHaveHeader('Content-Encoding'))
       .expect(200, '', done)
     })
@@ -417,9 +388,7 @@ describe('compression()', function(){
         res.end(null)
       })
 
-      request(server)
-      .get('/')
-      .set('Accept-Encoding', 'gzip')
+      gzipRequest(server)
       .expect(shouldNotHaveHeader('Content-Encoding'))
       .expect(200, '', done)
     })
@@ -432,10 +401,7 @@ describe('compression()', function(){
         res.end('hello, world')
       })
 
-      request(server)
-      .get('/')
-      .set('Accept-Encoding', 'gzip')
-      .expect('Content-Encoding', 'gzip', done)
+      gzipRequest(server).expect('Content-Encoding', 'gzip', done)
     })
 
     it('should return false writing after end', function (done) {
@@ -446,10 +412,7 @@ describe('compression()', function(){
         assert.ok(res.end() === false)
       })
 
-      request(server)
-      .get('/')
-      .set('Accept-Encoding', 'gzip')
-      .expect('Content-Encoding', 'gzip', done)
+      gzipRequest(server).expect('Content-Encoding', 'gzip', done)
     })
   })
 
@@ -460,10 +423,7 @@ describe('compression()', function(){
         res.end('hello, world')
       })
 
-      request(server)
-      .get('/')
-      .set('Accept-Encoding', 'deflate')
-      .expect('Content-Encoding', 'deflate', done)
+      deflateRequest(server).expect('Content-Encoding', 'deflate', done)
     })
   })
 
@@ -516,10 +476,7 @@ describe('compression()', function(){
         res.end('hello, world')
       })
 
-      request(server)
-      .get('/')
-      .set('Accept-Encoding', 'br')
-      .expect('Content-Encoding', 'br', done)
+      brotliRequest(server).expect('Content-Encoding', 'br', done)
     })
 
     it('should have a correctly encoded brotli response', function (done) {
@@ -530,12 +487,9 @@ describe('compression()', function(){
 
       var stream = new streamBuffers.WritableStreamBuffer()
 
-      request(server)
-      .get('/')
-      .set('Accept-Encoding', 'br')
+      brotliRequest(server)
       .pipe(stream)
-
-      stream.on('finish', function () {
+      .on('finish', function () {
         assert.equal('hello, world', iltorb.decompressSync(stream.getContents()).toString('utf-8'))
         done()
       })
@@ -549,12 +503,9 @@ describe('compression()', function(){
 
       var stream = new streamBuffers.WritableStreamBuffer()
 
-      request(server)
-      .get('/')
-      .set('Accept-Encoding', 'br')
+      brotliRequest(server)
       .pipe(stream)
-
-      stream.on('finish', function () {
+      .on('finish', function () {
         // check to make sure that the response buffer is byte-for-byte equivalent to calling
         // brotli directly with the same quality parameter.
         assertBuffersEqual(
@@ -575,14 +526,8 @@ describe('compression()', function(){
         count++
       })
 
-      request(server)
-      .get('/')
-      .set('Accept-Encoding', 'gzip')
-      .expect('hello, world #0', function () {
-        request(server)
-        .get('/')
-        .set('Accept-Encoding', 'gzip')
-        .expect('hello, world #0', done)
+      gzipRequest(server).expect('hello, world #0', function () {
+        gzipRequest(server).expect('hello, world #0', done)
       })
     })
 
@@ -595,14 +540,8 @@ describe('compression()', function(){
         count++
       })
 
-      request(server)
-      .get('/')
-      .set('Accept-Encoding', 'deflate')
-      .expect('hello, world #0', function () {
-        request(server)
-        .get('/')
-        .set('Accept-Encoding', 'deflate')
-        .expect('hello, world #0', done)
+      deflateRequest(server).expect('hello, world #0', function () {
+        deflateRequest(server).expect('hello, world #0', done)
       })
     })
 
@@ -616,24 +555,18 @@ describe('compression()', function(){
       })
 
       var stream = new streamBuffers.WritableStreamBuffer()
-      request(server)
-      .get('/')
-      .set('Accept-Encoding', 'br')
-      .pipe(stream)
-
-      stream.on('finish', function () {
-        assert.equal('hello, world #0', iltorb.decompressSync(stream.getContents()).toString('utf-8'))
-        var stream2 = new streamBuffers.WritableStreamBuffer()
-        request(server)
-          .get('/')
-          .set('Accept-Encoding', 'br')
-          .pipe(stream2)
-
-          stream2.on('finish', function() {
-            assert.equal('hello, world #0', iltorb.decompressSync(stream2.getContents()).toString('utf-8'))
-            done()
-          })
-      })
+      brotliRequest(server)
+        .pipe(stream)
+        .on('finish', function () {
+          assert.equal('hello, world #0', iltorb.decompressSync(stream.getContents()).toString('utf-8'))
+          var stream2 = new streamBuffers.WritableStreamBuffer()
+          brotliRequest(server)
+            .pipe(stream2)
+            .on('finish', function() {
+              assert.equal('hello, world #0', iltorb.decompressSync(stream2.getContents()).toString('utf-8'))
+              done()
+            })
+        })
     })
 
     it('should not cache when the cache function returns false', function (done) {
@@ -645,14 +578,8 @@ describe('compression()', function(){
         count++
       })
 
-      request(server)
-      .get('/')
-      .set('Accept-Encoding', 'gzip')
-      .expect('hello, world #0', function () {
-        request(server)
-        .get('/')
-        .set('Accept-Encoding', 'gzip')
-        .expect('hello, world #1', done)
+      gzipRequest(server).expect('hello, world #0', function () {
+        gzipRequest(server).expect('hello, world #1', done)
       })
     })
 
@@ -665,14 +592,8 @@ describe('compression()', function(){
         count++
       })
 
-      request(server)
-      .get('/')
-      .set('Accept-Encoding', 'gzip')
-      .expect('hello, world #0', function () {
-        request(server)
-        .get('/')
-        .set('Accept-Encoding', 'gzip')
-        .expect('hello, world #1', done)
+      gzipRequest(server).expect('hello, world #0', function () {
+        gzipRequest(server).expect('hello, world #1', done)
       })
     })
 
@@ -684,14 +605,8 @@ describe('compression()', function(){
         count++
       })
 
-      request(server)
-      .get('/')
-      .set('Accept-Encoding', 'gzip')
-      .expect('hello, world #0', function () {
-        request(server)
-        .get('/')
-        .set('Accept-Encoding', 'gzip')
-        .expect('hello, world #1', done)
+      gzipRequest(server).expect('hello, world #0', function () {
+        gzipRequest(server).expect('hello, world #1', done)
       })
     })
 
@@ -704,14 +619,8 @@ describe('compression()', function(){
         count++
       })
 
-      request(server)
-      .get('/')
-      .set('Accept-Encoding', 'gzip')
-      .expect('hello, world #0', function () {
-        request(server)
-        .get('/')
-        .set('Accept-Encoding', 'gzip')
-        .expect('hello, world #1', done)
+      gzipRequest(server).expect('hello, world #0', function () {
+        gzipRequest(server).expect('hello, world #1', done)
       })
     })
 
@@ -723,28 +632,16 @@ describe('compression()', function(){
         res.end('hello, world #' + count)
       })
 
-      request(server)
-      .get('/')
-      .set('Accept-Encoding', 'gzip')
-      .expect('hello, world #0', function () {
+      gzipRequest(server).expect('hello, world #0', function () {
         etag = 'b'
         count = 1
-        request(server)
-        .get('/')
-        .set('Accept-Encoding', 'gzip')
-        .expect('hello, world #1', function () {
+        gzipRequest(server).expect('hello, world #1', function () {
           etag = 'b'
           count = 2
-          request(server)
-          .get('/')
-          .set('Accept-Encoding', 'gzip')
-          .expect('hello, world #1', function () {
+          gzipRequest(server).expect('hello, world #1', function () {
             etag = 'a'
             count = 3
-            request(server)
-            .get('/')
-            .set('Accept-Encoding', 'gzip')
-            .expect('hello, world #3', done)
+            gzipRequest(server).expect('hello, world #3', done)
           })
         })
       })
@@ -758,34 +655,19 @@ describe('compression()', function(){
         res.end('hello, world #' + count)
       })
 
-      request(server)
-      .get('/')
-      .set('Accept-Encoding', 'gzip')
-      .expect('hello, world #0', function () {
+      gzipRequest(server).expect('hello, world #0', function () {
         etag = 'b'
         count = 1
-        request(server)
-        .get('/')
-        .set('Accept-Encoding', 'gzip')
-        .expect('hello, world #1', function () {
+        gzipRequest(server).expect('hello, world #1', function () {
           etag = 'c'
           count = 2
-          request(server)
-          .get('/')
-          .set('Accept-Encoding', 'gzip')
-          .expect('hello, world #2', function () {
+          gzipRequest(server).expect('hello, world #2', function () {
             etag = 'b'
             count = 3
-            request(server)
-            .get('/')
-            .set('Accept-Encoding', 'gzip')
-            .expect('hello, world #1', function () {
+            gzipRequest(server).expect('hello, world #1', function () {
               etag = 'a'
               count = 4
-              request(server)
-              .get('/')
-              .set('Accept-Encoding', 'gzip')
-              .expect('hello, world #4', done)
+              gzipRequest(server).expect('hello, world #4', done)
             })
           })
         })
@@ -801,9 +683,7 @@ describe('compression()', function(){
         res.end('hello, world')
       })
 
-      request(server)
-      .get('/')
-      .set('Accept-Encoding', 'gzip')
+      gzipRequest(server)
       .expect('Cache-Control', 'no-transform')
       .expect(shouldNotHaveHeader('Content-Encoding'))
       .expect(200, 'hello, world', done)
@@ -816,9 +696,7 @@ describe('compression()', function(){
         res.end('hello, world')
       })
 
-      request(server)
-      .get('/')
-      .set('Accept-Encoding', 'gzip')
+      gzipRequest(server)
       .expect('Cache-Control', 'no-transform')
       .expect(shouldNotHaveHeader('Vary'))
       .expect(200, done)
@@ -896,9 +774,7 @@ describe('compression()', function(){
         resp.flush()
       }
 
-      request(server)
-      .get('/')
-      .set('Accept-Encoding', 'gzip')
+      gzipRequest(server)
       .request()
       .on('response', function (res) {
         assert.equal(res.headers['content-encoding'], 'gzip')
@@ -928,9 +804,7 @@ describe('compression()', function(){
         resp.flush()
       }
 
-      request(server)
-      .get('/')
-      .set('Accept-Encoding', 'gzip')
+      gzipRequest(server)
       .request()
       .on('response', function (res) {
         assert.equal(res.headers['content-encoding'], 'gzip')
@@ -960,9 +834,7 @@ describe('compression()', function(){
         resp.flush()
       }
 
-      request(server)
-      .get('/')
-      .set('Accept-Encoding', 'deflate')
+      deflateRequest(server)
       .request()
       .on('response', function (res) {
         assert.equal(res.headers['content-encoding'], 'deflate')
@@ -1006,4 +878,22 @@ function shouldNotHaveHeader(header) {
 
 function assertBuffersEqual(buffer1, buffer2) {
   assert.equal(buffer1.toString('hex'), buffer2.toString('hex'));
+}
+
+function gzipRequest(server) {
+  return request(server)
+    .get('/')
+    .set('Accept-Encoding', 'gzip')
+}
+
+function deflateRequest(server) {
+  return request(server)
+    .get('/')
+    .set('Accept-Encoding', 'deflate')
+}
+
+function brotliRequest(server) {
+  return request(server)
+    .get('/')
+    .set('Accept-Encoding', 'br')
 }
