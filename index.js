@@ -28,6 +28,7 @@ var Transform = require('stream').Transform
 var vary = require('vary')
 var Writable = require('stream').Writable
 var zlib = require('zlib')
+var zopfli = require('node-zopfli')
 
 /**
  * Module exports.
@@ -440,9 +441,9 @@ function transformFromBuffer(buffer) {
 function getBestQualityReencoder(coding) {
   switch (coding) {
     case 'gzip':
-      return multipipe(zlib.createGunzip(), zlib.createGzip({level: 9}))
+      return multipipe(zlib.createGunzip(), zopfli.createGzip())
     case 'deflate':
-      return multipipe(zlib.createInflate(), zlib.createDeflate({level: 9}))
+      return multipipe(zlib.createInflate(), zopfli.createDeflate())
     case 'br':
       return multipipe(iltorb.decompressStream(), iltorb.compressStream())
   }
