@@ -542,7 +542,7 @@ describe('compression()', function(){
     })
 
     it('should apply the brotli parameters from options', function (done) {
-      var server = createServer({ threshold: 0 , brotli: { quality: 11 } }, function (req, res) {
+      var server = createServer({ threshold: 0 , brotli: { quality: 8 } }, function (req, res) {
         res.setHeader('Content-Type', 'text/plain')
         res.end('hello, world')
       })
@@ -559,14 +559,14 @@ describe('compression()', function(){
         // brotli directly with the same quality parameter.
         assertBuffersEqual(
           stream.getContents(),
-          iltorb.compressSync(new Buffer('hello, world', 'utf-8'), { quality: 11 }));
+          iltorb.compressSync(new Buffer('hello, world', 'utf-8'), { quality: 8 }));
         done()
       })
     })
   })
 
   describe('when caching is turned on', function () {
-    it('should cache a compressed response with the same ETag', function (done) {
+    it('should cache a gzipped response with the same ETag', function (done) {
       var count = 0;
       var server = createServer({ threshold: 0 }, function (req, res) {
         res.setHeader('Content-Type', 'text/plain')
@@ -583,6 +583,56 @@ describe('compression()', function(){
         .get('/')
         .set('Accept-Encoding', 'gzip')
         .expect('hello, world #0', done)
+      })
+    })
+
+    it('should cache a deflate response with the same ETag', function (done) {
+      var count = 0;
+      var server = createServer({ threshold: 0 }, function (req, res) {
+        res.setHeader('Content-Type', 'text/plain')
+        res.setHeader('ETag', '12345')
+        res.end('hello, world #' + count)
+        count++
+      })
+
+      request(server)
+      .get('/')
+      .set('Accept-Encoding', 'deflate')
+      .expect('hello, world #0', function () {
+        request(server)
+        .get('/')
+        .set('Accept-Encoding', 'deflate')
+        .expect('hello, world #0', done)
+      })
+    })
+
+    it('should cache a brotli response with the same ETag', function (done) {
+      var count = 0;
+      var server = createServer({ threshold: 0, brotli: { quality: 1 }}, function (req, res) {
+        res.setHeader('Content-Type', 'text/plain')
+        res.setHeader('ETag', '12345')
+        res.end('hello, world #' + count)
+        count++
+      })
+
+      var stream = new streamBuffers.WritableStreamBuffer()
+      request(server)
+      .get('/')
+      .set('Accept-Encoding', 'br')
+      .pipe(stream)
+
+      stream.on('finish', function () {
+        assert.equal('hello, world #0', iltorb.decompressSync(stream.getContents()).toString('utf-8'))
+        var stream2 = new streamBuffers.WritableStreamBuffer()
+        request(server)
+          .get('/')
+          .set('Accept-Encoding', 'br')
+          .pipe(stream2)
+
+          stream2.on('finish', function() {
+            assert.equal('hello, world #0', iltorb.decompressSync(stream2.getContents()).toString('utf-8'))
+            done()
+          })
       })
     })
 

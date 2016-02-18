@@ -15,13 +15,14 @@
     "debug": "~2.2.0",
     "iltorb": "^1.0.9",
     "lru-cache": "^4.0.0",
+    "multipipe": "^0.3.0",
     "on-headers": "~1.0.1",
+    "stream-buffers": "^3.0.0",
     "vary": "~1.1.0"
   },
   "devDependencies": {
     "istanbul": "0.4.2",
     "mocha": "2.3.4",
-    "stream-buffers": "^3.0.0",
     "supertest": "1.1.0"
   },
   "files": [
