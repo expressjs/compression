@@ -1,4 +1,4 @@
-# squash
+# shrink-ray
 
 [![NPM Version][npm-image]][npm-url]
 [![NPM Downloads][downloads-image]][downloads-url]
@@ -17,10 +17,7 @@ The following compression codings are supported:
   - deflate
   - gzip
   - brotli
-
-The following coding is planned but not yet supported:
-
-  - zopfli
+  - zopfli (for asynchronous compression of static assets)
 
 ## Install
 
@@ -28,18 +25,18 @@ You must first install `node`, `npm`, and [the node native build
 toolchain](https://github.com/nodejs/node-gyp#installation).
 
 ```bash
-$ npm install squash
+$ npm install shrink-ray
 ```
 
 ## API
 
 ```js
-var squash = require('squash')
+var shrinkRay = require('shrink-ray')
 ```
 
-### squash([options])
+### shrinkRay([options])
 
-Returns the squash middleware using the given `options`. The middleware
+Returns the shrink-ray middleware using the given `options`. The middleware
 will attempt to compress response bodies for all request that traverse through
 the middleware, based on the given `options`.
 
@@ -49,12 +46,12 @@ as compressing will transform the body.
 
 #### Options
 
-`squash()` accepts these properties in the options object.
+`shrinkRay()` accepts these properties in the options object.
 
-Note that `squash` options are backward-compatible with `compression`, but
+Note that `shrink-ray` options are backward-compatible with `compression`, but
 we have also moved all of the gzip/deflate/zlib-specific parameters
 into a sub-object called `zlib`. If you use `zlib` parameters at the root level
-of options in `squash`, you will get a deprecation warning.
+of options in `shrink-ray`, you will get a deprecation warning.
 
 ##### filter
 
@@ -71,7 +68,7 @@ module to determine if `res.getHeader('Content-Type')` is compressible.
 A function to decide if the compressed response should be cached for later use.
 This function is called as `cache(req, res)` and is expected to return `true` if
 the compressed response should be cached and `false` if the response should not
-be cached. Note that `squash` uses ETags to ensure that a cache entry is appropriate
+be cached. Note that `shrink-ray` uses ETags to ensure that a cache entry is appropriate
 to return, so it will **never** cache a response that does not include an `ETag`,
 even if the cache function returns `true`.
 
@@ -82,7 +79,7 @@ not acceptable for use when responding to a request in real-time because they
 are too CPU-intensive, but they can be performed in the background so that
 subsequent requests get the highest compression levels available.
 
-By default, `squash` caches any response that has an `ETag` header associated with
+By default, `shrink-ray` caches any response that has an `ETag` header associated with
 it, which means it should work out of the box with `express.static`, caching static
 files with the highest available compression. If you serve a large number of dynamic
 files with ETags, you may want to have your cache function restrict caching to your

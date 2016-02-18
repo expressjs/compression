@@ -1,5 +1,5 @@
 {
-  "name": "squash",
+  "name": "shrink-ray",
   "description": "Node.js compression middleware with brotli and zopfli support",
   "version": "0.0.1",
   "contributors": [
