@@ -18,13 +18,13 @@ var accepts = require('accepts')
 var bytes = require('bytes')
 var compressible = require('compressible')
 var debug = require('debug')('compression')
+var Duplex = require('stream').Duplex
 var iltorb = require('iltorb')
 var lruCache = require('lru-cache')
 var multipipe = require('multipipe')
 var onHeaders = require('on-headers')
 var Readable = require('stream').Readable
 var streamBuffers = require('stream-buffers');
-var Transform = require('stream').Transform
 var vary = require('vary')
 var Writable = require('stream').Writable
 var zlib = require('zlib')
@@ -218,9 +218,9 @@ function compression(options) {
       if (cacheable) {
         var buffer = cache.lookup(method, req.url, etag)
         if (buffer) {
-          // the rest of the code expects a transform stream, so
-          // make a trivial transform stream that just ignores its input
-          stream = transformFromBuffer(buffer)
+          // the rest of the code expects a duplex stream, so
+          // make a duplex stream that just ignores its input
+          stream = duplexFromBuffer(buffer)
         }
       }
 
@@ -249,7 +249,7 @@ function compression(options) {
             chunks.push(chunk)
           })
           stream.on('end', function () {
-            cache.add(method, req.url, etag, Buffer.concat(chunks))
+            cache.add(method, req.url, etag, chunks)
           })
         }
       }
@@ -355,6 +355,16 @@ function createCache(size) {
 
   return {
     add: function (coding, url, etag, buffer) {
+      // check to see if another request already filled the cache; avoids
+      // a lot of work if there's a thundering herd.
+      if (index[coding] && index[coding][url] && index[coding][url][etag]) {
+        return
+      }
+
+      if (Array.isArray(buffer)) {
+        buffer = Buffer.concat(buffer)
+      }
+
       var item = {
         coding: coding,
         url: url,
@@ -387,7 +397,7 @@ function createCache(size) {
       if (index[coding] && index[coding][url] && index[coding][url][etag]) {
         return lru.get(index[coding][url][etag]).buffer
       }
-      return null;
+      return null
     }
   }
 }
@@ -419,19 +429,24 @@ function writableToBuffer() {
   return result
 }
 
-function transformFromBuffer(buffer) {
-  return new Transform({
-    transform: function (chunk, encoding, callback) {
-      if (!this.ended) {
-        this.push(buffer)
+// this duplex just ignores its write side and reads out the buffer as
+// requested
+function duplexFromBuffer(buffer) {
+  return new Duplex({
+    read: function(size) {
+      if (!this.cursor) this.cursor = 0;
+      if (this.cursor >= buffer.length) {
         this.push(null)
-        this.ended = true
+        return
       }
-      callback()
+
+      var endIndex = Math.min(this.cursor + size, buffer.length)
+      this.push(buffer.slice(this.cursor, endIndex))
+      this.cursor = endIndex
     },
-    flush: function (callback) {
-      // if there was no data sent in, transform was never called
-      this._transform(null, null, callback)
+
+    write: function(chunk, encoding, callback) {
+      callback()
     }
   })
 }
