@@ -19,7 +19,7 @@ var args = yargs(process.argv)
 
 var app = express();
 
-if (args.c !== "none") app.use(require(args.c)())
+if (args.c !== "none") app.use(require(args.c)({filter: function () { return true }}))
 app.use(express.static('canterbury'))
 
 var server = http.createServer(app)
