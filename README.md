@@ -16,7 +16,8 @@ In addition, if a response contains an ETag, `shrink-ray` will cache the compres
 result for later requests and even re-compress it asynchronously at the highest
 possible compression (using zopfli for gzip and deflate and brotli quality 11
 for brotli). This makes it possible to use the best possible compression
-algorithms for static content without having to sacrifice runtime performance.
+algorithms for static content (saving as much as 25% over standard gzip) without
+sacrificing runtime performance.
 
 The combination of caching and use of better compression algorithms makes
 `shrink-ray` serve static files in [our benchmark](./benchmark) 3x faster than
