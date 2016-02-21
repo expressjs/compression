@@ -5,16 +5,26 @@
 
 Node.js compression middleware with modern codings like brotli and zopfli.
 
-**Note:** this project was forked from `compression`, the standard Express/Connect
-compression middleware, and it stands on the shoulders of that impressive
-project.
-
 The following compression codings are supported:
 
   - deflate
   - gzip
   - brotli
   - zopfli (for asynchronous compression of static assets)
+
+In addition, if a response contains an ETag, `shrink-ray` will cache the compressed
+result for later requests and even re-compress it asynchronously at the highest
+possible compression (using zopfli for gzip and deflate and brotli quality 11
+for brotli). This makes it possible to use the best possible compression
+algorithms for static content without having to sacrifice runtime performance.
+
+The combination of caching and use of better compression algorithms makes
+`shrink-ray` serve static files in [our benchmark](./benchmark) 3x faster than
+`compression` while using only one quarter as much CPU time.
+
+**Note:** this project was forked from `compression`, the standard Express/Connect
+compression middleware, and it stands on the shoulders of that impressive
+project.
 
 ## Install
 
