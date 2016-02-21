@@ -2,9 +2,6 @@
 
 [![NPM Version][npm-image]][npm-url]
 [![NPM Downloads][downloads-image]][downloads-url]
-[![Build Status][travis-image]][travis-url]
-[![Test Coverage][coveralls-image]][coveralls-url]
-[![Gratipay][gratipay-image]][gratipay-url]
 
 Node.js compression middleware with modern codings like brotli and zopfli.
 
@@ -122,7 +119,7 @@ passed in to the `zlib` sub-object.
 Also note that to temporarily preserve backwards compatibility with `compression`,
 all of these `zlib` parameters can be included at the root level of the options
 object. However, having `zlib` parameters at the root level is deprecated, and we
-plan to remove it soon.
+plan to remove it.
 
 ##### zlib.chunkSize
 
@@ -214,7 +211,7 @@ The default `filter` function. This is used to construct a custom filter
 function that is an extension of the default function.
 
 ```js
-app.use(compression({filter: shouldCompress}))
+app.use(shrinkRay({filter: shouldCompress}))
 
 function shouldCompress(req, res) {
   if (req.headers['x-no-compression']) {
@@ -223,7 +220,7 @@ function shouldCompress(req, res) {
   }
 
   // fallback to standard filter function
-  return compression.filter(req, res)
+  return shrinkRay.filter(req, res)
 }
 ```
 
@@ -231,6 +228,9 @@ function shouldCompress(req, res) {
 
 This module adds a `res.flush()` method to force the partially-compressed
 response to be flushed to the client.
+
+Note that brotli does not currently support `flush`, so it is a no-op when using
+brotli compression.
 
 ## Examples
 
@@ -240,13 +240,13 @@ When using this module with express or connect, simply `app.use` the module as
 high as you like. Requests that pass through the middleware will be compressed.
 
 ```js
-var compression = require('compression')
+var shrinkRay = require('shrink-ray')
 var express = require('express')
 
 var app = express()
 
 // compress all requests
-app.use(compression())
+app.use(shrinkRay())
 
 // add all routes
 ```
@@ -261,14 +261,17 @@ events, there are certain block of data that need to reach the client.
 You can achieve this by calling `res.flush()` when you need the data written to
 actually make it to the client.
 
+(Note that since brotli does not support `flush`, brotli will never be used as
+compression for server-sent events.)
+
 ```js
-var compression = require('compression')
+var shrinkRay = require('shrink-ray')
 var express     = require('express')
 
 var app = express()
 
 // compress responses
-app.use(compression())
+app.use(shrinkRay())
 
 // server-sent event stream
 app.get('/events', function (req, res) {
@@ -293,13 +296,7 @@ app.get('/events', function (req, res) {
 
 [MIT](LICENSE)
 
-[npm-image]: https://img.shields.io/npm/v/compression.svg
-[npm-url]: https://npmjs.org/package/compression
-[travis-image]: https://img.shields.io/travis/expressjs/compression/master.svg
-[travis-url]: https://travis-ci.org/expressjs/compression
-[coveralls-image]: https://img.shields.io/coveralls/expressjs/compression/master.svg
-[coveralls-url]: https://coveralls.io/r/expressjs/compression?branch=master
-[downloads-image]: https://img.shields.io/npm/dm/compression.svg
-[downloads-url]: https://npmjs.org/package/compression
-[gratipay-image]: https://img.shields.io/gratipay/dougwilson.svg
-[gratipay-url]: https://www.gratipay.com/dougwilson/
+[npm-image]: https://img.shields.io/npm/v/shrink-ray.svg
+[npm-url]: https://npmjs.org/package/shrink-ray
+[downloads-image]: https://img.shields.io/npm/dm/shrink-ray.svg
+[downloads-url]: https://npmjs.org/package/shrink-ray
