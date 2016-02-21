@@ -1,7 +1,7 @@
 {
   "name": "shrink-ray",
   "description": "Node.js compression middleware with brotli and zopfli support",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "contributors": [
     "Douglas Christopher Wilson <doug@somethingdoug.com>",
     "Jonathan Ong <me@jongleberry.com> (http://jongleberry.com)",
