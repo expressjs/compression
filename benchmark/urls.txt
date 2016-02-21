@@ -1,0 +1,11 @@
+http://localhost:3000/alice29.txt
+http://localhost:3000/asyoulik.txt
+http://localhost:3000/cp.html
+http://localhost:3000/fields.c
+http://localhost:3000/grammar.lsp
+http://localhost:3000/kennedy.xls
+http://localhost:3000/lcet10.txt
+http://localhost:3000/plrabn12.txt
+http://localhost:3000/ptt5
+http://localhost:3000/sum
+http://localhost:3000/xargs.1
