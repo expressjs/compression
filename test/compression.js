@@ -467,6 +467,18 @@ describe('compression()', function(){
       .set('Accept-Encoding', 'deflate, gzip, br')
       .expect('Content-Encoding', 'br', done)
     })
+
+    it('should respond with gzip for server-sent events (SSE)', function (done) {
+      var server = createServer({ threshold: 0 }, function (req, res) {
+        res.setHeader('Content-Type', 'text/event-stream')
+        res.end('hello, world')
+      })
+
+      request(server)
+      .get('/')
+      .set('Accept-Encoding', 'deflate, gzip, br')
+      .expect('Content-Encoding', 'gzip', done)
+    })
   })
 
   describe('when "Accept-Encoding: br"', function () {
@@ -513,6 +525,17 @@ describe('compression()', function(){
           iltorb.compressSync(new Buffer('hello, world', 'utf-8'), { quality: 8 }));
         done()
       })
+    })
+
+    it('should not throw if flush() is called', function (done) {
+      var server = createServer({ threshold: 0 }, function (req, res) {
+        res.setHeader('Content-Type', 'text/plain')
+        res.write('hello, ');
+        res.flush();
+        res.end('world')
+      })
+
+      brotliRequest(server).expect('Content-Encoding', 'br', done)
     })
   })
 

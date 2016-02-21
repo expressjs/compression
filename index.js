@@ -81,6 +81,8 @@ function compression(options) {
 
   var shouldCache = opts.cache || function () { return true; }
 
+  var dummyBrotliFlush = function () { }
+
   return function compression(req, res, next){
     var ended = false
     var length
@@ -197,11 +199,15 @@ function compression(options) {
         return
       }
 
+      var contentType = res.getHeader('Content-Type');
+
       // compression method
       var accept = accepts(req)
       // send in each compression method separately to ignore client preference and
-      // instead enforce server preference
-      var method = accept.encoding('br')
+      // instead enforce server preference. also, server-sent events (mime type of
+      // text/event-stream) require flush functionality, so skip brotli in that
+      // case.
+      var method = (contentType !== "text/event-stream" && accept.encoding('br'))
         || accept.encoding('gzip')
         || accept.encoding('deflate')
         || accept.encoding('identity');
@@ -232,6 +238,8 @@ function compression(options) {
         switch (method) {
           case 'br':
             stream = iltorb.compressStream(brotliOpts)
+            // brotli has no flush method. add a dummy flush method here.
+            stream.flush = dummyBrotliFlush;
             break
           case 'gzip':
             stream = zlib.createGzip(zlibOpts)
