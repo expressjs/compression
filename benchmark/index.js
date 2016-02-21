@@ -9,6 +9,10 @@ var args = yargs(process.argv)
 		choices: ["compression", "shrink-ray", "none"],
 		describe: "The compression middleware to use (compression or shrink-ray)",
 	})
+	.option("p", {
+		default: 3000,
+		describe: "The port on which to serve the content",
+	})
 	.help('?')
 	.alias('?', 'help')
 	.argv
@@ -19,6 +23,6 @@ if (args.c !== "none") app.use(require(args.c)())
 app.use(express.static('canterbury'))
 
 var server = http.createServer(app)
-server.listen(3000, function () {
-  console.log('Compressed Canterbury corpus app listening on port 3000 with ' + args.c + ' middleware!')
+server.listen(args.p, function () {
+  console.log('Compressed Canterbury corpus app listening on port ' + args.p + ' with ' + args.c + ' middleware!')
 })
