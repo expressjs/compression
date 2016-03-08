@@ -468,7 +468,7 @@ function getBestQualityReencoder(coding) {
     case 'gzip':
       return multipipe(zlib.createGunzip(), zopfli.createGzip())
     case 'deflate':
-      return multipipe(zlib.createInflate(), zopfli.createDeflate())
+      return new require("stream").PassThrough()
     case 'br':
       return multipipe(iltorb.decompressStream(), iltorb.compressStream())
   }
