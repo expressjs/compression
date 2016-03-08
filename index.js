@@ -369,6 +369,7 @@ function createCache(size) {
         return
       }
 
+      console.log(buffer)
       if (Array.isArray(buffer)) {
         buffer = Buffer.concat(buffer)
       }
@@ -387,18 +388,18 @@ function createCache(size) {
 
       lru.set(key, item)
 
-      // // now asynchronously re-encode the entry at best quality
-      // var result = writableToBuffer()
-      //
-      // readableFromBuffer(buffer)
-      //   .pipe(getBestQualityReencoder(coding))
-      //   .pipe(result)
-      //   .on('finish', function () {
-      //     var itemInCache = lru.peek(key)
-      //     if (itemInCache) {
-      //       itemInCache.buffer = result.toBuffer()
-      //     }
-      //   })
+      // now asynchronously re-encode the entry at best quality
+      var result = writableToBuffer()
+
+      readableFromBuffer(buffer)
+        .pipe(getBestQualityReencoder(coding))
+        .pipe(result)
+        .on('finish', function () {
+          var itemInCache = lru.peek(key)
+          if (itemInCache) {
+            itemInCache.buffer = result.toBuffer()
+          }
+        })
     },
 
     lookup: function (coding, url, etag) {
@@ -414,6 +415,7 @@ function readableFromBuffer(buffer) {
   return new Readable({
     read: function (size) {
       if (!this.ended) {
+        console.log(buffer)
         this.push(buffer)
         this.ended = true
       } else {
