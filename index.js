@@ -369,7 +369,7 @@ function createCache(size) {
       if (index[coding] && index[coding][url] && index[coding][url][etag]) {
         return
       }
-
+      console.log(buffer)
       if (Array.isArray(buffer)) {
         buffer = Buffer.concat(buffer)
       }
