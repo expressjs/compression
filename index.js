@@ -414,6 +414,7 @@ function createCache(size) {
 function BufferReadable(buffer, opt) {
     Readable.call(this, opt)
     this.buffer = buffer
+    console.log(buffer)
 }
 
 util.inherits(BufferReadable, Readable)
