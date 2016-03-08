@@ -411,12 +411,12 @@ function createCache(size) {
   }
 }
 
-util.inherits(BufferReadable, Readable)
-
 function BufferReadable(buffer, opt) {
     Readable.call(this, opt)
     this.buffer = buffer
 }
+
+util.inherits(BufferReadable, Readable)
 
 BufferReadable.prototype._read = function (size) {
   if (!this.ended) {
@@ -427,12 +427,12 @@ BufferReadable.prototype._read = function (size) {
   }
 }
 
-util.inherits(BufferWritable, Writable)
-
 function BufferWritable(opt) {
   Writable.call(this, opt)
   this.chunks = []
 }
+
+util.inherits(BufferWritable, Writable)
 
 BufferWritable.prototype._write = function (chunk, encoding, callback) {
   this.chunks.push(chunk)
@@ -445,12 +445,12 @@ BufferWritable.prototype.toBuffer = function () {
 
 // this duplex just ignores its write side and reads out the buffer as
 // requested
-util.inherits(BufferDuplex, Duplex)
-
 function BufferDuplex(buffer, opts) {
   Duplex.call(this, opts)
   this.buffer = buffer
 }
+
+util.inherits(BufferDuplex, Duplex)
 
 BufferDuplex.prototype._read = function(size) {
   if (!this.cursor) this.cursor = 0;
