@@ -369,7 +369,6 @@ function createCache(size) {
         return
       }
 
-      console.log(buffer)
       if (Array.isArray(buffer)) {
         buffer = Buffer.concat(buffer)
       }
@@ -415,7 +414,6 @@ function readableFromBuffer(buffer) {
   return new Readable({
     read: function (size) {
       if (!this.ended) {
-        console.log(buffer)
         this.push(buffer)
         this.ended = true
       } else {
@@ -468,6 +466,10 @@ function getBestQualityReencoder(coding) {
     case 'gzip':
       return multipipe(zlib.createGunzip(), zopfli.createGzip())
     case 'deflate':
+      // for some reason, re-encoding with deflate makes some tests fail on
+      // the travis machines. until we can figure this out, just offer a passthrough,
+      // and don't re-encode deflate.
+//       return multipipe(zlib.createInflate(), zopfli.createDeflate())
       return new require("stream").PassThrough()
     case 'br':
       return multipipe(iltorb.decompressStream(), iltorb.compressStream())
