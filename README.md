@@ -10,7 +10,7 @@ The following compression codings are supported:
   - deflate
   - gzip
   - brotli
-  - zopfli (for asynchronous compression of static assets)
+  - zopfli (for asynchronous compression of static assets only)
 
 In addition, if a response contains an ETag, `shrink-ray` will cache the compressed
 result for later requests and even re-compress it asynchronously at the highest
