@@ -10,7 +10,7 @@ var zlib = require('zlib');
 var compression = require('..');
 
 describe('compression()', function(){
-  xit('should skip HEAD', function(done){
+  it('should skip HEAD', function(done){
     var server = createServer({ threshold: 0 }, function (req, res) {
       res.setHeader('Content-Type', 'text/plain')
       res.end('hello, world')
@@ -23,7 +23,7 @@ describe('compression()', function(){
     .expect(200, done)
   })
 
-  xit('should skip unknown accept-encoding', function(done){
+  it('should skip unknown accept-encoding', function(done){
     var server = createServer({ threshold: 0 }, function (req, res) {
       res.setHeader('Content-Type', 'text/plain')
       res.end('hello, world')
@@ -36,7 +36,7 @@ describe('compression()', function(){
     .expect(200, done)
   })
 
-  xit('should skip if content-encoding already set', function(done){
+  it('should skip if content-encoding already set', function(done){
     var server = createServer({ threshold: 0 }, function (req, res) {
       res.setHeader('Content-Type', 'text/plain')
       res.setHeader('Content-Encoding', 'x-custom')
@@ -48,7 +48,7 @@ describe('compression()', function(){
     .expect(200, 'hello, world', done)
   })
 
-  xit('should set Vary', function(done){
+  it('should set Vary', function(done){
     var server = createServer({ threshold: 0 }, function (req, res) {
       res.setHeader('Content-Type', 'text/plain')
       res.end('hello, world')
@@ -59,7 +59,7 @@ describe('compression()', function(){
     .expect('Vary', 'Accept-Encoding', done)
   })
 
-  xit('should set Vary even if Accept-Encoding is not set', function(done){
+  it('should set Vary even if Accept-Encoding is not set', function(done){
     var server = createServer({ threshold: 1000 }, function (req, res) {
       res.setHeader('Content-Type', 'text/plain')
       res.end('hello, world')
@@ -72,7 +72,7 @@ describe('compression()', function(){
     .expect(200, done)
   })
 
-  xit('should not set Vary if Content-Type does not pass filter', function(done){
+  it('should not set Vary if Content-Type does not pass filter', function(done){
     var server = createServer(null, function (req, res) {
       res.setHeader('Content-Type', 'image/jpeg')
       res.end()
@@ -84,7 +84,7 @@ describe('compression()', function(){
     .expect(200, done)
   })
 
-  xit('should set Vary for HEAD request', function(done){
+  it('should set Vary for HEAD request', function(done){
     var server = createServer({ threshold: 0 }, function (req, res) {
       res.setHeader('Content-Type', 'text/plain')
       res.end('hello, world')
@@ -96,7 +96,7 @@ describe('compression()', function(){
     .expect('Vary', 'Accept-Encoding', done)
   })
 
-  xit('should transfer chunked', function(done){
+  it('should transfer chunked', function(done){
     var server = createServer({ threshold: 0 }, function (req, res) {
       res.setHeader('Content-Type', 'text/plain')
       res.end('hello, world')
@@ -106,7 +106,7 @@ describe('compression()', function(){
     .expect('Transfer-Encoding', 'chunked', done)
   })
 
-  xit('should remove Content-Length for chunked', function(done){
+  it('should remove Content-Length for chunked', function(done){
     var server = createServer({ threshold: 0 }, function (req, res) {
       res.setHeader('Content-Type', 'text/plain')
       res.end('hello, world')
@@ -119,7 +119,7 @@ describe('compression()', function(){
     .expect(200, done)
   })
 
-  xit('should work with encoding arguments', function (done) {
+  it('should work with encoding arguments', function (done) {
     var server = createServer({ threshold: 0 }, function (req, res) {
       res.setHeader('Content-Type', 'text/plain')
       res.write('hello, ', 'utf8')
@@ -131,7 +131,7 @@ describe('compression()', function(){
     .expect(200, 'hello, world', done)
   })
 
-  xit('should allow writing after close', function(done){
+  it('should allow writing after close', function(done){
     // UGH
     var server = createServer({ threshold: 0 }, function (req, res) {
       res.setHeader('Content-Type', 'text/plain')
@@ -148,7 +148,7 @@ describe('compression()', function(){
     .end(function(){})
   })
 
-  xit('should back-pressure when compressed', function(done){
+  it('should back-pressure when compressed', function(done){
     var buf
     var client
     var drained = false
@@ -203,7 +203,7 @@ describe('compression()', function(){
     .end()
   })
 
-  xit('should back-pressure when uncompressed', function(done){
+  it('should back-pressure when uncompressed', function(done){
     var buf
     var client
     var drained = false
@@ -258,7 +258,7 @@ describe('compression()', function(){
     .end()
   })
 
-  xit('should transfer large bodies', function (done) {
+  it('should transfer large bodies', function (done) {
     var len = bytes('1mb')
     var buf = new Buffer(len)
     var server = createServer({ threshold: 0 }, function (req, res) {
@@ -275,7 +275,7 @@ describe('compression()', function(){
     .expect(200, buf.toString(), done)
   })
 
-  xit('should transfer large bodies with multiple writes', function (done) {
+  it('should transfer large bodies with multiple writes', function (done) {
     var len = bytes('40kb')
     var buf = new Buffer(len)
     var server = createServer({ threshold: 0 }, function (req, res) {
@@ -296,7 +296,7 @@ describe('compression()', function(){
   })
 
   describe('threshold', function(){
-    xit('should not compress responses below the threshold size', function(done){
+    it('should not compress responses below the threshold size', function(done){
       var server = createServer({ threshold: '1kb' }, function (req, res) {
         res.setHeader('Content-Type', 'text/plain')
         res.setHeader('Content-Length', '12')
@@ -308,7 +308,7 @@ describe('compression()', function(){
       .expect(200, done)
     })
 
-    xit('should compress responses above the threshold size', function(done){
+    it('should compress responses above the threshold size', function(done){
       var server = createServer({ threshold: '1kb' }, function (req, res) {
         res.setHeader('Content-Type', 'text/plain')
         res.setHeader('Content-Length', '2048')
@@ -318,7 +318,7 @@ describe('compression()', function(){
       gzipRequest(server).expect('Content-Encoding', 'gzip', done)
     })
 
-    xit('should compress when streaming without a content-length', function(done){
+    it('should compress when streaming without a content-length', function(done){
       var server = createServer({ threshold: '1kb' }, function (req, res) {
         res.setHeader('Content-Type', 'text/plain')
         res.write('hello, ')
@@ -330,7 +330,7 @@ describe('compression()', function(){
       gzipRequest(server).expect('Content-Encoding', 'gzip', done)
     })
 
-    xit('should not compress when streaming and content-length is lower than threshold', function(done){
+    it('should not compress when streaming and content-length is lower than threshold', function(done){
       var server = createServer({ threshold: '1kb' }, function (req, res) {
         res.setHeader('Content-Type', 'text/plain')
         res.setHeader('Content-Length', '12')
@@ -345,7 +345,7 @@ describe('compression()', function(){
       .expect(200, done)
     })
 
-    xit('should compress when streaming and content-length is larger than threshold', function(done){
+    it('should compress when streaming and content-length is larger than threshold', function(done){
       var server = createServer({ threshold: '1kb' }, function (req, res) {
         res.setHeader('Content-Type', 'text/plain')
         res.setHeader('Content-Length', '2048')
@@ -359,7 +359,7 @@ describe('compression()', function(){
     })
 
     // res.end(str, encoding) broken in node.js 0.8
-    var run = /^v0\.8\./.test(process.version) ? it.skip : xit
+    var run = /^v0\.8\./.test(process.version) ? it.skip : it
     run('should handle writing hex data', function(done){
       var server = createServer({ threshold: 6 }, function (req, res) {
         res.setHeader('Content-Type', 'text/plain')
@@ -371,7 +371,7 @@ describe('compression()', function(){
       .expect(200, '....', done)
     })
 
-    xit('should consider res.end() as 0 length', function(done){
+    it('should consider res.end() as 0 length', function(done){
       var server = createServer({ threshold: 1 }, function (req, res) {
         res.setHeader('Content-Type', 'text/plain')
         res.end()
@@ -382,7 +382,7 @@ describe('compression()', function(){
       .expect(200, '', done)
     })
 
-    xit('should work with res.end(null)', function (done) {
+    it('should work with res.end(null)', function (done) {
       var server = createServer({ threshold: 1000 }, function (req, res) {
         res.setHeader('Content-Type', 'text/plain')
         res.end(null)
@@ -395,7 +395,7 @@ describe('compression()', function(){
   })
 
   describe('when "Accept-Encoding: gzip"', function () {
-    xit('should respond with gzip', function (done) {
+    it('should respond with gzip', function (done) {
       var server = createServer({ threshold: 0 }, function (req, res) {
         res.setHeader('Content-Type', 'text/plain')
         res.end('hello, world')
@@ -404,7 +404,7 @@ describe('compression()', function(){
       gzipRequest(server).expect('Content-Encoding', 'gzip', done)
     })
 
-    xit('should return false writing after end', function (done) {
+    it('should return false writing after end', function (done) {
       var server = createServer({ threshold: 0 }, function (req, res) {
         res.setHeader('Content-Type', 'text/plain')
         res.end('hello, world')
@@ -417,7 +417,7 @@ describe('compression()', function(){
   })
 
   describe('when "Accept-Encoding: deflate"', function () {
-    xit('should respond with deflate', function (done) {
+    it('should respond with deflate', function (done) {
       var server = createServer({ threshold: 0 }, function (req, res) {
         res.setHeader('Content-Type', 'text/plain')
         res.end('hello, world')
@@ -428,7 +428,7 @@ describe('compression()', function(){
   })
 
   describe('when "Accept-Encoding: gzip, deflate"', function () {
-    xit('should respond with gzip', function (done) {
+    it('should respond with gzip', function (done) {
       var server = createServer({ threshold: 0 }, function (req, res) {
         res.setHeader('Content-Type', 'text/plain')
         res.end('hello, world')
@@ -442,7 +442,7 @@ describe('compression()', function(){
   })
 
   describe('when "Accept-Encoding: deflate, gzip"', function () {
-    xit('should respond with gzip', function (done) {
+    it('should respond with gzip', function (done) {
       var server = createServer({ threshold: 0 }, function (req, res) {
         res.setHeader('Content-Type', 'text/plain')
         res.end('hello, world')
@@ -456,7 +456,7 @@ describe('compression()', function(){
   })
 
   describe('when "Accept-Encoding: deflate, gzip, br"', function () {
-    xit('should respond with brotli', function (done) {
+    it('should respond with brotli', function (done) {
       var server = createServer({ threshold: 0 }, function (req, res) {
         res.setHeader('Content-Type', 'text/plain')
         res.end('hello, world')
@@ -468,7 +468,7 @@ describe('compression()', function(){
       .expect('Content-Encoding', 'br', done)
     })
 
-    xit('should respond with gzip for server-sent events (SSE)', function (done) {
+    it('should respond with gzip for server-sent events (SSE)', function (done) {
       var server = createServer({ threshold: 0 }, function (req, res) {
         res.setHeader('Content-Type', 'text/event-stream')
         res.end('hello, world')
@@ -482,7 +482,7 @@ describe('compression()', function(){
   })
 
   describe('when "Accept-Encoding: br"', function () {
-    xit('should respond with brotli', function (done) {
+    it('should respond with brotli', function (done) {
       var server = createServer({ threshold: 0 }, function (req, res) {
         res.setHeader('Content-Type', 'text/plain')
         res.end('hello, world')
@@ -491,7 +491,7 @@ describe('compression()', function(){
       brotliRequest(server).expect('Content-Encoding', 'br', done)
     })
 
-    xit('should have a correctly encoded brotli response', function (done) {
+    it('should have a correctly encoded brotli response', function (done) {
       var server = createServer({ threshold: 0 }, function (req, res) {
         res.setHeader('Content-Type', 'text/plain')
         res.end('hello, world')
@@ -507,7 +507,7 @@ describe('compression()', function(){
       })
     })
 
-    xit('should apply the brotli parameters from options', function (done) {
+    it('should apply the brotli parameters from options', function (done) {
       var server = createServer({ threshold: 0 , brotli: { quality: 8 } }, function (req, res) {
         res.setHeader('Content-Type', 'text/plain')
         res.end('hello, world')
@@ -527,7 +527,7 @@ describe('compression()', function(){
       })
     })
 
-    xit('should not throw if flush() is called', function (done) {
+    it('should not throw if flush() is called', function (done) {
       var server = createServer({ threshold: 0 }, function (req, res) {
         res.setHeader('Content-Type', 'text/plain')
         res.write('hello, ');
@@ -540,7 +540,7 @@ describe('compression()', function(){
   })
 
   describe('when caching is turned on', function () {
-    xit('should cache a gzipped response with the same ETag', function (done) {
+    it('should cache a gzipped response with the same ETag', function (done) {
       var count = 0;
       var server = createServer({ threshold: 0 }, function (req, res) {
         res.setHeader('Content-Type', 'text/plain')
@@ -554,7 +554,7 @@ describe('compression()', function(){
       })
     })
 
-    xit('should cache a deflate response with the same ETag', function (done) {
+    it('should cache a deflate response with the same ETag', function (done) {
       var count = 0;
       var server = createServer({ threshold: 0 }, function (req, res) {
         res.setHeader('Content-Type', 'text/plain')
@@ -581,8 +581,9 @@ describe('compression()', function(){
           if (!this.ended) {
             this.push(new Buffer([0x78, 0x9c, 0xcb, 0x48, 0xcd, 0xc9, 0xc9, 0xd7, 0x51, 0x28, 0xcf, 0x2f, 0xca, 0x49, 0x51, 0x50, 0x36, 0x00, 0x00, 0x2b, 0xc5, 0x04, 0xfc]))
             this.ended = true
+          } else {
+            this.push(null)
           }
-          this.push(null)
         }
       })
       .pipe(zlib.createInflate())
@@ -598,7 +599,7 @@ describe('compression()', function(){
       })
     })
 
-    xit('should cache a brotli response with the same ETag', function (done) {
+    it('should cache a brotli response with the same ETag', function (done) {
       var count = 0;
       var server = createServer({ threshold: 0, brotli: { quality: 1 }}, function (req, res) {
         res.setHeader('Content-Type', 'text/plain')
@@ -622,7 +623,7 @@ describe('compression()', function(){
         })
     })
 
-    xit('should not cache when the cache function returns false', function (done) {
+    it('should not cache when the cache function returns false', function (done) {
       var count = 0;
       var server = createServer({ threshold: 0, cache: function(req, res) { return false; } }, function (req, res) {
         res.setHeader('Content-Type', 'text/plain')
@@ -636,7 +637,7 @@ describe('compression()', function(){
       })
     })
 
-    xit('should not get a cached compressed response for a different ETag', function (done) {
+    it('should not get a cached compressed response for a different ETag', function (done) {
       var count = 0;
       var server = createServer({ threshold: 0 }, function (req, res) {
         res.setHeader('Content-Type', 'text/plain')
@@ -650,7 +651,7 @@ describe('compression()', function(){
       })
     })
 
-    xit('should not cache when there is no ETag', function (done) {
+    it('should not cache when there is no ETag', function (done) {
       var count = 0;
       var server = createServer({ threshold: 0 }, function (req, res) {
         res.setHeader('Content-Type', 'text/plain')
@@ -663,7 +664,7 @@ describe('compression()', function(){
       })
     })
 
-    xit('should not cache when caching is disabled', function (done) {
+    it('should not cache when caching is disabled', function (done) {
       var count = 0;
       var server = createServer({ threshold: 0, cacheSize: false }, function (req, res) {
         res.setHeader('Content-Type', 'text/plain')
@@ -677,7 +678,7 @@ describe('compression()', function(){
       })
     })
 
-    xit('should evict from the cache when over the limit', function (done) {
+    it('should evict from the cache when over the limit', function (done) {
       var etag = 'a', count = 0;
       var server = createServer({ threshold: 0, cacheSize: 40 }, function (req, res) {
         res.setHeader('Content-Type', 'text/plain')
@@ -700,7 +701,7 @@ describe('compression()', function(){
       })
     })
 
-    xit('should evict the oldest representation from the cache when over the limit', function (done) {
+    it('should evict the oldest representation from the cache when over the limit', function (done) {
       var etag = 'a', count = 0;
       var server = createServer({ threshold: 0, cacheSize: 80 }, function (req, res) {
         res.setHeader('Content-Type', 'text/plain')
@@ -729,7 +730,7 @@ describe('compression()', function(){
   })
 
   describe('when "Cache-Control: no-transform" response header', function () {
-    xit('should not compress response', function (done) {
+    it('should not compress response', function (done) {
       var server = createServer({ threshold: 0 }, function (req, res) {
         res.setHeader('Cache-Control', 'no-transform')
         res.setHeader('Content-Type', 'text/plain')
@@ -742,7 +743,7 @@ describe('compression()', function(){
       .expect(200, 'hello, world', done)
     })
 
-    xit('should not set Vary headerh', function (done) {
+    it('should not set Vary headerh', function (done) {
       var server = createServer({ threshold: 0 }, function (req, res) {
         res.setHeader('Cache-Control', 'no-transform')
         res.setHeader('Content-Type', 'text/plain')
@@ -757,11 +758,11 @@ describe('compression()', function(){
   })
 
   describe('.filter', function () {
-    xit('should be a function', function () {
+    it('should be a function', function () {
       assert.equal(typeof compression.filter, 'function')
     })
 
-    xit('should return false on empty response', function (done) {
+    it('should return false on empty response', function (done) {
       var server = http.createServer(function (req, res) {
         res.end(String(compression.filter(req, res)))
       })
@@ -771,7 +772,7 @@ describe('compression()', function(){
       .expect(200, 'false', done)
     })
 
-    xit('should return true for "text/plain"', function (done) {
+    it('should return true for "text/plain"', function (done) {
       var server = http.createServer(function (req, res) {
         res.setHeader('Content-Type', 'text/plain')
         res.end(String(compression.filter(req, res)))
@@ -782,7 +783,7 @@ describe('compression()', function(){
       .expect(200, 'true', done)
     })
 
-    xit('should return false for "application/x-bogus"', function (done) {
+    it('should return false for "application/x-bogus"', function (done) {
       var server = http.createServer(function (req, res) {
         res.setHeader('Content-Type', 'application/x-bogus')
         res.end(String(compression.filter(req, res)))
@@ -795,7 +796,7 @@ describe('compression()', function(){
   })
 
   describe('res.flush()', function () {
-    xit('should always be present', function (done) {
+    it('should always be present', function (done) {
       var server = createServer(null, function (req, res) {
         res.statusCode = typeof res.flush === 'function'
           ? 200
@@ -809,7 +810,7 @@ describe('compression()', function(){
       .expect(200, done)
     })
 
-    xit('should flush the response', function (done) {
+    it('should flush the response', function (done) {
       var chunks = 0
       var resp
       var server = createServer({ threshold: 0 }, function (req, res) {
@@ -840,7 +841,7 @@ describe('compression()', function(){
       .end()
     })
 
-    xit('should flush small chunks for gzip', function (done) {
+    it('should flush small chunks for gzip', function (done) {
       var chunks = 0
       var resp
       var server = createServer({ threshold: 0 }, function (req, res) {
@@ -870,7 +871,7 @@ describe('compression()', function(){
       .end()
     })
 
-    xit('should flush small chunks for deflate', function (done) {
+    it('should flush small chunks for deflate', function (done) {
       var chunks = 0
       var resp
       var server = createServer({ threshold: 0 }, function (req, res) {
