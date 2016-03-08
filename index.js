@@ -411,6 +411,8 @@ function createCache(size) {
   }
 }
 
+util.inherits(BufferReadable, Readable)
+
 function BufferReadable(buffer, opt) {
     Readable.call(this, opt)
     this.buffer = buffer
@@ -425,7 +427,7 @@ BufferReadable.prototype._read = function (size) {
   }
 }
 
-util.inherits(BufferReadable, Readable)
+util.inherits(BufferWritable, Writable)
 
 function BufferWritable(opt) {
   Writable.call(this, opt)
@@ -441,10 +443,10 @@ BufferWritable.prototype.toBuffer = function () {
   return Buffer.concat(this.chunks)
 }
 
-util.inherits(BufferWritable, Writable)
-
 // this duplex just ignores its write side and reads out the buffer as
 // requested
+util.inherits(BufferDuplex, Duplex)
+
 function BufferDuplex(buffer, opts) {
   Duplex.call(this, opts)
   this.buffer = buffer
@@ -465,8 +467,6 @@ BufferDuplex.prototype._read = function(size) {
 BufferDuplex.prototype._write = function(chunk, encoding, callback) {
   callback()
 }
-
-util.inherits(BufferDuplex, Duplex)
 
 // get a decode --> encode transform stream that will re-encode the content at
 // the best quality available for that coding method.
