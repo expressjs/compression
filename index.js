@@ -24,7 +24,8 @@ var lruCache = require('lru-cache')
 var multipipe = require('multipipe')
 var onHeaders = require('on-headers')
 var Readable = require('stream').Readable
-var streamBuffers = require('stream-buffers');
+var streamBuffers = require('stream-buffers')
+var util = require('util')
 var vary = require('vary')
 var Writable = require('stream').Writable
 var zlib = require('zlib')
@@ -226,7 +227,7 @@ function compression(options) {
         if (buffer) {
           // the rest of the code expects a duplex stream, so
           // make a duplex stream that just ignores its input
-          stream = duplexFromBuffer(buffer)
+          stream = new BufferDuplex(buffer)
         }
       }
 
@@ -388,9 +389,9 @@ function createCache(size) {
       lru.set(key, item)
 
       // now asynchronously re-encode the entry at best quality
-      var result = writableToBuffer()
+      var result = new BufferWritable()
 
-      readableFromBuffer(buffer)
+      new BufferReadable(buffer)
         .pipe(getBestQualityReencoder(coding))
         .pipe(result)
         .on('finish', function () {
@@ -410,54 +411,62 @@ function createCache(size) {
   }
 }
 
-function readableFromBuffer(buffer) {
-  return new Readable({
-    read: function (size) {
-      if (!this.ended) {
-        this.push(buffer)
-        this.ended = true
-      } else {
-        this.push(null)
-      }
-    }
-  })
+function BufferReadable(buffer, opt) {
+    Readable.call(this, opt)
+    this.buffer = buffer
 }
 
-function writableToBuffer() {
-  var chunks = []
-  var result = new Writable({
-    write: function (chunk, encoding, callback) {
-      chunks.push(chunk)
-      callback()
-    }
-  })
-  result.toBuffer = function () {
-    return Buffer.concat(chunks)
+BufferReadable.prototype._read = function (size) {
+  if (!this.ended) {
+    this.push(this.buffer)
+    this.ended = true
+  } else {
+    this.push(null)
   }
-  return result
 }
+
+util.inherits(BufferReadable, Readable)
+
+function BufferWritable(opt) {
+  Writable.call(this, opt)
+  this.chunks = []
+}
+
+BufferWritable.prototype._write = function (chunk, encoding, callback) {
+  this.chunks.push(chunk)
+  callback()
+}
+
+BufferWritable.prototype.toBuffer = function () {
+  return Buffer.concat(this.chunks)
+}
+
+util.inherits(BufferWritable, Writable)
 
 // this duplex just ignores its write side and reads out the buffer as
 // requested
-function duplexFromBuffer(buffer) {
-  return new Duplex({
-    read: function(size) {
-      if (!this.cursor) this.cursor = 0;
-      if (this.cursor >= buffer.length) {
-        this.push(null)
-        return
-      }
-
-      var endIndex = Math.min(this.cursor + size, buffer.length)
-      this.push(buffer.slice(this.cursor, endIndex))
-      this.cursor = endIndex
-    },
-
-    write: function(chunk, encoding, callback) {
-      callback()
-    }
-  })
+function BufferDuplex(buffer, opts) {
+  Duplex.call(this, opts)
+  this.buffer = buffer
 }
+
+BufferDuplex.prototype._read = function(size) {
+  if (!this.cursor) this.cursor = 0;
+  if (this.cursor >= this.buffer.length) {
+    this.push(null)
+    return
+  }
+
+  var endIndex = Math.min(this.cursor + size, this.buffer.length)
+  this.push(this.buffer.slice(this.cursor, endIndex))
+  this.cursor = endIndex
+}
+
+BufferDuplex.prototype._write = function(chunk, encoding, callback) {
+  callback()
+}
+
+util.inherits(BufferDuplex, Duplex)
 
 // get a decode --> encode transform stream that will re-encode the content at
 // the best quality available for that coding method.
