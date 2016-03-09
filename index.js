@@ -480,7 +480,7 @@ function getBestQualityReencoder(coding) {
       // the travis machines. until we can figure this out, just offer a passthrough,
       // and don't re-encode deflate.
       return multipipe(zlib.createInflate(), zopfli.createDeflate())
-      // return new require("stream").PassThrough()
+      // return new require("stream").PassThrough() 
     case 'br':
       return multipipe(iltorb.decompressStream(), iltorb.compressStream())
   }
