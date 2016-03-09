@@ -589,7 +589,7 @@ describe('compression()', function(){
           }
         }
       })
-      .pipe(zlib.createInflate())
+      .pipe(multipipe(zlib.createInflate(), zlib.createDeflate(), zlib.createInflate()))
       .pipe(stream.Writable({
         write: function(chunk, encoding, callback) {
           chunks.push(chunk)
