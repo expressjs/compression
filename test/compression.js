@@ -568,40 +568,6 @@ describe('compression()', function(){
       })
     })
 
-    it('should be able to inflate a particular buffer', function(done) {
-      var stream = require("stream")
-      var zlib = require("zlib")
-      var expect = require("expect")
-      var multipipe = require("multipipe")
-      var chunks = []
-
-
-      new stream.Readable({
-        read: function() {
-          if (!this.ended) {
-            this.push(Buffer.concat([
-              new Buffer([0x78, 0x9c,]),
-              new Buffer([0xcb, 0x48, 0xcd, 0xc9, 0xc9, 0xd7, 0x51, 0x28, 0xcf, 0x2f, 0xca, 0x49, 0x51, 0x50, 0x36, 0x00, 0x00, 0x2b, 0xc5, 0x04, 0xfc])
-            ]))
-            this.ended = true
-          } else {
-            this.push(null)
-          }
-        }
-      })
-      .pipe(multipipe(zlib.createInflate(), zlib.createDeflate(), zlib.createInflate()))
-      .pipe(stream.Writable({
-        write: function(chunk, encoding, callback) {
-          chunks.push(chunk)
-          callback()
-        }
-      }))
-      .on('finish', function() {
-        expect(Buffer.concat(chunks).toString('utf-8')).toBe('hello, world #0')
-        done()
-      })
-    })
-
     it('should cache a brotli response with the same ETag', function (done) {
       var count = 0;
       var server = createServer({ threshold: 0, brotli: { quality: 1 }}, function (req, res) {
