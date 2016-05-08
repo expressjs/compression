@@ -95,15 +95,15 @@ function compression (options) {
 
       if (!this._header) {
         // estimate the length
-        if (!this.getHeader('Content-Length'), cb) {
-          length = chunkLength(chunk, encoding, cb)
+        if (!this.getHeader('Content-Length')) {
+          length = chunkLength(chunk, encoding)
         }
 
         this._implicitHeader()
       }
 
       if (!stream) {
-        return _end.call(this, chunk, encoding)
+        return _end.call(this, chunk, encoding, cb)
       }
 
       // mark ended
@@ -111,8 +111,8 @@ function compression (options) {
 
       // write Buffer for Node.js 0.8
       return chunk
-        ? stream.end(new Buffer(chunk, encoding))
-        : stream.end()
+        ? stream.end(new Buffer(chunk, encoding), cb)
+        : stream.end(null, cb)
     }
 
     res.on = function on (type, listener) {
