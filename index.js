@@ -39,7 +39,7 @@ var cacheControlNoTransformRegExp = /(?:^|,)\s*?no-transform\s*?(?:,|$)/
 /**
  * Compress response data with gzip / deflate.
  *
- * @param {Object} options
+ * @param {Object} [options]
  * @return {Function} middleware
  * @public
  */
