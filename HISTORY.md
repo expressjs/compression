@@ -7,6 +7,8 @@ unreleased
     - Drop partial bytes on all parsed units
     - Fix parsing byte string that looks like hex
     - perf: hoist regular expressions
+  * deps: compressible@~2.0.8
+    - deps: mime-db@'>= 1.23.0 < 2'
 
 1.6.1 / 2016-01-19
 ==================
