@@ -1,12 +1,12 @@
 unreleased
 ==========
 
+  * deps: accepts@~1.3.2
+    - deps: mime-types@~2.1.10
   * deps: bytes@2.3.0
     - Drop partial bytes on all parsed units
     - Fix parsing byte string that looks like hex
     - perf: hoist regular expressions
-  * deps: accepts@~1.3.2
-    - deps: mime-types@~2.1.10
 
 1.6.1 / 2016-01-19
 ==================
