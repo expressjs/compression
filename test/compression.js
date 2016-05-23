@@ -682,13 +682,13 @@ describe('compression()', function () {
       var callbackOutput = [];
       var server = createServer({ threshold: 0 }, function (req, res) {
         res.setHeader('Content-Type', 'text/plain')
-        res.write('Hello', null, function (err){
+        res.write('Hello', null, function () {
           callbackOutput.push(0);
         });
-        res.write(' World', null, function (err){
+        res.write(' World', null, function () {
           callbackOutput.push(1);
         });
-        res.end(null, null, function (err){
+        res.end(null, null, function () {
           callbackOutput.push(2);
         });
       })
@@ -697,7 +697,10 @@ describe('compression()', function () {
       .get('/')
       .set('Accept-Encoding', 'gzip')
       .expect('Content-Encoding', 'gzip')
-      .end(function(){
+      .end(function (err) {
+        if (err) {
+          throw new Error(err);
+        }
         assert.equal(callbackOutput.length, 3)
         assert.deepEqual(callbackOutput, [0, 1, 2])
         done();
