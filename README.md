@@ -205,10 +205,10 @@ app.get('/events', function (req, res) {
 
   // send a ping approx every 2 seconds
   var timer = setInterval(function () {
-    res.write('data: ping\n\n')
-
-    // !!! this is the important part
-    res.flush()
+    res.write('data: ping\n\n', function(){
+      // !!! this is the important part
+      res.flush()
+    })
   }, 2000)
 
   res.on('close', function () {
