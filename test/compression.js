@@ -676,6 +676,35 @@ describe('compression()', function () {
       .end()
     })
   })
+
+  describe('when callbacks are used', function () {
+    it('should call the passed callbacks', function(done){
+      var callbacks = 0;
+      var server = createServer({ threshold: '1kb' }, function (req, res) {
+        res.setHeader('Content-Type', 'text/plain')
+        res.write('Hello', null, function(){
+          callbacks++
+          res.flush()
+        });
+        res.write(' World', null, function(){
+          callbacks++
+          res.flush()
+        });
+        res.end(null, null, function(){
+          callbacks++
+        });
+      })
+
+      request(server)
+      .get('/')
+      .set('Accept-Encoding', 'gzip')
+      .expect('Content-Encoding', 'gzip')
+      .end(function(){
+        assert.equal(callbacks, 3)
+        done();
+      });
+    })
+  })
 })
 
 function createServer (opts, fn) {
