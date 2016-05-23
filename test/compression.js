@@ -678,19 +678,19 @@ describe('compression()', function () {
   })
 
   describe('when callbacks are used', function () {
-    it('should call the passed callbacks in the order passed', function(done){
-      var callbackOutput = [];
+    it('should call the passed callbacks in the order passed', function (done) {
+      var callbackOutput = []
       var server = createServer({ threshold: 0 }, function (req, res) {
         res.setHeader('Content-Type', 'text/plain')
         res.write('Hello', null, function () {
-          callbackOutput.push(0);
-        });
+          callbackOutput.push(0)
+        })
         res.write(' World', null, function () {
-          callbackOutput.push(1);
-        });
+          callbackOutput.push(1)
+        })
         res.end(null, null, function () {
-          callbackOutput.push(2);
-        });
+          callbackOutput.push(2)
+        })
       })
 
       request(server)
@@ -699,12 +699,12 @@ describe('compression()', function () {
       .expect('Content-Encoding', 'gzip')
       .end(function (err) {
         if (err) {
-          throw new Error(err);
+          throw new Error(err)
         }
         assert.equal(callbackOutput.length, 3)
         assert.deepEqual(callbackOutput, [0, 1, 2])
-        done();
-      });
+        done()
+      })
     })
   })
 })
