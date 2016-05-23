@@ -678,43 +678,18 @@ describe('compression()', function () {
   })
 
   describe('when callbacks are used', function () {
-    it('should call the passed callbacks while compressing', function(done){
-      var callbacks = 0;
+    it('should call the passed callbacks in the order passed', function(done){
+      var callbackOutput = [];
       var server = createServer({ threshold: 0 }, function (req, res) {
         res.setHeader('Content-Type', 'text/plain')
-        res.write('Hello', null, function(){
-          callbacks++
+        res.write('Hello', null, function (err){
+          callbackOutput.push(0);
         });
-        res.write(' World', null, function(){
-          callbacks++
+        res.write(' World', null, function (err){
+          callbackOutput.push(1);
         });
-        res.end(null, null, function(){
-          callbacks++
-        });
-      })
-
-      request(server)
-      .get('/')
-      .set('Accept-Encoding', 'gzip')
-      .expect('Content-Encoding', 'gzip')
-      .end(function(){
-        assert.equal(callbacks, 3)
-        done();
-      });
-    })
-    
-    it('should call the passed callbacks while not compressing', function(done){
-      var callbacks = 0;
-      var server = createServer({ threshold: '10kb' }, function (req, res) {
-        res.setHeader('Content-Type', 'text/plain')
-        res.write('Hello', null, function(){
-          callbacks++
-        });
-        res.write(' World', null, function(){
-          callbacks++
-        });
-        res.end(null, null, function(){
-          callbacks++
+        res.end(null, null, function (err){
+          callbackOutput.push(2);
         });
       })
 
@@ -723,7 +698,8 @@ describe('compression()', function () {
       .set('Accept-Encoding', 'gzip')
       .expect('Content-Encoding', 'gzip')
       .end(function(){
-        assert.equal(callbacks, 3)
+        assert.equal(callbackOutput.length, 3)
+        assert.deepEqual(callbackOutput, [0, 1, 2])
         done();
       });
     })
