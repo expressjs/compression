@@ -86,7 +86,7 @@ function compression (options) {
       return stream
         ? stream.write(new Buffer(chunk, encoding), cb)
         : _write.call(this, chunk, encoding, cb)
-    };
+    }
 
     res.end = function end (chunk, encoding, cb) {
       if (ended) {
