@@ -3,6 +3,8 @@ var bytes = require('bytes')
 var crypto = require('crypto')
 var http = require('http')
 var request = require('supertest')
+var OutgoingMessage = http.OutgoingMessage
+var hasCallbacks = (OutgoingMessage.prototype.write.length === 3)
 
 var compression = require('..')
 
@@ -679,10 +681,8 @@ describe('compression()', function () {
 
   describe('when callbacks are used', function () {
     it('should call the passed callbacks in the order passed when compressing', function (done) {
-      var hasCallbacks = false
       var callbackOutput = []
       var server = createServer(null, function (req, res) {
-        hasCallbacks = (res._write.length === 3 && res._end.length === 3)
         res.setHeader('Content-Type', 'text/plain')
         res.write('Hello', null, function () {
           callbackOutput.push(0)
@@ -712,10 +712,8 @@ describe('compression()', function () {
     })
 
     it('should call the passed callbacks in the order passed when not compressing', function (done) {
-      var hasCallbacks = false
       var callbackOutput = []
       var server = createServer(null, function (req, res) {
-        hasCallbacks = (res._write.length === 3 && res._end.length === 3)
         res.setHeader('Cache-Control', 'no-transform')
         res.setHeader('Content-Type', 'text/plain')
         res.write('hello,', null, function () {

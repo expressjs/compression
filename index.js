@@ -21,6 +21,8 @@ var debug = require('debug')('compression')
 var onHeaders = require('on-headers')
 var vary = require('vary')
 var zlib = require('zlib')
+var OutgoingMessage = require('http').OutgoingMessage
+var hasCallback = (OutgoingMessage.prototype.write.length === 3)
 
 /**
  * Module exports.
@@ -80,7 +82,7 @@ function compression (options) {
         return false
       }
 
-      cb = (res._write.length === 3) ? cb : null
+      cb = hasCallback ? cb : null
 
       if (!this._header) {
         this._implicitHeader()
@@ -96,7 +98,7 @@ function compression (options) {
         return false
       }
 
-      cb = (res._end.length === 3) ? cb : null
+      cb = hasCallback ? cb : null
 
       if (!this._header) {
         // estimate the length
