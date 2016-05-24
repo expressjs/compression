@@ -679,8 +679,10 @@ describe('compression()', function () {
 
   describe('when callbacks are used', function () {
     it('should call the passed callbacks in the order passed when compressing', function (done) {
+      var hasCallbacks = false
       var callbackOutput = []
       var server = createServer(null, function (req, res) {
+        hasCallbacks = (res.write.length === 3 && res.end.length === 3)
         res.setHeader('Content-Type', 'text/plain')
         res.write('Hello', null, function () {
           callbackOutput.push(0)
@@ -701,15 +703,19 @@ describe('compression()', function () {
         if (err) {
           throw new Error(err)
         }
-        assert.equal(callbackOutput.length, 3)
-        assert.deepEqual(callbackOutput, [0, 1, 2])
+        if (hasCallbacks) {
+          assert.equal(callbackOutput.length, 3)
+          assert.deepEqual(callbackOutput, [0, 1, 2])
+        }
         done()
       })
     })
 
     it('should call the passed callbacks in the order passed when not compressing', function (done) {
+      var hasCallbacks = false
       var callbackOutput = []
       var server = createServer(null, function (req, res) {
+        hasCallbacks = (res.write.length === 3 && res.end.length === 3)
         res.setHeader('Cache-Control', 'no-transform')
         res.setHeader('Content-Type', 'text/plain')
         res.write('hello,', null, function () {
@@ -732,8 +738,10 @@ describe('compression()', function () {
         if (err) {
           throw new Error(err)
         }
-        assert.equal(callbackOutput.length, 3)
-        assert.deepEqual(callbackOutput, [0, 1, 2])
+        if (hasCallbacks) {
+          assert.equal(callbackOutput.length, 3)
+          assert.deepEqual(callbackOutput, [0, 1, 2])
+        }
         done()
       })
     })
