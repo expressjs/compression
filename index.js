@@ -60,6 +60,7 @@ function compression (options) {
     var length
     var listeners = []
     var stream
+    var noop = function () {}
 
     var _end = res.end
     var _on = res.on
@@ -79,6 +80,8 @@ function compression (options) {
         return false
       }
 
+      cb = (res.write.length === 3) ? cb : noop
+
       if (!this._header) {
         this._implicitHeader()
       }
@@ -92,6 +95,8 @@ function compression (options) {
       if (ended) {
         return false
       }
+
+      cb = (res.end.length === 3) ? cb : noop
 
       if (!this._header) {
         // estimate the length
