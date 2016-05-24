@@ -80,7 +80,7 @@ function compression (options) {
         return false
       }
 
-      cb = (res._end.length === 3) ? cb : null
+      cb = (res._write.length === 3) ? cb : null
 
       if (!this._header) {
         this._implicitHeader()
