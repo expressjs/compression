@@ -706,9 +706,7 @@ describe('compression()', function () {
         done()
       })
     })
-  })
 
-  describe('when callbacks are used', function () {
     it('should call the passed callbacks in the order passed when not compressing', function (done) {
       var callbackOutput = []
       var server = createServer(null, function (req, res) {
