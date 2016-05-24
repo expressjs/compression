@@ -682,7 +682,7 @@ describe('compression()', function () {
       var hasCallbacks = false
       var callbackOutput = []
       var server = createServer(null, function (req, res) {
-        hasCallbacks = (res.write.length === 3 && res.end.length === 3)
+        hasCallbacks = (res._write.length === 3 && res._end.length === 3)
         res.setHeader('Content-Type', 'text/plain')
         res.write('Hello', null, function () {
           callbackOutput.push(0)
@@ -715,7 +715,7 @@ describe('compression()', function () {
       var hasCallbacks = false
       var callbackOutput = []
       var server = createServer(null, function (req, res) {
-        hasCallbacks = (res.write.length === 3 && res.end.length === 3)
+        hasCallbacks = (res._write.length === 3 && res._end.length === 3)
         res.setHeader('Cache-Control', 'no-transform')
         res.setHeader('Content-Type', 'text/plain')
         res.write('hello,', null, function () {

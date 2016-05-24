@@ -62,9 +62,9 @@ function compression (options) {
     var stream
     var noop = function () {}
 
-    var _end = res.end
+    res._end = res.end
+    res._write = res.write
     var _on = res.on
-    var _write = res.write
 
     // flush
     res.flush = function flush () {
@@ -80,7 +80,7 @@ function compression (options) {
         return false
       }
 
-      cb = (res.write.length === 3) ? cb : noop
+      cb = (res._end.length === 3) ? cb : null
 
       if (!this._header) {
         this._implicitHeader()
@@ -88,7 +88,7 @@ function compression (options) {
 
       return stream
         ? stream.write(new Buffer(chunk, encoding), cb)
-        : _write.call(this, chunk, encoding, cb)
+        : res._write.call(this, chunk, encoding, cb)
     }
 
     res.end = function end (chunk, encoding, cb) {
@@ -96,7 +96,7 @@ function compression (options) {
         return false
       }
 
-      cb = (res.end.length === 3) ? cb : noop
+      cb = (res._end.length === 3) ? cb : null
 
       if (!this._header) {
         // estimate the length
@@ -108,7 +108,7 @@ function compression (options) {
       }
 
       if (!stream) {
-        return _end.call(this, chunk, encoding, cb)
+        return res._end.call(this, chunk, encoding, cb)
       }
 
       // mark ended
@@ -116,8 +116,8 @@ function compression (options) {
 
       // write Buffer for Node.js 0.8
       return chunk
-        ? stream.end(new Buffer(chunk, encoding), cb)
-        : stream.end(null, cb)
+        ? stream.end(new Buffer(chunk, encoding), null, cb)
+        : stream.end(null, null, cb)
     }
 
     res.on = function on (type, listener) {
@@ -207,13 +207,13 @@ function compression (options) {
 
       // compression
       stream.on('data', function onStreamData (chunk) {
-        if (_write.call(res, chunk) === false) {
+        if (res._write.call(res, chunk) === false) {
           stream.pause()
         }
       })
 
       stream.on('end', function onStreamEnd () {
-        _end.call(res)
+        res._end.call(res)
       })
 
       _on.call(res, 'drain', function onResponseDrain () {
