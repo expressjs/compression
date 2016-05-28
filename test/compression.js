@@ -3,8 +3,6 @@ var bytes = require('bytes')
 var crypto = require('crypto')
 var http = require('http')
 var request = require('supertest')
-var OutgoingMessage = http.OutgoingMessage
-var hasCallbacks = (OutgoingMessage.prototype.write.length === 3)
 
 var compression = require('..')
 
