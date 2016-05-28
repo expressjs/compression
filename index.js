@@ -21,8 +21,6 @@ var debug = require('debug')('compression')
 var onHeaders = require('on-headers')
 var vary = require('vary')
 var zlib = require('zlib')
-var OutgoingMessage = require('http').OutgoingMessage
-var hasCallback = (OutgoingMessage.prototype.write.length === 3)
 
 /**
  * Module exports.
@@ -62,43 +60,43 @@ function compression (options) {
     var length
     var listeners = []
     var stream
-    var noop = function () {}
 
-    res._end = res.end
-    res._write = res.write
+    var _end = res.end
     var _on = res.on
+    var _write = res.write
+
+    var flushCB = function flushCB () {
+      stream.flush()
+    }
 
     // flush
     res.flush = function flush () {
       if (stream) {
-        stream.flush()
+        // call write and pass flushCB to force synchronous behavior
+        stream.write('', flushCB)
       }
     }
 
     // proxy
 
-    res.write = function write (chunk, encoding, cb) {
+    res.write = function write (chunk, encoding) {
       if (ended) {
         return false
       }
-
-      cb = hasCallback ? cb : null
 
       if (!this._header) {
         this._implicitHeader()
       }
 
       return stream
-        ? stream.write(new Buffer(chunk, encoding), cb)
-        : res._write.call(this, chunk, encoding, cb)
+        ? stream.write(new Buffer(chunk, encoding))
+        : _write.call(this, chunk, encoding)
     }
 
-    res.end = function end (chunk, encoding, cb) {
+    res.end = function end (chunk, encoding) {
       if (ended) {
         return false
       }
-
-      cb = hasCallback ? cb : null
 
       if (!this._header) {
         // estimate the length
@@ -110,7 +108,7 @@ function compression (options) {
       }
 
       if (!stream) {
-        return res._end.call(this, chunk, encoding, cb)
+        return _end.call(this, chunk, encoding)
       }
 
       // mark ended
@@ -118,8 +116,8 @@ function compression (options) {
 
       // write Buffer for Node.js 0.8
       return chunk
-        ? stream.end(new Buffer(chunk, encoding), null, cb)
-        : stream.end(null, null, cb)
+        ? stream.end(new Buffer(chunk, encoding))
+        : stream.end()
     }
 
     res.on = function on (type, listener) {
@@ -209,13 +207,13 @@ function compression (options) {
 
       // compression
       stream.on('data', function onStreamData (chunk) {
-        if (res._write.call(res, chunk) === false) {
+        if (_write.call(res, chunk) === false) {
           stream.pause()
         }
       })
 
       stream.on('end', function onStreamEnd () {
-        res._end.call(res)
+        _end.call(res)
       })
 
       _on.call(res, 'drain', function onResponseDrain () {
