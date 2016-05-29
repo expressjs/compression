@@ -119,7 +119,7 @@ function compression (options) {
       ended = true
 
       // write Buffer for Node.js 0.8
-      // call write and pass flushCB to force synchronous behavior
+      // call write and pass endCB to force synchronous behavior
       return chunk
         ? stream.write(new Buffer(chunk, encoding), endCB)
         : stream.write('', endCB)
