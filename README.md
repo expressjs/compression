@@ -173,7 +173,7 @@ var express = require('express')
 
 var app = express()
 
-// compress all requests
+// compress all responses
 app.use(compression())
 
 // add all routes
