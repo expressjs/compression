@@ -258,7 +258,7 @@ function shouldCompress (req, res) {
     debug('%s not compressible', type)
     return false
   }
-  
+
   if (connection === 'close') {
     debug('transfer cannot be chunked')
     return false 
