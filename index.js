@@ -252,10 +252,16 @@ function chunkLength (chunk, encoding) {
 
 function shouldCompress (req, res) {
   var type = res.getHeader('Content-Type')
+  var connection = res.getHeader('Connection')
 
   if (type === undefined || !compressible(type)) {
     debug('%s not compressible', type)
     return false
+  }
+  
+  if (connection === 'close') {
+    debug('transfer cannot be chunked')
+    return false 
   }
 
   return true
