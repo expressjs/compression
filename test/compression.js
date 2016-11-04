@@ -46,6 +46,20 @@ describe('compression()', function () {
     .expect('Content-Encoding', 'x-custom')
     .expect(200, 'hello, world', done)
   })
+  
+  it('should skip if connection will be closed', function (done) {
+    var server = createServer({ threshold: 0 }, function (req, res) {
+      res.setHeader('Content-Type', 'text/plain')
+      res.setHeader('Connection', 'close')
+      res.end('hello, world')
+    })
+
+    request(server)
+    .get('/')
+    .set('Accept-Encoding', 'gzip')
+    .expect(shouldNotHaveHeader('Content-Encoding'))
+    .expect(200, done)
+  })
 
   it('should set Vary', function (done) {
     var server = createServer({ threshold: 0 }, function (req, res) {
