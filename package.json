@@ -19,6 +19,7 @@
   "devDependencies": {
     "eslint": "3.9.1",
     "eslint-config-standard": "6.2.1",
+    "eslint-plugin-markdown": "1.0.0-beta.3",
     "eslint-plugin-promise": "3.3.1",
     "eslint-plugin-standard": "2.0.1",
     "istanbul": "0.4.5",
@@ -34,7 +35,7 @@
     "node": ">= 0.8.0"
   },
   "scripts": {
-    "lint": "eslint .",
+    "lint": "eslint --plugin markdown --ext js,md .",
     "test": "mocha --check-leaks --reporter spec --bail",
     "test-cov": "istanbul cover node_modules/mocha/bin/_mocha -- --check-leaks --reporter dot",
     "test-travis": "istanbul cover node_modules/mocha/bin/_mocha --report lcovonly -- --check-leaks --reporter spec"

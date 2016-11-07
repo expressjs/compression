@@ -25,6 +25,8 @@ $ npm install compression
 
 ## API
 
+<!-- eslint-disable no-unused-vars -->
+
 ```js
 var compression = require('compression')
 ```
@@ -146,9 +148,13 @@ The default `filter` function. This is used to construct a custom filter
 function that is an extension of the default function.
 
 ```js
+var compression = require('compression')
+var express = require('express')
+
+var app = express()
 app.use(compression({filter: shouldCompress}))
 
-function shouldCompress(req, res) {
+function shouldCompress (req, res) {
   if (req.headers['x-no-compression']) {
     // don't compress responses with this request header
     return false
@@ -195,7 +201,7 @@ actually make it to the client.
 
 ```js
 var compression = require('compression')
-var express     = require('express')
+var express = require('express')
 
 var app = express()
 
