@@ -5,6 +5,9 @@ unreleased
   * deps: compressible@~2.0.9
     - Fix regex fallback to not override `compressible: false` in db
     - deps: mime-db@'>= 1.24.0 < 2'
+  * deps: debug@2.3.0
+    - Fix error when running under React Native
+    - deps: ms@0.7.2
 
 1.6.2 / 2016-05-12
 ==================
