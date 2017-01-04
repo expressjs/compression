@@ -676,6 +676,76 @@ describe('compression()', function () {
       .end()
     })
   })
+
+  describe('when callbacks are used', function () {
+    it('should call the passed callbacks in the order passed when compressing', function (done) {
+      var hasCallbacks = false
+      var callbackOutput = []
+      var server = createServer(null, function (req, res) {
+        hasCallbacks = (http.OutgoingMessage.prototype.write.length === 3 && http.OutgoingMessage.prototype.end.length === 3)
+        res.setHeader('Content-Type', 'text/plain')
+        res.write('Hello', null, function () {
+          callbackOutput.push(0)
+        })
+        res.write(' World', null, function () {
+          callbackOutput.push(1)
+        })
+        res.end(null, null, function () {
+          callbackOutput.push(2)
+        })
+      })
+
+      request(server)
+      .get('/')
+      .set('Accept-Encoding', 'gzip')
+      .expect('Content-Encoding', 'gzip')
+      .end(function (err) {
+        if (err) {
+          throw new Error(err)
+        }
+        if (hasCallbacks) {
+          assert.equal(callbackOutput.length, 3)
+          assert.deepEqual(callbackOutput, [0, 1, 2])
+        }
+        done()
+      })
+    })
+
+    it('should call the passed callbacks in the order passed when not compressing', function (done) {
+      var hasCallbacks = false
+      var callbackOutput = []
+      var server = createServer(null, function (req, res) {
+        hasCallbacks = (http.OutgoingMessage.prototype.write.length === 3 && http.OutgoingMessage.prototype.end.length === 3)
+        res.setHeader('Cache-Control', 'no-transform')
+        res.setHeader('Content-Type', 'text/plain')
+        res.write('hello,', null, function () {
+          callbackOutput.push(0)
+        })
+        res.write(' world', null, function () {
+          callbackOutput.push(1)
+        })
+        res.end(null, null, function () {
+          callbackOutput.push(2)
+        })
+      })
+
+      request(server)
+      .get('/')
+      .set('Accept-Encoding', 'gzip')
+      .expect('Cache-Control', 'no-transform')
+      .expect(shouldNotHaveHeader('Content-Encoding'))
+      .end(function (err) {
+        if (err) {
+          throw new Error(err)
+        }
+        if (hasCallbacks) {
+          assert.equal(callbackOutput.length, 3)
+          assert.deepEqual(callbackOutput, [0, 1, 2])
+        }
+        done()
+      })
+    })
+  })
 })
 
 function createServer (opts, fn) {
