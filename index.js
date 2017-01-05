@@ -21,6 +21,7 @@ var debug = require('debug')('compression')
 var onHeaders = require('on-headers')
 var vary = require('vary')
 var zlib = require('zlib')
+var http = require('http')
 
 /**
  * Module exports.
@@ -35,6 +36,7 @@ module.exports.filter = shouldCompress
  */
 
 var cacheControlNoTransformRegExp = /(?:^|,)\s*?no-transform\s*?(?:,|$)/
+var nodeHasCallbacks = (http.OutgoingMessage.prototype.write.length === 3 && http.OutgoingMessage.prototype.end.length === 3)
 
 /**
  * Compress response data with gzip / deflate.
@@ -84,8 +86,8 @@ function compression (options) {
       }
 
       return stream
-        ? stream.write(new Buffer(chunk, encoding), cb)
-        : _write.call(this, chunk, encoding, cb)
+        ? stream.write(new Buffer(chunk, encoding), nodeHasCallbacks ? cb : undefined)
+        : _write.call(this, chunk, encoding, nodeHasCallbacks ? cb : undefined)
     }
 
     res.end = function end (chunk, encoding, cb) {
@@ -103,7 +105,7 @@ function compression (options) {
       }
 
       if (!stream) {
-        return _end.call(this, chunk, encoding, cb)
+        return _end.call(this, chunk, encoding, nodeHasCallbacks ? cb : undefined)
       }
 
       // mark ended
@@ -111,8 +113,8 @@ function compression (options) {
 
       // write Buffer for Node.js 0.8
       return chunk
-        ? stream.end(new Buffer(chunk, encoding), cb)
-        : stream.end(null, null, cb)
+        ? stream.end(new Buffer(chunk, encoding), nodeHasCallbacks ? cb : undefined)
+        : stream.end(null, null, nodeHasCallbacks ? cb : undefined)
     }
 
     res.on = function on (type, listener) {
