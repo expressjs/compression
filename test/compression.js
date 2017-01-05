@@ -707,7 +707,7 @@ describe('compression()', function () {
           assert.equal(callbackOutput.length, 3)
           assert.deepEqual(callbackOutput, [0, 1, 2])
         } else {
-          //nodejs 0.10 zlib has callbacks but OutgoingMessage doesn't, assert that no callbacks were made
+          // nodejs 0.10 zlib has callbacks but OutgoingMessage doesn't, assert that no callbacks were made
           assert.equal(callbackOutput.length, 0)
         }
         done()
