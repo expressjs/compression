@@ -679,11 +679,8 @@ describe('compression()', function () {
 
   describe('when callbacks are used', function () {
     it('should call the passed callbacks in the order passed when compressing', function (done) {
-      var hasCallbacks = false
       var callbackOutput = []
       var server = createServer(null, function (req, res) {
-        // hasCallback check can be removed once this module only supports node >= 0.12 and .travis.yml is updated to test on node >= 0.12
-        hasCallbacks = (http.OutgoingMessage.prototype.write.length === 3 && http.OutgoingMessage.prototype.end.length === 3)
         res.setHeader('Content-Type', 'text/plain')
         res.write('Hello', null, function () {
           callbackOutput.push(0)
@@ -704,20 +701,15 @@ describe('compression()', function () {
         if (err) {
           throw new Error(err)
         }
-        if (hasCallbacks) {
-          assert.equal(callbackOutput.length, 3)
-          assert.deepEqual(callbackOutput, [0, 1, 2])
-        }
+        assert.equal(callbackOutput.length, 3)
+        assert.deepEqual(callbackOutput, [0, 1, 2])
         done()
       })
     })
 
     it('should call the passed callbacks in the order passed when not compressing', function (done) {
-      var hasCallbacks = false
       var callbackOutput = []
       var server = createServer(null, function (req, res) {
-        // hasCallback check can be removed once this module only supports node >= 0.12 and .travis.yml is updated to test on node >= 0.12
-        hasCallbacks = (http.OutgoingMessage.prototype.write.length === 3 && http.OutgoingMessage.prototype.end.length === 3)
         res.setHeader('Cache-Control', 'no-transform')
         res.setHeader('Content-Type', 'text/plain')
         res.write('hello,', null, function () {
@@ -740,10 +732,8 @@ describe('compression()', function () {
         if (err) {
           throw new Error(err)
         }
-        if (hasCallbacks) {
-          assert.equal(callbackOutput.length, 3)
-          assert.deepEqual(callbackOutput, [0, 1, 2])
-        }
+        assert.equal(callbackOutput.length, 3)
+        assert.deepEqual(callbackOutput, [0, 1, 2])
         done()
       })
     })
