@@ -5,9 +5,9 @@ unreleased
   * deps: compressible@~2.0.9
     - Fix regex fallback to not override `compressible: false` in db
     - deps: mime-db@'>= 1.24.0 < 2'
-  * deps: debug@2.6.0
+  * deps: debug@2.6.1
     - Allow colors in workers
-    - Deprecated `DEBUG_FD` environment variable
+    - Deprecated `DEBUG_FD` environment variable set to `3` or higher
     - Fix error when running under React Native
     - Use same color for same namespace
     - deps: ms@0.7.2
