@@ -3,6 +3,7 @@ var bytes = require('bytes')
 var crypto = require('crypto')
 var http = require('http')
 var request = require('supertest')
+var zlib = require('zlib')
 
 var compression = require('..')
 
@@ -581,98 +582,71 @@ describe('compression()', function () {
 
     it('should flush the response', function (done) {
       var chunks = 0
-      var resp
+      var next
       var server = createServer({ threshold: 0 }, function (req, res) {
-        resp = res
+        next = writeAndFlush(res, 2, new Buffer(1024))
         res.setHeader('Content-Type', 'text/plain')
         res.setHeader('Content-Length', '2048')
-        write()
+        next()
       })
 
-      function write () {
-        chunks++
-        if (chunks === 2) return resp.end()
-        if (chunks > 2) return chunks--
-        resp.write(new Buffer(1024))
-        resp.flush()
+      function onchunk (chunk) {
+        assert.ok(chunks++ < 2)
+        assert.equal(chunk.length, 1024)
+        next()
       }
 
       request(server)
       .get('/')
       .set('Accept-Encoding', 'gzip')
       .request()
-      .on('response', function (res) {
-        assert.equal(res.headers['content-encoding'], 'gzip')
-        res.on('data', write)
-        res.on('end', function () {
-          assert.equal(chunks, 2)
-          done()
-        })
-      })
+      .on('response', unchunk('gzip', onchunk, done))
       .end()
     })
 
     it('should flush small chunks for gzip', function (done) {
       var chunks = 0
-      var resp
+      var next
       var server = createServer({ threshold: 0 }, function (req, res) {
-        resp = res
+        next = writeAndFlush(res, 2, new Buffer('..'))
         res.setHeader('Content-Type', 'text/plain')
-        write()
+        next()
       })
 
-      function write () {
-        chunks++
-        if (chunks === 20) return resp.end()
-        if (chunks > 20) return chunks--
-        resp.write('..')
-        resp.flush()
+      function onchunk (chunk) {
+        assert.ok(chunks++ < 20)
+        assert.equal(chunk.toString(), '..')
+        next()
       }
 
       request(server)
       .get('/')
       .set('Accept-Encoding', 'gzip')
       .request()
-      .on('response', function (res) {
-        assert.equal(res.headers['content-encoding'], 'gzip')
-        res.on('data', write)
-        res.on('end', function () {
-          assert.equal(chunks, 20)
-          done()
-        })
-      })
+      .on('response', unchunk('gzip', onchunk, done))
       .end()
     })
 
     it('should flush small chunks for deflate', function (done) {
       var chunks = 0
-      var resp
+      var next
       var server = createServer({ threshold: 0 }, function (req, res) {
-        resp = res
+        next = writeAndFlush(res, 2, new Buffer('..'))
         res.setHeader('Content-Type', 'text/plain')
-        write()
+        next()
       })
 
-      function write () {
-        chunks++
-        if (chunks === 20) return resp.end()
-        if (chunks > 20) return chunks--
-        resp.write('..')
-        resp.flush()
+      function onchunk (chunk) {
+        assert.ok(chunks++ < 20)
+        assert.equal(chunk.toString(), '..')
+        next()
       }
 
       request(server)
       .get('/')
       .set('Accept-Encoding', 'deflate')
       .request()
-      .on('response', function (res) {
-        assert.equal(res.headers['content-encoding'], 'deflate')
-        res.on('data', write)
-        res.on('end', function () {
-          assert.equal(chunks, 20)
-          done()
-        })
-      })
+      .on('response', unchunk('deflate', onchunk, done))
       .end()
     })
   })
@@ -702,5 +676,36 @@ function shouldHaveBodyLength (length) {
 function shouldNotHaveHeader (header) {
   return function (res) {
     assert.ok(!(header.toLowerCase() in res.headers), 'should not have header ' + header)
+  }
+}
+
+function writeAndFlush (stream, count, buf) {
+  var writes = 0
+
+  return function () {
+    if (writes++ >= count) return
+    if (writes === count) return stream.end(buf)
+    stream.write(buf)
+    stream.flush()
+  }
+}
+
+function unchunk (encoding, onchunk, onend) {
+  return function (res) {
+    var stream
+
+    assert.equal(res.headers['content-encoding'], encoding)
+
+    switch (encoding) {
+      case 'deflate':
+        stream = res.pipe(zlib.createInflate())
+        break
+      case 'gzip':
+        stream = res.pipe(zlib.createGunzip())
+        break
+    }
+
+    stream.on('data', onchunk)
+    stream.on('end', onend)
   }
 }
