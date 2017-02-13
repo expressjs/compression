@@ -134,6 +134,9 @@ function compression (options) {
       debug('no compression: %s', msg)
       addListeners(res, _on, listeners)
       listeners = null
+      res.write = write;
+      res.on = on;
+      res.end = end;
     }
 
     onHeaders(res, function onResponseHeaders () {
