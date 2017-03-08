@@ -11,6 +11,7 @@ unreleased
     - Fix error when running under React Native
     - Use same color for same namespace
     - deps: ms@0.7.2
+    - Whitelist DEBUG_FD for values 1 and 2 only
 
 1.6.2 / 2016-05-12
 ==================
