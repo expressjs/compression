@@ -1,11 +1,11 @@
 env:
-  - CXX=g++-4.8
+  - CXX=g++-5.1
 addons:
   apt:
     sources:
       - ubuntu-toolchain-r-test
     packages:
-      - g++-4.8
+      - g++-5.1
 language: node_js
 node_js:
   - "4.2"
