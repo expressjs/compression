@@ -13,9 +13,6 @@ node_js:
   - 6
   - 7
 sudo: false
-before_install:
-  # Setup Node.js version-specific dependencies
-  - "npm rm --save-dev istanbul"
 script:
   # Run test script, depending on istanbul install
   - "test ! -z $(npm -ps ls istanbul) || npm test"
