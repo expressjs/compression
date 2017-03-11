@@ -8,16 +8,14 @@ addons:
       - g++-4.8
 language: node_js
 node_js:
-  - "0.12"
-  - "1.8"
-  - "2.5"
-  - "3.3"
   - "4.2"
   - "5.4"
+  - 6
+  - 7
 sudo: false
 before_install:
   # Setup Node.js version-specific dependencies
-  - "test $TRAVIS_NODE_VERSION != '0.8' || npm rm --save-dev istanbul"
+  - "npm rm --save-dev istanbul"
 script:
   # Run test script, depending on istanbul install
   - "test ! -z $(npm -ps ls istanbul) || npm test"
