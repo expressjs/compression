@@ -87,7 +87,7 @@ compression (currently equivalent to level 6).
   - `8`
   - `9` Best compression (also `zlib.Z_BEST_COMPRESSION`).
 
-The default value is `zlib.Z_DEFAULT_COMPRESSION`, or `-1`.
+The default value is `zlib.Z_DEFAULT_COMPRESSION`, or `-1`.  The actual level specified by default cab be found [here](http://www.zlib.net/manual.html).
 
 **Note** in the list above, `zlib` is from `zlib = require('zlib')`.
 
