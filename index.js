@@ -52,12 +52,12 @@ var BROTLI_DEFAULT_QUALITY = 4
 /**
  * Compress response data with gzip / deflate.
  *
- * @param {Object} options
+ * @param {Object} [options]
  * @return {Function} middleware
  * @public
  */
 
-function compression(options) {
+function compression (options) {
   var opts = options || {}
 
   // options
@@ -84,17 +84,18 @@ function compression(options) {
 
   var dummyBrotliFlush = function () { }
 
-  return function compression(req, res, next){
+  return function compression (req, res, next) {
     var ended = false
     var length
     var listeners = []
-    var write = res.write
-    var on = res.on
-    var end = res.end
     var stream
 
+    var _end = res.end
+    var _on = res.on
+    var _write = res.write
+
     // flush
-    res.flush = function flush() {
+    res.flush = function flush () {
       if (stream) {
         stream.flush()
       }
@@ -102,7 +103,7 @@ function compression(options) {
 
     // proxy
 
-    res.write = function(chunk, encoding){
+    res.write = function write (chunk, encoding) {
       if (ended) {
         return false
       }
@@ -113,10 +114,10 @@ function compression(options) {
 
       return stream
         ? stream.write(new Buffer(chunk, encoding))
-        : write.call(this, chunk, encoding)
-    };
+        : _write.call(this, chunk, encoding)
+    }
 
-    res.end = function(chunk, encoding){
+    res.end = function end (chunk, encoding) {
       if (ended) {
         return false
       }
@@ -131,7 +132,7 @@ function compression(options) {
       }
 
       if (!stream) {
-        return end.call(this, chunk, encoding)
+        return _end.call(this, chunk, encoding)
       }
 
       // mark ended
@@ -141,11 +142,11 @@ function compression(options) {
       return chunk
         ? stream.end(new Buffer(chunk, encoding))
         : stream.end()
-    };
+    }
 
-    res.on = function(type, listener){
+    res.on = function on (type, listener) {
       if (!listeners || type !== 'drain') {
-        return on.call(this, type, listener)
+        return _on.call(this, type, listener)
       }
 
       if (stream) {
@@ -158,13 +159,13 @@ function compression(options) {
       return this
     }
 
-    function nocompress(msg) {
+    function nocompress (msg) {
       debug('no compression: %s', msg)
-      addListeners(res, on, listeners)
+      addListeners(res, _on, listeners)
       listeners = null
     }
 
-    onHeaders(res, function(){
+    onHeaders(res, function onResponseHeaders () {
       // determine if request is filtered
       if (!filter(req, res)) {
         nocompress('filtered')
@@ -186,16 +187,16 @@ function compression(options) {
         return
       }
 
-      var encoding = res.getHeader('Content-Encoding') || 'identity';
+      var encoding = res.getHeader('Content-Encoding') || 'identity'
 
       // already encoded
-      if ('identity' !== encoding) {
+      if (encoding !== 'identity') {
         nocompress('already encoded')
         return
       }
 
       // head
-      if ('HEAD' === req.method) {
+      if (req.method === 'HEAD') {
         nocompress('HEAD request')
         return
       }
@@ -267,27 +268,27 @@ function compression(options) {
       addListeners(stream, stream.on, listeners)
 
       // header fields
-      res.setHeader('Content-Encoding', method);
-      res.removeHeader('Content-Length');
+      res.setHeader('Content-Encoding', method)
+      res.removeHeader('Content-Length')
 
       // compression
-      stream.on('data', function(chunk){
-        if (write.call(res, chunk) === false) {
+      stream.on('data', function onStreamData (chunk) {
+        if (_write.call(res, chunk) === false) {
           stream.pause()
         }
-      });
+      })
 
-      stream.on('end', function(){
-        end.call(res);
-      });
+      stream.on('end', function onStreamEnd () {
+        _end.call(res)
+      })
 
-      on.call(res, 'drain', function() {
+      _on.call(res, 'drain', function onResponseDrain () {
         stream.resume()
-      });
-    });
+      })
+    })
 
-    next();
-  };
+    next()
+  }
 }
 
 /**
@@ -295,7 +296,7 @@ function compression(options) {
  * @private
  */
 
-function addListeners(stream, on, listeners) {
+function addListeners (stream, on, listeners) {
   for (var i = 0; i < listeners.length; i++) {
     on.apply(stream, listeners[i])
   }
@@ -305,7 +306,7 @@ function addListeners(stream, on, listeners) {
  * Get the length of a given chunk
  */
 
-function chunkLength(chunk, encoding) {
+function chunkLength (chunk, encoding) {
   if (!chunk) {
     return 0
   }
@@ -320,7 +321,7 @@ function chunkLength(chunk, encoding) {
  * @private
  */
 
-function shouldCompress(req, res) {
+function shouldCompress (req, res) {
   var type = res.getHeader('Content-Type')
 
   if (type === undefined || !compressible(type)) {
@@ -336,13 +337,13 @@ function shouldCompress(req, res) {
  * @private
  */
 
-function shouldTransform(req, res) {
+function shouldTransform (req, res) {
   var cacheControl = res.getHeader('Cache-Control')
 
   // Don't compress for Cache-Control: no-transform
   // https://tools.ietf.org/html/rfc7234#section-5.2.2.4
-  return !cacheControl
-    || !cacheControlNoTransformRegExp.test(cacheControl)
+  return !cacheControl ||
+    !cacheControlNoTransformRegExp.test(cacheControl)
 }
 
 function createCache(size) {
