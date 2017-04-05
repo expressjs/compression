@@ -1,11 +1,10 @@
 var assert = require('assert')
-var bytes = require('bytes');
-var crypto = require('crypto');
-var http = require('http');
-var iltorb = require('iltorb');
-var streamBuffers = require('stream-buffers');
-var request = require('supertest');
-var zlib = require('zlib');
+var bytes = require('bytes')
+var crypto = require('crypto')
+var http = require('http')
+var iltorb = require('iltorb')
+var streamBuffers = require('stream-buffers')
+var request = require('supertest')
 
 var compression = require('..')
 
@@ -510,7 +509,7 @@ describe('compression()', function () {
     })
 
     it('should apply the brotli parameters from options', function (done) {
-      var server = createServer({ threshold: 0 , brotli: { quality: 8 } }, function (req, res) {
+      var server = createServer({ threshold: 0, brotli: { quality: 8 } }, function (req, res) {
         res.setHeader('Content-Type', 'text/plain')
         res.end('hello, world')
       })
@@ -524,7 +523,7 @@ describe('compression()', function () {
         // brotli directly with the same quality parameter.
         assertBuffersEqual(
           stream.getContents(),
-          iltorb.compressSync(new Buffer('hello, world', 'utf-8'), { quality: 8 }));
+          iltorb.compressSync(new Buffer('hello, world', 'utf-8'), { quality: 8 }))
         done()
       })
     })
@@ -532,8 +531,8 @@ describe('compression()', function () {
     it('should not throw if flush() is called', function (done) {
       var server = createServer({ threshold: 0 }, function (req, res) {
         res.setHeader('Content-Type', 'text/plain')
-        res.write('hello, ');
-        res.flush();
+        res.write('hello, ')
+        res.flush()
         res.end('world')
       })
 
@@ -543,7 +542,7 @@ describe('compression()', function () {
 
   describe('when caching is turned on', function () {
     it('should cache a gzipped response with the same ETag', function (done) {
-      var count = 0;
+      var count = 0
       var server = createServer({ threshold: 0 }, function (req, res) {
         res.setHeader('Content-Type', 'text/plain')
         res.setHeader('ETag', '12345')
@@ -557,7 +556,7 @@ describe('compression()', function () {
     })
 
     it('should cache a deflate response with the same ETag', function (done) {
-      var count = 0;
+      var count = 0
       var server = createServer({ threshold: 0 }, function (req, res) {
         res.setHeader('Content-Type', 'text/plain')
         res.setHeader('ETag', '12345')
@@ -571,8 +570,8 @@ describe('compression()', function () {
     })
 
     it('should cache a brotli response with the same ETag', function (done) {
-      var count = 0;
-      var server = createServer({ threshold: 0, brotli: { quality: 1 }}, function (req, res) {
+      var count = 0
+      var server = createServer({threshold: 0, brotli: { quality: 1 }}, function (req, res) {
         res.setHeader('Content-Type', 'text/plain')
         res.setHeader('ETag', '12345')
         res.end('hello, world #' + count)
@@ -587,7 +586,7 @@ describe('compression()', function () {
           var stream2 = new streamBuffers.WritableStreamBuffer()
           brotliRequest(server)
             .pipe(stream2)
-            .on('finish', function() {
+            .on('finish', function () {
               assert.equal('hello, world #0', iltorb.decompressSync(stream2.getContents()).toString('utf-8'))
               done()
             })
@@ -595,8 +594,8 @@ describe('compression()', function () {
     })
 
     it('should not cache when the cache function returns false', function (done) {
-      var count = 0;
-      var server = createServer({ threshold: 0, cache: function(req, res) { return false; } }, function (req, res) {
+      var count = 0
+      var server = createServer({ threshold: 0, cache: function (req, res) { return false } }, function (req, res) {
         res.setHeader('Content-Type', 'text/plain')
         res.setHeader('ETag', '12345')
         res.end('hello, world #' + count)
@@ -609,7 +608,7 @@ describe('compression()', function () {
     })
 
     it('should not get a cached compressed response for a different ETag', function (done) {
-      var count = 0;
+      var count = 0
       var server = createServer({ threshold: 0 }, function (req, res) {
         res.setHeader('Content-Type', 'text/plain')
         res.setHeader('ETag', count.toString())
@@ -623,7 +622,7 @@ describe('compression()', function () {
     })
 
     it('should not cache when there is no ETag', function (done) {
-      var count = 0;
+      var count = 0
       var server = createServer({ threshold: 0 }, function (req, res) {
         res.setHeader('Content-Type', 'text/plain')
         res.end('hello, world #' + count)
@@ -636,7 +635,7 @@ describe('compression()', function () {
     })
 
     it('should not cache when caching is disabled', function (done) {
-      var count = 0;
+      var count = 0
       var server = createServer({ threshold: 0, cacheSize: false }, function (req, res) {
         res.setHeader('Content-Type', 'text/plain')
         res.setHeader('ETag', '12345')
@@ -650,7 +649,8 @@ describe('compression()', function () {
     })
 
     it('should evict from the cache when over the limit', function (done) {
-      var etag = 'a', count = 0;
+      var etag = 'a'
+      var count = 0
       var server = createServer({ threshold: 0, cacheSize: 40 }, function (req, res) {
         res.setHeader('Content-Type', 'text/plain')
         res.setHeader('ETag', etag)
@@ -673,7 +673,8 @@ describe('compression()', function () {
     })
 
     it('should evict the oldest representation from the cache when over the limit', function (done) {
-      var etag = 'a', count = 0;
+      var etag = 'a'
+      var count = 0
       var server = createServer({ threshold: 0, cacheSize: 80 }, function (req, res) {
         res.setHeader('Content-Type', 'text/plain')
         res.setHeader('ETag', etag)
@@ -901,23 +902,23 @@ function shouldNotHaveHeader (header) {
   }
 }
 
-function assertBuffersEqual(buffer1, buffer2) {
-  assert.equal(buffer1.toString('hex'), buffer2.toString('hex'));
+function assertBuffersEqual (buffer1, buffer2) {
+  assert.equal(buffer1.toString('hex'), buffer2.toString('hex'))
 }
 
-function gzipRequest(server) {
+function gzipRequest (server) {
   return request(server)
     .get('/')
     .set('Accept-Encoding', 'gzip')
 }
 
-function deflateRequest(server) {
+function deflateRequest (server) {
   return request(server)
     .get('/')
     .set('Accept-Encoding', 'deflate')
 }
 
-function brotliRequest(server) {
+function brotliRequest (server) {
   return request(server)
     .get('/')
     .set('Accept-Encoding', 'br')

@@ -24,7 +24,6 @@ var lruCache = require('lru-cache')
 var multipipe = require('multipipe')
 var onHeaders = require('on-headers')
 var Readable = require('stream').Readable
-var streamBuffers = require('stream-buffers')
 var util = require('util')
 var vary = require('vary')
 var Writable = require('stream').Writable
@@ -74,13 +73,13 @@ function compression (options) {
   var zlibOpts = opts.zlib || {}
   var zlibOptNames = ['flush', 'chunkSize', 'windowBits', 'level', 'memLevel', 'strategy', 'dictionary']
   zlibOptNames.forEach(function (option) {
-      zlibOpts[option] = zlibOpts[option] || opts[option];
-    })
+    zlibOpts[option] = zlibOpts[option] || opts[option]
+  })
 
   if (!opts.hasOwnProperty('cacheSize')) opts.cacheSize = '128mB'
-  var cache = opts.cacheSize ? createCache(bytes(opts.cacheSize.toString())) : null;
+  var cache = opts.cacheSize ? createCache(bytes(opts.cacheSize.toString())) : null
 
-  var shouldCache = opts.cache || function () { return true; }
+  var shouldCache = opts.cache || function () { return true }
 
   var dummyBrotliFlush = function () { }
 
@@ -201,7 +200,7 @@ function compression (options) {
         return
       }
 
-      var contentType = res.getHeader('Content-Type');
+      var contentType = res.getHeader('Content-Type')
 
       // compression method
       var accept = accepts(req)
@@ -209,10 +208,10 @@ function compression (options) {
       // instead enforce server preference. also, server-sent events (mime type of
       // text/event-stream) require flush functionality, so skip brotli in that
       // case.
-      var method = (contentType !== "text/event-stream" && accept.encoding('br'))
-        || accept.encoding('gzip')
-        || accept.encoding('deflate')
-        || accept.encoding('identity');
+      var method = (contentType !== 'text/event-stream' && accept.encoding('br')) ||
+        accept.encoding('gzip') ||
+        accept.encoding('deflate') ||
+        accept.encoding('identity')
 
       // negotiation failed
       if (!method || method === 'identity') {
@@ -221,7 +220,7 @@ function compression (options) {
       }
 
       // do we have this coding/url/etag combo in the cache?
-      var etag = res.getHeader('ETag') || null;
+      var etag = res.getHeader('ETag') || null
       var cacheable = cache && shouldCache(req, res) && etag && res.statusCode >= 200 && res.statusCode < 300
       if (cacheable) {
         var buffer = cache.lookup(method, req.url, etag)
@@ -241,7 +240,7 @@ function compression (options) {
           case 'br':
             stream = iltorb.compressStream(brotliOpts)
             // brotli has no flush method. add a dummy flush method here.
-            stream.flush = dummyBrotliFlush;
+            stream.flush = dummyBrotliFlush
             break
           case 'gzip':
             stream = zlib.createGzip(zlibOpts)
@@ -254,8 +253,8 @@ function compression (options) {
         // if it is cacheable, let's keep hold of the compressed chunks and cache
         // them once the compression stream ends.
         if (cacheable) {
-          var chunks = [];
-          stream.on('data', function (chunk){
+          var chunks = []
+          stream.on('data', function (chunk) {
             chunks.push(chunk)
           })
           stream.on('end', function () {
@@ -346,7 +345,7 @@ function shouldTransform (req, res) {
     !cacheControlNoTransformRegExp.test(cacheControl)
 }
 
-function createCache(size) {
+function createCache (size) {
   var index = {}
   var lru = lruCache({
     max: size,
@@ -412,9 +411,9 @@ function createCache(size) {
   }
 }
 
-function BufferReadable(buffer, opt) {
-    Readable.call(this, opt)
-    this.buffer = buffer
+function BufferReadable (buffer, opt) {
+  Readable.call(this, opt)
+  this.buffer = buffer
 }
 
 util.inherits(BufferReadable, Readable)
@@ -428,7 +427,7 @@ BufferReadable.prototype._read = function (size) {
   }
 }
 
-function BufferWritable(opt) {
+function BufferWritable (opt) {
   Writable.call(this, opt)
   this.chunks = []
 }
@@ -446,15 +445,15 @@ BufferWritable.prototype.toBuffer = function () {
 
 // this duplex just ignores its write side and reads out the buffer as
 // requested
-function BufferDuplex(buffer, opts) {
+function BufferDuplex (buffer, opts) {
   Duplex.call(this, opts)
   this.buffer = buffer
 }
 
 util.inherits(BufferDuplex, Duplex)
 
-BufferDuplex.prototype._read = function(size) {
-  if (!this.cursor) this.cursor = 0;
+BufferDuplex.prototype._read = function (size) {
+  if (!this.cursor) this.cursor = 0
   if (this.cursor >= this.buffer.length) {
     this.push(null)
     return
@@ -465,13 +464,13 @@ BufferDuplex.prototype._read = function(size) {
   this.cursor = endIndex
 }
 
-BufferDuplex.prototype._write = function(chunk, encoding, callback) {
+BufferDuplex.prototype._write = function (chunk, encoding, callback) {
   callback()
 }
 
 // get a decode --> encode transform stream that will re-encode the content at
 // the best quality available for that coding method.
-function getBestQualityReencoder(coding) {
+function getBestQualityReencoder (coding) {
   switch (coding) {
     case 'gzip':
       return multipipe(zlib.createGunzip(), zopfli.createGzip())
@@ -480,7 +479,8 @@ function getBestQualityReencoder(coding) {
       // the travis machines. until we can figure this out, just offer a passthrough,
       // and don't re-encode deflate.
       // return multipipe(zlib.createInflate(), zopfli.createDeflate())
-      return new require("stream").PassThrough()
+      var PassThrough = require('stream').PassThrough
+      return new PassThrough()
     case 'br':
       return multipipe(iltorb.decompressStream(), iltorb.compressStream())
   }
