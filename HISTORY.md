@@ -2,9 +2,9 @@ unreleased
 ==========
 
   * deps: bytes@2.4.0
-  * deps: compressible@~2.0.9
+  * deps: compressible@~2.0.10
     - Fix regex fallback to not override `compressible: false` in db
-    - deps: mime-db@'>= 1.24.0 < 2'
+    - deps: mime-db@'>= 1.27.0 < 2'
   * deps: debug@2.6.1
     - Allow colors in workers
     - Deprecated `DEBUG_FD` environment variable set to `3` or higher
