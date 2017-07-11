@@ -1,5 +1,5 @@
-unreleased
-==========
+1.7.0 / 2017-07-10
+==================
 
   * Use `safe-buffer` for improved Buffer API
   * deps: bytes@2.5.0
