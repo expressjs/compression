@@ -65,10 +65,19 @@ function compression (options) {
     var _on = res.on
     var _write = res.write
 
+    var flushCB = function flushCB () {
+      stream.flush()
+    }
+
+    var endCB = function endCB () {
+      stream.end()
+    }
+
     // flush
     res.flush = function flush () {
       if (stream) {
-        stream.flush()
+        // call write and pass flushCB to force synchronous behavior
+        stream.write('', flushCB)
       }
     }
 
@@ -110,9 +119,10 @@ function compression (options) {
       ended = true
 
       // write Buffer for Node.js 0.8
+      // call write and pass endCB to force synchronous behavior
       return chunk
-        ? stream.end(new Buffer(chunk, encoding))
-        : stream.end()
+        ? stream.write(new Buffer(chunk, encoding), endCB)
+        : stream.write('', endCB)
     }
 
     res.on = function on (type, listener) {
