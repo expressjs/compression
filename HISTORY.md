@@ -1,6 +1,7 @@
 unreleased
 ==========
 
+  * Callbacks available in `write` and `end` when supported in nodejs (requires nodejs >= 0.12.x)
   * deps: bytes@2.4.0
   * deps: compressible@~2.0.10
     - Fix regex fallback to not override `compressible: false` in db
