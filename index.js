@@ -15,6 +15,7 @@
  */
 
 var accepts = require('accepts')
+var Buffer = require('safe-buffer').Buffer
 var bytes = require('bytes')
 var compressible = require('compressible')
 var debug = require('debug')('compression')
@@ -84,7 +85,7 @@ function compression (options) {
       }
 
       return stream
-        ? stream.write(new Buffer(chunk, encoding))
+        ? stream.write(Buffer.from(chunk, encoding))
         : _write.call(this, chunk, encoding)
     }
 
@@ -111,7 +112,7 @@ function compression (options) {
 
       // write Buffer for Node.js 0.8
       return chunk
-        ? stream.end(new Buffer(chunk, encoding))
+        ? stream.end(Buffer.from(chunk, encoding))
         : stream.end()
     }
 

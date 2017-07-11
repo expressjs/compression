@@ -1,4 +1,5 @@
 var assert = require('assert')
+var Buffer = require('safe-buffer').Buffer
 var bytes = require('bytes')
 var crypto = require('crypto')
 var http = require('http')
@@ -268,13 +269,11 @@ describe('compression()', function () {
 
   it('should transfer large bodies', function (done) {
     var len = bytes('1mb')
-    var buf = new Buffer(len)
+    var buf = Buffer.alloc(len, '.')
     var server = createServer({ threshold: 0 }, function (req, res) {
       res.setHeader('Content-Type', 'text/plain')
       res.end(buf)
     })
-
-    buf.fill('.')
 
     request(server)
     .get('/')
@@ -287,7 +286,7 @@ describe('compression()', function () {
 
   it('should transfer large bodies with multiple writes', function (done) {
     var len = bytes('40kb')
-    var buf = new Buffer(len)
+    var buf = Buffer.alloc(len, '.')
     var server = createServer({ threshold: 0 }, function (req, res) {
       res.setHeader('Content-Type', 'text/plain')
       res.write(buf)
@@ -295,8 +294,6 @@ describe('compression()', function () {
       res.write(buf)
       res.end(buf)
     })
-
-    buf.fill('.')
 
     request(server)
     .get('/')
@@ -326,7 +323,7 @@ describe('compression()', function () {
       var server = createServer({ threshold: '1kb' }, function (req, res) {
         res.setHeader('Content-Type', 'text/plain')
         res.setHeader('Content-Length', '2048')
-        res.end(new Buffer(2048))
+        res.end(Buffer.alloc(2048))
       })
 
       request(server)
@@ -371,9 +368,9 @@ describe('compression()', function () {
       var server = createServer({ threshold: '1kb' }, function (req, res) {
         res.setHeader('Content-Type', 'text/plain')
         res.setHeader('Content-Length', '2048')
-        res.write(new Buffer(1024))
+        res.write(Buffer.alloc(1024))
         setTimeout(function () {
-          res.end(new Buffer(1024))
+          res.end(Buffer.alloc(1024))
         }, 10)
       })
 
@@ -584,7 +581,7 @@ describe('compression()', function () {
       var chunks = 0
       var next
       var server = createServer({ threshold: 0 }, function (req, res) {
-        next = writeAndFlush(res, 2, new Buffer(1024))
+        next = writeAndFlush(res, 2, Buffer.alloc(1024))
         res.setHeader('Content-Type', 'text/plain')
         res.setHeader('Content-Length', '2048')
         next()
@@ -608,7 +605,7 @@ describe('compression()', function () {
       var chunks = 0
       var next
       var server = createServer({ threshold: 0 }, function (req, res) {
-        next = writeAndFlush(res, 2, new Buffer('..'))
+        next = writeAndFlush(res, 2, Buffer.from('..'))
         res.setHeader('Content-Type', 'text/plain')
         next()
       })
@@ -631,7 +628,7 @@ describe('compression()', function () {
       var chunks = 0
       var next
       var server = createServer({ threshold: 0 }, function (req, res) {
-        next = writeAndFlush(res, 2, new Buffer('..'))
+        next = writeAndFlush(res, 2, Buffer.from('..'))
         res.setHeader('Content-Type', 'text/plain')
         next()
       })

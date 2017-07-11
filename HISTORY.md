@@ -1,6 +1,7 @@
 unreleased
 ==========
 
+  * Use `safe-buffer` for improved Buffer API
   * deps: bytes@2.5.0
   * deps: compressible@~2.0.10
     - Fix regex fallback to not override `compressible: false` in db
