@@ -26,7 +26,7 @@
     "eslint-plugin-promise": "3.5.0",
     "eslint-plugin-standard": "3.0.1",
     "istanbul": "0.4.5",
-    "mocha": "2.4.5",
+    "mocha": "2.5.3",
     "supertest": "1.1.0"
   },
   "files": [
