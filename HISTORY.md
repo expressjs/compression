@@ -3,6 +3,8 @@ unreleased
 
   * deps: accepts@~1.3.4
     - deps: mime-types@~2.1.16
+  * deps: compressible@~2.0.11
+    - deps: mime-db@'>= 1.29.0 < 2'
 
 1.7.0 / 2017-07-10
 ==================
