@@ -1,11 +1,12 @@
 unreleased
 ==========
 
-  * deps: debug@2.6.9
   * deps: accepts@~1.3.4
     - deps: mime-types@~2.1.16
+  * deps: bytes@3.0.0
   * deps: compressible@~2.0.11
     - deps: mime-db@'>= 1.29.0 < 2'
+  * deps: debug@2.6.9
   * deps: vary@~1.1.2
     - perf: improve header token parsing speed
 
