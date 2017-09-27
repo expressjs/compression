@@ -1,6 +1,7 @@
 unreleased
 ==========
 
+  * deps: debug@2.6.9
   * deps: accepts@~1.3.4
     - deps: mime-types@~2.1.16
   * deps: compressible@~2.0.11
