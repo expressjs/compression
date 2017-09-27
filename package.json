@@ -15,7 +15,7 @@
     "debug": "2.6.9",
     "on-headers": "~1.0.1",
     "safe-buffer": "5.1.1",
-    "vary": "~1.1.1"
+    "vary": "~1.1.2"
   },
   "devDependencies": {
     "eslint": "3.19.0",
