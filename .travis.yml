@@ -1,12 +1,5 @@
 language: node_js
 sudo: false
-node_js:
-  - 9
-  - 8
-  - 7
-  - 6
-  - 5
-  - 4
 
 cache:
   directories:
@@ -14,5 +7,31 @@ cache:
 
 before_cache: rm -rf node_modules/.cache
 
-script: npm test
-after_success: cat ./coverage/lcov.info | coveralls
+stages:
+  - Test
+
+stdJob: &stdJob
+  stage: Test
+  before_script: greenkeeper-lockfile-update
+  script:
+    - if [ $SNYK_TOKEN ]; then snyk test --dev; fi;
+    - npm test
+  after_success: cat ./coverage/lcov.info | coveralls
+
+jobs:
+  include:
+    - node_js: &node_latest 9
+      <<: *stdJob
+      after_script:
+        - if [ $GH_TOKEN ]; then greenkeeper-lockfile-upload; fi;
+        - if [ $SNYK_TOKEN ]; then snyk monitor --dev; fi;
+    - node_js: 8
+      <<: *stdJob
+    - node_js: 7
+      <<: *stdJob
+    - node_js: 6
+      <<: *stdJob
+    - node_js: 5
+      <<: *stdJob
+    - node_js: 4
+      <<: *stdJob

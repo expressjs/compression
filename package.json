@@ -36,11 +36,13 @@
     "vary":           "^1.1.2"
   },
   "devDependencies": {
-    "coveralls": "^3.0.0",
-    "expect":    "^21.2.1",
-    "mocha":     "^4.0.1",
-    "nyc":       "^11.3.0",
-    "supertest": "^3.0.0"
+    "coveralls":            "^3.0.0",
+    "expect":               "^21.2.1",
+    "greenkeeper-lockfile": "^1.12.0",
+    "mocha":                "^4.0.1",
+    "nyc":                  "^11.3.0",
+    "snyk":                 "^1.49.3",
+    "supertest":            "^3.0.0"
   },
   "files":           [
     "LICENSE",
@@ -53,6 +55,8 @@
   "scripts":         {
     "reinstall":   "rm -rf node_modules package-lock.json && npm install",
     "test":        "nyc mocha --check-leaks --bail",
-    "test-travis": "istanbul cover mocha --report lcovonly -- --check-leaks --reporter spec"
-  }
+    "prepare":     "snyk protect",
+    "snyk:wizard": "snyk wizard --dev"
+  },
+  "snyk":            true
 }
