@@ -76,7 +76,7 @@ npm install shrink-ray-current
 # API
 
 ```js
-const shrinkRay = require('shrink-ray-curent');
+const shrinkRay = require('shrink-ray-current');
 ```
 
 ## `shrinkRay([options])`
