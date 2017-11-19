@@ -1,7 +1,7 @@
 {
   "name":            "shrink-ray-current",
   "description":     "Node.js compression middleware with brotli and zopfli support",
-  "version":         "1.0.0",
+  "version":         "1.7.0",
   "contributors":    [
     "Arturas Molcanovas <a.molcanovas@gmail.com> (https://alorel.github.io)",
     "Douglas Christopher Wilson <doug@somethingdoug.com>",
@@ -9,7 +9,14 @@
     "Sasha Aickin"
   ],
   "license":         "MIT",
-  "repository":      "aickin/compression",
+  "repository":      {
+    "type": "git",
+    "url":  "git+https://github.com/Alorel/shrink-ray.git"
+  },
+  "homepage":        "https://github.com/Alorel/shrink-ray",
+  "bugs":            {
+    "url": "https://github.com/Alorel/shrink-ray/issues"
+  },
   "keywords":        [
     "compression",
     "gzip",
@@ -44,19 +51,15 @@
     "snyk":                 "^1.49.3",
     "supertest":            "^3.0.0"
   },
-  "files":           [
-    "LICENSE",
-    "HISTORY.md",
-    "index.js"
-  ],
   "engines":         {
-    "node": ">= 4.8"
+    "node": ">=4.8"
   },
   "scripts":         {
-    "reinstall":   "rm -rf node_modules package-lock.json && npm install",
-    "test":        "nyc mocha --check-leaks --bail",
-    "prepare":     "snyk protect",
-    "snyk:wizard": "snyk wizard --dev"
+    "reinstall":      "rm -rf node_modules package-lock.json && npm install",
+    "test":           "nyc mocha --check-leaks --bail",
+    "prepare":        "snyk protect",
+    "snyk:wizard":    "snyk wizard --dev",
+    "version-readme": "node ./prepublish.js"
   },
   "snyk":            true
 }
