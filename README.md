@@ -11,8 +11,6 @@ This mirror has all the dependencies up-to-date.
 [![Dev Dependencies](https://img.shields.io/david/dev/Alorel/shrink-ray.svg?style=flat-square)](https://github.com/Alorel/shrink-ray/blob/master/package.json)
 [![Greenkeeper badge](https://badges.greenkeeper.io/Alorel/shrink-ray.svg)](https://greenkeeper.io/)
 
------
-
 Node.js compression middleware with modern codings like brotli and zopfli.
 
 The following compression codings are supported:
