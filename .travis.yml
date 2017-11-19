@@ -8,16 +8,16 @@ node_js:
   - 5
   - 4
 
-env:
-  global:
-    - CXX=g++-5
-
-addons:
-  apt:
-    sources:
-      - ubuntu-toolchain-r-test
-    packages:
-      - g++-5
+#env:
+#  global:
+#    - CXX=g++-5
+#
+#addons:
+#  apt:
+#    sources:
+#      - ubuntu-toolchain-r-test
+#    packages:
+#      - g++-5
 
 cache:
   directories:
