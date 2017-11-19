@@ -1,29 +1,30 @@
+language: node_js
+sudo: false
+node_js:
+  - 9
+  - 8
+  - 7
+  - 6
+  - 5
+  - 4
+
 env:
-  - CXX=g++-5
+  global:
+    - CXX=g++-5
+
 addons:
   apt:
     sources:
       - ubuntu-toolchain-r-test
     packages:
       - g++-5
-language: node_js
-node_js:
-  - "4.4"
-  - "5.11"
-  - 6
-  - 7
-sudo: false
+
 cache:
   directories:
     - node_modules
-before_install:
-  # Update Node.js modules
-  - "test ! -d node_modules || npm prune"
-  - "test ! -d node_modules || npm rebuild"
+
 script:
   # Run test script, depending on istanbul install
-  - "test ! -z $(npm -ps ls istanbul) || npm test"
-  - "test   -z $(npm -ps ls istanbul) || npm run-script test-travis"
-  - "test   -z $(npm -ps ls eslint  ) || npm run-script lint"
-after_script:
-  - "test -e ./coverage/lcov.info && npm install coveralls@2 && cat ./coverage/lcov.info | coveralls"
+  - npm test
+  - npm run test-travis
+after_script: cat ./coverage/lcov.info | coveralls

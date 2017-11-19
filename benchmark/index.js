@@ -3,19 +3,19 @@ var http = require('http')
 var yargs = require('yargs')
 
 var args = yargs(process.argv)
-	.usage('Usage: $0 [options]')
-	.option('c', {
-  default: 'compression',
-  choices: ['compression', 'shrink-ray', 'none'],
-  describe: 'The compression middleware to use (compression or shrink-ray)'
-	})
-	.option('p', {
-  default: 3000,
-  describe: 'The port on which to serve the content'
-	})
-	.help('?')
-	.alias('?', 'help')
-	.argv
+  .usage('Usage: $0 [options]')
+  .option('c', {
+    default: 'compression',
+    choices: ['compression', 'shrink-ray', 'none'],
+    describe: 'The compression middleware to use (compression or shrink-ray)'
+  })
+  .option('p', {
+    default: 3000,
+    describe: 'The port on which to serve the content'
+  })
+  .help('?')
+  .alias('?', 'help')
+  .argv
 
 var app = express()
 

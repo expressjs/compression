@@ -1,0 +1,6 @@
+/coverage/
+/benchmark/
+/test/
+/.nycrc
+/.travis.yml
+/*.tgz
