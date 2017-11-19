@@ -39,7 +39,7 @@ $ npm install shrink-ray
 ## API
 
 ```js
-var shrinkRay = require('shrink-ray')
+const shrinkRay = require('shrink-ray-curent')
 ```
 
 ### shrinkRay([options])
