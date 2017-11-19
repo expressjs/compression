@@ -1,5 +1,7 @@
 # shrink-ray-current
 
+[![Greenkeeper badge](https://badges.greenkeeper.io/Alorel/shrink-ray.svg)](https://greenkeeper.io/)
+
 [![NPM Version][npm-image]][npm-url]
 [![NPM Downloads][downloads-image]][downloads-url]
 
