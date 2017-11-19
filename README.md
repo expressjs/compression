@@ -7,7 +7,6 @@ This mirror has all the dependencies up-to-date.
 [![License](https://img.shields.io/npm/l/shrink-ray-current.svg?style=flat-square)](https://www.npmjs.com/package/shrink-ray-current)
 [![Build status](https://img.shields.io/travis/Alorel/shrink-ray.svg?style=flat-square)](https://travis-ci.org/Alorel/shrink-ray)
 [![Coverage](https://img.shields.io/coveralls/github/Alorel/shrink-ray.svg?style=flat-square)](https://coveralls.io/github/Alorel/shrink-ray)
-[![License](https://img.shields.io/david/Alorel/shrink-ray.svg?style=flat-square)](https://coveralls.io/github/Alorel/shrink-ray)
 [![Dependencies](https://img.shields.io/david/Alorel/shrink-ray.svg?style=flat-square)](https://github.com/Alorel/shrink-ray/blob/master/package.json)
 [![Dev Dependencies](https://img.shields.io/david/dev/Alorel/shrink-ray.svg?style=flat-square)](https://github.com/Alorel/shrink-ray/blob/master/package.json)
 [![Greenkeeper badge](https://badges.greenkeeper.io/Alorel/shrink-ray.svg)](https://greenkeeper.io/)
