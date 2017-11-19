@@ -1,3 +1,5 @@
+'use strict';
+
 const assert        = require('assert');
 const bytes         = require('bytes');
 const crypto        = require('crypto');

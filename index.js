@@ -1,3 +1,5 @@
+'use strict';
+
 /*!
  * compression
  * Copyright(c) 2017 Arturas Molcanovas
