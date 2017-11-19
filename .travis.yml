@@ -38,10 +38,10 @@ jobs:
       <<: *stdJob
     - stage: Deploy
       node_js: *node_latest
-      script: true
-      before_deploy: node ./prepublish.js
+      script: node ./prepublish.js
       deploy:
         - provider: npm
+          skip_cleanup: true
           on:
             tags: true
           email: a.molcanovas@gmail.com
