@@ -1,7 +1,18 @@
 # shrink-ray-current
 
-[![NPM Version][npm-image]][npm-url]
-[![NPM Downloads][downloads-image]][downloads-url]
+The original [shrink-ray](https://www.npmjs.com/package/shrink-ray) appears to be abandoned.
+This mirror has all the dependencies up-to-date.
+
+[![Version](https://img.shields.io/npm/v/shrink-ray-current.svg?style=flat-square)](https://www.npmjs.com/package/shrink-ray-current)
+[![License](https://img.shields.io/npm/l/shrink-ray-current.svg?style=flat-square)](https://www.npmjs.com/package/shrink-ray-current)
+[![Build status](https://img.shields.io/travis/Alorel/shrink-ray.svg?style=flat-square)](https://travis-ci.org/Alorel/shrink-ray)
+[![Coverage](https://img.shields.io/coveralls/github/Alorel/shrink-ray.svg?style=flat-square)](https://coveralls.io/github/Alorel/shrink-ray)
+[![License](https://img.shields.io/david/Alorel/shrink-ray.svg?style=flat-square)](https://coveralls.io/github/Alorel/shrink-ray)
+[![Dependencies](https://img.shields.io/david/Alorel/shrink-ray.svg?style=flat-square)](https://github.com/Alorel/shrink-ray/blob/master/package.json)
+[![Dev Dependencies](https://img.shields.io/david/dev/Alorel/shrink-ray.svg?style=flat-square)](https://github.com/Alorel/shrink-ray/blob/master/package.json)
+[![Greenkeeper badge](https://badges.greenkeeper.io/Alorel/shrink-ray.svg)](https://greenkeeper.io/)
+
+-----
 
 Node.js compression middleware with modern codings like brotli and zopfli.
 
@@ -12,7 +23,7 @@ The following compression codings are supported:
   - brotli
   - zopfli (for asynchronous compression of static assets only)
 
-In addition, if a response contains an ETag, `shrink-ray` will cache the compressed
+In addition, if a response contains an ETag, `shrink-ray-current` will cache the compressed
 result for later requests and even re-compress it asynchronously at the highest
 possible compression (using zopfli for gzip and deflate and brotli quality 11
 for brotli). This makes it possible to use the best possible compression
@@ -27,22 +38,51 @@ The combination of caching and use of better compression algorithms makes
 compression middleware, and it stands on the shoulders of that impressive
 project.
 
-## Install
+# Table of Contents
+
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+
+
+- [Install](#install)
+- [API](#api)
+  - [`shrinkRay([options])`](#shrinkrayoptions)
+    - [Options](#options)
+      - [filter](#filter)
+      - [cache](#cache)
+      - [cacheSize](#cachesize)
+      - [threshold](#threshold)
+      - [zlib](#zlib)
+      - [zlib.chunkSize](#zlibchunksize)
+      - [zlib.level](#zliblevel)
+      - [zlib.memLevel](#zlibmemlevel)
+      - [zlib.strategy](#zlibstrategy)
+      - [zlib.windowBits](#zlibwindowbits)
+      - [brotli](#brotli)
+    - [.filter](#filter)
+  - [res.flush](#resflush)
+- [Examples](#examples)
+  - [express/connect](#expressconnect)
+  - [Server-Sent Events](#server-sent-events)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
+# Install
 
 You must first install `node`, `npm`, and [the node native build
 toolchain](https://github.com/nodejs/node-gyp#installation).
 
 ```bash
-$ npm install shrink-ray
+npm install shrink-ray
 ```
 
-## API
+# API
 
 ```js
-const shrinkRay = require('shrink-ray-curent')
+const shrinkRay = require('shrink-ray-curent');
 ```
 
-### shrinkRay([options])
+## `shrinkRay([options])`
 
 Returns the shrink-ray middleware using the given `options`. The middleware
 will attempt to compress response bodies for all request that traverse through
@@ -52,7 +92,7 @@ This middleware will never compress responses that include a `Cache-Control`
 header with the [`no-transform` directive](https://tools.ietf.org/html/rfc7234#section-5.2.2.4),
 as compressing will transform the body.
 
-#### Options
+### Options
 
 `shrinkRay()` accepts these properties in the options object.
 
@@ -61,7 +101,7 @@ we have also moved all of the gzip/deflate/zlib-specific parameters
 into a sub-object called `zlib`. If you use `zlib` parameters at the root level
 of options in `shrink-ray`, you will get a deprecation warning.
 
-##### filter
+#### filter
 
 A function to decide if the response should be considered for compression.
 This function is called as `filter(req, res)` and is expected to return
@@ -71,7 +111,7 @@ the response.
 The default filter function uses the [compressible](https://www.npmjs.com/package/compressible)
 module to determine if `res.getHeader('Content-Type')` is compressible.
 
-##### cache
+#### cache
 
 A function to decide if the compressed response should be cached for later use.
 This function is called as `cache(req, res)` and is expected to return `true` if
@@ -94,7 +134,7 @@ files with ETags, you may want to have your cache function restrict caching to y
 static file directory so as to avoid thrashing the cache and wasting CPU time on
 expensive compressions.
 
-##### cacheSize
+#### cacheSize
 
 The approximate size, in bytes, of the cache. This is a number of bytes, any string
 accepted by the [bytes](https://www.npmjs.com/package/bytes) module, or `false`
@@ -109,7 +149,7 @@ When deciding how large to make your cache, remember that every cached resource
 in your app may have as many as three compressed entries: one each for gzip,
 deflate, and brotli.
 
-##### threshold
+#### threshold
 
 The byte threshold for the response body size before compression is considered
 for the response, defaults to `1kb`. This is a number of bytes, any string
@@ -120,7 +160,7 @@ at the time the response headers are written, then it is assumed the response is
 _over_ the threshold. To guarantee the response size can be determined, be sure
 set a `Content-Length` response header.
 
-##### zlib
+#### zlib
 
 There is a sub-object of the options object called `zlib` which contains all of
 the parameters related to `gzip` and `deflate`. In addition to
@@ -132,14 +172,14 @@ all of these `zlib` parameters can be included at the root level of the options
 object. However, having `zlib` parameters at the root level is deprecated, and we
 plan to remove it.
 
-##### zlib.chunkSize
+#### zlib.chunkSize
 
 The default value is `zlib.Z_DEFAULT_CHUNK`, or `16384`.
 
 See [Node.js documentation](http://nodejs.org/api/zlib.html#zlib_memory_usage_tuning)
 regarding the usage.
 
-##### zlib.level
+#### zlib.level
 
 The level of zlib compression to apply to responses. A higher level will result
 in better compression, but will take longer to complete. A lower level will
@@ -166,7 +206,7 @@ The default value is `zlib.Z_DEFAULT_COMPRESSION`, or `-1`.
 
 **Note** in the list above, `zlib` is from `zlib = require('zlib')`.
 
-##### zlib.memLevel
+#### zlib.memLevel
 
 This specifies how much memory should be allocated for the internal compression
 state and is an integer in the range of `1` (minimum level) and `9` (maximum
@@ -177,7 +217,7 @@ The default value is `zlib.Z_DEFAULT_MEMLEVEL`, or `8`.
 See [Node.js documentation](http://nodejs.org/api/zlib.html#zlib_memory_usage_tuning)
 regarding the usage.
 
-##### zlib.strategy
+#### zlib.strategy
 
 This is used to tune the compression algorithm. This value only affects the
 compression ratio, not the correctness of the compressed output, even if it
@@ -199,14 +239,14 @@ is not set appropriately.
 
 **Note** in the list above, `zlib` is from `zlib = require('zlib')`.
 
-##### zlib.windowBits
+#### zlib.windowBits
 
 The default value is `zlib.Z_DEFAULT_WINDOWBITS`, or `15`.
 
 See [Node.js documentation](http://nodejs.org/api/zlib.html#zlib_memory_usage_tuning)
 regarding the usage.
 
-##### brotli
+#### brotli
 
 To control the parameters of the brotli algorithm, pass in child object at the key
 `brotli` with one or more of the following brotli algorithm parameters: `lgblock`,
@@ -216,26 +256,26 @@ Note that unlike the standard brotli library, which defaults to quality 11, this
 library defaults to quality 4, which is [generally more appropriate for dynamic
 content](https://blogs.akamai.com/2016/02/understanding-brotlis-potential.html).
 
-#### .filter
+### .filter
 
 The default `filter` function. This is used to construct a custom filter
 function that is an extension of the default function.
 
 ```js
-app.use(shrinkRay({filter: shouldCompress}))
+app.use(shrinkRay({filter: shouldCompress}));
 
 function shouldCompress(req, res) {
   if (req.headers['x-no-compression']) {
     // don't compress responses with this request header
-    return false
+    return false;
   }
 
   // fallback to standard filter function
-  return shrinkRay.filter(req, res)
+  return shrinkRay.filter(req, res);
 }
 ```
 
-### res.flush
+## res.flush
 
 This module adds a `res.flush()` method to force the partially-compressed
 response to be flushed to the client.
@@ -243,26 +283,25 @@ response to be flushed to the client.
 Note that brotli does not currently support `flush`, so it is a no-op when using
 brotli compression.
 
-## Examples
+# Examples
 
-### express/connect
+## express/connect
 
 When using this module with express or connect, simply `app.use` the module as
 high as you like. Requests that pass through the middleware will be compressed.
 
 ```js
-var shrinkRay = require('shrink-ray')
-var express = require('express')
-
-var app = express()
+const shrinkRay = require('shrink-ray-current');
+const express = require('express');
+const app = express();
 
 // compress all requests
-app.use(shrinkRay())
+app.use(shrinkRay());
 
 // add all routes
 ```
 
-### Server-Sent Events
+## Server-Sent Events
 
 Because of the nature of compression this module does not work out of the box
 with server-sent events. To compress content, a window of the output needs to
@@ -276,38 +315,28 @@ actually make it to the client.
 compression for server-sent events.)
 
 ```js
-var shrinkRay = require('shrink-ray')
-var express     = require('express')
-
-var app = express()
+const shrinkRay = require('shrink-ray-current');
+const express   = require('express');
+const app       = express();
 
 // compress responses
-app.use(shrinkRay())
+app.use(shrinkRay());
 
 // server-sent event stream
-app.get('/events', function (req, res) {
-  res.setHeader('Content-Type', 'text/event-stream')
-  res.setHeader('Cache-Control', 'no-cache')
+app.get('/events', (req, res) => {
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
 
   // send a ping approx every 2 seconds
-  var timer = setInterval(function () {
-    res.write('data: ping\n\n')
+  const timer = setInterval(() => {
+    res.write('data: ping\n\n');
 
     // !!! this is the important part
-    res.flush()
-  }, 2000)
+    res.flush();
+  }, 2000);
 
-  res.on('close', function () {
+  res.on('close', () => {
     clearInterval(timer)
   })
-})
+});
 ```
-
-## License
-
-[MIT](LICENSE)
-
-[npm-image]: https://img.shields.io/npm/v/shrink-ray.svg
-[npm-url]: https://npmjs.org/package/shrink-ray
-[downloads-image]: https://img.shields.io/npm/dm/shrink-ray.svg
-[downloads-url]: https://npmjs.org/package/shrink-ray
