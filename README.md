@@ -72,7 +72,7 @@ You must first install `node`, `npm`, and [the node native build
 toolchain](https://github.com/nodejs/node-gyp#installation).
 
 ```bash
-npm install shrink-ray
+npm install shrink-ray-current
 ```
 
 # API
