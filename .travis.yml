@@ -8,20 +8,11 @@ node_js:
   - 5
   - 4
 
-#env:
-#  global:
-#    - CXX=g++-5
-#
-#addons:
-#  apt:
-#    sources:
-#      - ubuntu-toolchain-r-test
-#    packages:
-#      - g++-5
-
 cache:
   directories:
     - node_modules
+
+before_cache: rm -rf node_modules/.cache
 
 script: npm test
 after_success: cat ./coverage/lcov.info | coveralls
