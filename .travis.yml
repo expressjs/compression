@@ -23,8 +23,5 @@ cache:
   directories:
     - node_modules
 
-script:
-  # Run test script, depending on istanbul install
-  - npm test
-  - npm run test-travis
-after_script: cat ./coverage/lcov.info | coveralls
+script: npm test
+after_success: cat ./coverage/lcov.info | coveralls
