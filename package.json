@@ -36,7 +36,7 @@
     "debug":          "^3.1.0",
     "iltorb":         "^2.0.2",
     "lru-cache":      "^4.1.1",
-    "multipipe":      "^1.0.2",
+    "multipipe":      "^2.0.1",
     "node-zopfli":    "^2.0.2",
     "on-headers":     "^1.0.1",
     "stream-buffers": "^3.0.1",
