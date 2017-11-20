@@ -32,9 +32,7 @@ jobs:
       <<: *stdJob
     - node_js: 6
       <<: *stdJob
-    - node_js: 5
-      <<: *stdJob
-    - node_js: 4
+    - node_js: '6.0'
       <<: *stdJob
     - stage: Deploy
       node_js: *node_latest
