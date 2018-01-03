@@ -80,8 +80,8 @@ function compression (options) {
         return false
       }
 
-      if (!this._header) {
-        this._implicitHeader()
+      if (!this.headersSent) {
+        this.writeHead(this.statusCode)
       }
 
       return stream
@@ -94,13 +94,13 @@ function compression (options) {
         return false
       }
 
-      if (!this._header) {
+      if (!this.headersSent) {
         // estimate the length
         if (!this.getHeader('Content-Length')) {
           length = chunkLength(chunk, encoding)
         }
 
-        this._implicitHeader()
+        this.writeHead(this.statusCode)
       }
 
       if (!stream) {
