@@ -4,7 +4,6 @@
 [![NPM Downloads][downloads-image]][downloads-url]
 [![Build Status][travis-image]][travis-url]
 [![Test Coverage][coveralls-image]][coveralls-url]
-[![Gratipay][gratipay-image]][gratipay-url]
 
 Node.js compression middleware.
 
@@ -239,5 +238,3 @@ app.get('/events', function (req, res) {
 [coveralls-url]: https://coveralls.io/r/expressjs/compression?branch=master
 [downloads-image]: https://img.shields.io/npm/dm/compression.svg
 [downloads-url]: https://npmjs.org/package/compression
-[gratipay-image]: https://img.shields.io/gratipay/dougwilson.svg
-[gratipay-url]: https://www.gratipay.com/dougwilson/
