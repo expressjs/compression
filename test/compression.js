@@ -312,11 +312,13 @@ describe('compression()', function () {
       res.end('hello, world')
     })
 
-    var request = createHttp2Client().request({
+    var client = createHttp2Client()
+    var request = client.request({
       'Accept-Encoding': 'gzip'
     })
-    request.on('response', (headers) => {
+    request.on('response', function (headers) {
       assert.equal(headers['content-encoding'], 'gzip')
+      client.destroy()
       done()
     })
     request.end()
