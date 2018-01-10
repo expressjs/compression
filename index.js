@@ -80,7 +80,7 @@ function compression (options) {
         return false
       }
 
-      if (!this._header) {
+      if (!this.headersSent) {
         this._implicitHeader()
       }
 
@@ -94,7 +94,7 @@ function compression (options) {
         return false
       }
 
-      if (!this._header) {
+      if (!this.headersSent) {
         // estimate the length
         if (!this.getHeader('Content-Length')) {
           length = chunkLength(chunk, encoding)
