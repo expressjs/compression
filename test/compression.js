@@ -4,9 +4,16 @@ var Buffer = require('safe-buffer').Buffer
 var bytes = require('bytes')
 var crypto = require('crypto')
 var http = require('http')
-var http2 = require('http2')
 var request = require('supertest')
 var zlib = require('zlib')
+
+try {
+  var http2 = require('http2')
+} catch (err) {
+  if (err) {
+    console.log('http2 tests disabled.')
+  }
+}
 
 var compression = require('..')
 
@@ -306,23 +313,25 @@ describe('compression()', function () {
       .expect(200, done)
   })
 
-  it('should work with http2 server', function (done) {
-    createHttp2Server({ threshold: 0 }, function (req, res) {
-      res.setHeader('Content-Type', 'text/plain')
-      res.end('hello, world')
-    })
+  if (http2) {
+    it('should work with http2 server', function (done) {
+      createHttp2Server({ threshold: 0 }, function (req, res) {
+        res.setHeader('Content-Type', 'text/plain')
+        res.end('hello, world')
+      })
 
-    var client = createHttp2Client()
-    var request = client.request({
-      'Accept-Encoding': 'gzip'
+      var client = createHttp2Client()
+      var request = client.request({
+        'Accept-Encoding': 'gzip'
+      })
+      request.on('response', function (headers) {
+        assert.equal(headers['content-encoding'], 'gzip')
+        client.destroy()
+        done()
+      })
+      request.end()
     })
-    request.on('response', function (headers) {
-      assert.equal(headers['content-encoding'], 'gzip')
-      client.destroy()
-      done()
-    })
-    request.end()
-  })
+  }
 
   describe('threshold', function () {
     it('should not compress responses below the threshold size', function (done) {
