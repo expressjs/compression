@@ -4,6 +4,7 @@ var Buffer = require('safe-buffer').Buffer
 var bytes = require('bytes')
 var crypto = require('crypto')
 var http = require('http')
+var http2 = require('http2')
 var request = require('supertest')
 var zlib = require('zlib')
 
@@ -303,6 +304,22 @@ describe('compression()', function () {
       .expect('Content-Encoding', 'gzip')
       .expect(shouldHaveBodyLength(len * 4))
       .expect(200, done)
+  })
+
+  it('should work with http2 server', function (done) {
+    createHttp2Server({ threshold: 0 }, function (req, res) {
+      res.setHeader('Content-Type', 'text/plain')
+      res.end('hello, world')
+    })
+
+    var request = createHttp2Client().request({
+      'Accept-Encoding': 'gzip'
+    })
+    request.on('response', (headers) => {
+      assert.equal(headers['content-encoding'], 'gzip')
+      done()
+    })
+    request.end()
   })
 
   describe('threshold', function () {
@@ -672,6 +689,28 @@ function createServer (opts, fn) {
       fn(req, res)
     })
   })
+}
+
+function createHttp2Server (opts, fn) {
+  var _compression = compression(opts)
+  var server = http2.createServer(function (req, res) {
+    _compression(req, res, function (err) {
+      if (err) {
+        res.statusCode = err.status || 500
+        res.end(err.message)
+        return
+      }
+
+      fn(req, res)
+    })
+  })
+  server.listen(8443, '127.0.0.1')
+  return server
+}
+
+function createHttp2Client () {
+  var client = http2.connect('http://127.0.0.1:8443')
+  return client
 }
 
 function shouldHaveBodyLength (length) {
