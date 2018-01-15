@@ -328,13 +328,7 @@ describe('compression()', function () {
         })
         request.on('response', function (headers) {
           assert.equal(headers['content-encoding'], 'gzip')
-          request.close(http2.constants.NGHTTP2_NO_ERROR, function () {
-            client.close(function () {
-              server.close(function () {
-                done()
-              })
-            })
-          })
+          closeHttp2(request, client, server, done)
         })
         request.end()
       })
@@ -730,6 +724,28 @@ function createHttp2Server (opts, fn) {
 function createHttp2Client (port) {
   var client = http2.connect('http://127.0.0.1:' + port)
   return client
+}
+
+function closeHttp2 (request, client, server, callback) {
+  if (typeof client.shutdown === 'function') {
+    // this is the node v8.x way of closing the connections
+    request.destroy(http2.constants.NGHTTP2_NO_ERROR, function () {
+      client.shutdown({}, function () {
+        server.close(function () {
+          callback()
+        })
+      })
+    })
+  } else {
+    // this is the node v9.x onwards (hopefully) way of closing the connections
+    request.close(http2.constants.NGHTTP2_NO_ERROR, function () {
+      client.close(function () {
+        server.close(function () {
+          callback()
+        })
+      })
+    })
+  }
 }
 
 function shouldHaveBodyLength (length) {
