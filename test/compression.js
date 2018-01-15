@@ -315,21 +315,22 @@ describe('compression()', function () {
 
   if (http2) {
     it('should work with http2 server', function (done) {
-      createHttp2Server({ threshold: 0 }, function (req, res) {
+      var server = createHttp2Server({ threshold: 0 }, function (req, res) {
         res.setHeader('Content-Type', 'text/plain')
         res.end('hello, world')
       })
-
-      var client = createHttp2Client()
-      var request = client.request({
-        'Accept-Encoding': 'gzip'
+      server.on('listening', function () {
+        var client = createHttp2Client(server.address().port)
+        var request = client.request({
+          'Accept-Encoding': 'gzip'
+        })
+        request.on('response', function (headers) {
+          assert.equal(headers['content-encoding'], 'gzip')
+          client.destroy()
+          done()
+        })
+        request.end()
       })
-      request.on('response', function (headers) {
-        assert.equal(headers['content-encoding'], 'gzip')
-        client.destroy()
-        done()
-      })
-      request.end()
     })
   }
 
@@ -715,12 +716,12 @@ function createHttp2Server (opts, fn) {
       fn(req, res)
     })
   })
-  server.listen(8443, '127.0.0.1')
+  server.listen(0, '127.0.0.1')
   return server
 }
 
-function createHttp2Client () {
-  var client = http2.connect('http://127.0.0.1:8443')
+function createHttp2Client (port) {
+  var client = http2.connect('http://127.0.0.1:' + port)
   return client
 }
 
