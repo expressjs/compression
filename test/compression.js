@@ -328,8 +328,11 @@ describe('compression()', function () {
         })
         request.on('response', function (headers) {
           assert.equal(headers['content-encoding'], 'gzip')
-          client.destroy()
-          done()
+          client.close(function () {
+            server.close(function () {
+              done()
+            })
+          })
         })
         request.end()
       })
