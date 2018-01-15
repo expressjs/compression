@@ -7,8 +7,10 @@ var http = require('http')
 var request = require('supertest')
 var zlib = require('zlib')
 
+var describeHttp2 = describe.skip
 try {
   var http2 = require('http2')
+  describeHttp2 = describe
 } catch (err) {
   if (err) {
     console.log('http2 tests disabled.')
@@ -313,7 +315,7 @@ describe('compression()', function () {
       .expect(200, done)
   })
 
-  if (http2) {
+  describeHttp2('http2', function () {
     it('should work with http2 server', function (done) {
       var server = createHttp2Server({ threshold: 0 }, function (req, res) {
         res.setHeader('Content-Type', 'text/plain')
@@ -332,7 +334,7 @@ describe('compression()', function () {
         request.end()
       })
     })
-  }
+  })
 
   describe('threshold', function () {
     it('should not compress responses below the threshold size', function (done) {
