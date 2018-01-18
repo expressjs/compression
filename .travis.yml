@@ -13,19 +13,13 @@ before_cache: rm -rf node_modules/.cache
 
 stdJob: &stdJob
   stage: Test
-  before_script: greenkeeper-lockfile-update
-  script:
-    - if [ $SNYK_TOKEN ]; then snyk test --dev; fi;
-    - npm test
+  script: npm test
   after_success: cat ./coverage/lcov.info | coveralls
 
 jobs:
   include:
     - node_js: &node_latest 9
       <<: *stdJob
-      after_script:
-        - if [ $GH_TOKEN ]; then greenkeeper-lockfile-upload; fi;
-        - if [ $SNYK_TOKEN ]; then snyk monitor --dev; fi;
     - node_js: 8
       <<: *stdJob
     - node_js: 7

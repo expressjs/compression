@@ -1,7 +1,7 @@
 {
   "name": "shrink-ray-current",
   "description": "Node.js compression middleware with brotli and zopfli support",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "contributors": [
     "Arturas Molcanovas <a.molcanovas@gmail.com> (https://alorel.github.io)",
     "Douglas Christopher Wilson <doug@somethingdoug.com>",
@@ -30,25 +30,26 @@
     "content-encoding"
   ],
   "dependencies": {
-    "accepts": "^1.3.4",
+    "@types/express": "*",
+    "@types/iltorb": "*",
+    "@types/node": "*",
+    "accepts": "^1.3.0",
     "bytes": "^3.0.0",
-    "compressible": "^2.0.12",
+    "compressible": "^2.0.0",
     "debug": "^3.1.0",
-    "iltorb": "^2.0.2",
-    "lru-cache": "^4.1.1",
-    "multipipe": "^2.0.1",
-    "node-zopfli": "^2.0.2",
-    "on-headers": "^1.0.1",
-    "stream-buffers": "^3.0.1",
-    "vary": "^1.1.2"
+    "iltorb": "^2.0.0",
+    "lru-cache": "^4.0.0",
+    "multipipe": "^2.0.0",
+    "node-zopfli": "^2.0.0",
+    "on-headers": "^1.0.0",
+    "stream-buffers": "^3.0.0",
+    "vary": "^1.1.0"
   },
   "devDependencies": {
     "coveralls": "^3.0.0",
-    "expect": "^21.2.1",
-    "greenkeeper-lockfile": "^1.12.0",
-    "mocha": "^4.0.1",
+    "expect": "^22.0.0",
+    "mocha": "^5.0.0",
     "nyc": "^11.3.0",
-    "snyk": "^1.49.3",
     "supertest": "^3.0.0"
   },
   "engines": {
@@ -57,9 +58,6 @@
   "scripts": {
     "reinstall": "rm -rf node_modules package-lock.json && npm install",
     "test": "nyc mocha --check-leaks --bail",
-    "prepare": "snyk protect",
-    "snyk:wizard": "snyk wizard --dev",
     "version-readme": "node ./prepublish.js"
-  },
-  "snyk": true
+  }
 }
