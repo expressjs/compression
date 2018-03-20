@@ -162,9 +162,11 @@ describe('compression()', function () {
     var resp
     var server = createServer({ threshold: 0 }, function (req, res) {
       resp = res
+
       res.on('drain', function () {
         drained = true
       })
+
       res.setHeader('Content-Type', 'text/plain')
       res.write('start')
       pressure()
@@ -179,21 +181,23 @@ describe('compression()', function () {
 
     function complete () {
       if (--wait !== 0) return
-      assert.ok(drained)
       done()
     }
 
     function pressure () {
       if (!buf || !resp || !client) return
 
+      assert.ok(!drained)
+
       while (resp.write(buf) !== false) {
         resp.flush()
       }
 
       resp.on('drain', function () {
-        resp.write('end')
+        assert.ok(resp.write('end'))
         resp.end()
       })
+
       resp.on('finish', complete)
       client.resume()
     }
@@ -218,9 +222,11 @@ describe('compression()', function () {
     var resp
     var server = createServer({ filter: function () { return false } }, function (req, res) {
       resp = res
+
       res.on('drain', function () {
         drained = true
       })
+
       res.setHeader('Content-Type', 'text/plain')
       res.write('start')
       pressure()
@@ -235,7 +241,6 @@ describe('compression()', function () {
 
     function complete () {
       if (--wait !== 0) return
-      assert.ok(drained)
       done()
     }
 
@@ -247,7 +252,8 @@ describe('compression()', function () {
       }
 
       resp.on('drain', function () {
-        resp.write('end')
+        assert.ok(drained)
+        assert.ok(resp.write('end'))
         resp.end()
       })
       resp.on('finish', complete)
