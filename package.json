@@ -18,6 +18,7 @@
     "vary": "~1.1.2"
   },
   "devDependencies": {
+    "after": "0.8.2",
     "eslint": "4.19.0",
     "eslint-config-standard": "11.0.0",
     "eslint-plugin-import": "2.9.0",

@@ -1,3 +1,4 @@
+var after = require('after')
 var assert = require('assert')
 var Buffer = require('safe-buffer').Buffer
 var bytes = require('bytes')
@@ -157,6 +158,7 @@ describe('compression()', function () {
 
   it('should back-pressure when compressed', function (done) {
     var buf
+    var cb = after(2, done)
     var client
     var drained = false
     var resp
@@ -171,18 +173,12 @@ describe('compression()', function () {
       res.write('start')
       pressure()
     })
-    var wait = 2
 
     crypto.pseudoRandomBytes(1024 * 128, function (err, chunk) {
       if (err) return done(err)
       buf = chunk
       pressure()
     })
-
-    function complete () {
-      if (--wait !== 0) return
-      done()
-    }
 
     function pressure () {
       if (!buf || !resp || !client) return
@@ -198,7 +194,7 @@ describe('compression()', function () {
         resp.end()
       })
 
-      resp.on('finish', complete)
+      resp.on('finish', cb)
       client.resume()
     }
 
@@ -209,7 +205,7 @@ describe('compression()', function () {
         client = res
         assert.equal(res.headers['content-encoding'], 'gzip')
         res.pause()
-        res.on('end', complete)
+        res.on('end', cb)
         pressure()
       })
       .end()
@@ -217,6 +213,7 @@ describe('compression()', function () {
 
   it('should back-pressure when uncompressed', function (done) {
     var buf
+    var cb = after(2, done)
     var client
     var drained = false
     var resp
@@ -231,18 +228,12 @@ describe('compression()', function () {
       res.write('start')
       pressure()
     })
-    var wait = 2
 
     crypto.pseudoRandomBytes(1024 * 128, function (err, chunk) {
       if (err) return done(err)
       buf = chunk
       pressure()
     })
-
-    function complete () {
-      if (--wait !== 0) return
-      done()
-    }
 
     function pressure () {
       if (!buf || !resp || !client) return
@@ -256,7 +247,7 @@ describe('compression()', function () {
         assert.ok(resp.write('end'))
         resp.end()
       })
-      resp.on('finish', complete)
+      resp.on('finish', cb)
       client.resume()
     }
 
@@ -267,7 +258,7 @@ describe('compression()', function () {
         client = res
         shouldNotHaveHeader('Content-Encoding')(res)
         res.pause()
-        res.on('end', complete)
+        res.on('end', cb)
         pressure()
       })
       .end()
