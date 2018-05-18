@@ -34,3 +34,5 @@ script:
   - "test   -z $(npm -ps ls eslint  ) || npm run-script lint"
 after_script:
   - "test -e ./coverage/lcov.info && npm install coveralls@2 && cat ./coverage/lcov.info | coveralls"
+git:
+  depth: 5
