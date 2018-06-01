@@ -49,7 +49,7 @@
     "coveralls": "^3.0.0",
     "expect": "^23.0.0",
     "mocha": "^5.0.0",
-    "nyc": "^11.3.0",
+    "nyc": "^12.0.1",
     "supertest": "^3.0.0"
   },
   "engines": {
