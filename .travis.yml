@@ -1,36 +1,28 @@
 language: node_js
 sudo: false
-
-stages:
-  - Test
-  - name: Deploy
-    if: tag IS present
+node_js:
+  - stable
+  - lts/boron
+  - lts/carbon
 
 cache:
   directories:
     - node_modules
 before_cache: rm -rf node_modules/.cache
+install: npm install --build-from-source
+after_success: cat ./coverage/lcov.info | coveralls
 
-stdJob: &stdJob
-  stage: Test
-  script: npm test
-  after_success: cat ./coverage/lcov.info | coveralls
+stages:
+  - test
+  - name: Deploy
+    if: tag IS present
 
 jobs:
   include:
-    - node_js: &node_latest 9
-      <<: *stdJob
-    - node_js: 8
-      <<: *stdJob
-    - node_js: 7
-      <<: *stdJob
-    - node_js: 6
-      <<: *stdJob
-    - node_js: '6.0'
-      <<: *stdJob
     - stage: Deploy
-      node_js: *node_latest
+      node_js: stable
       script: node ./prepublish.js
+      after_success: false
       deploy:
         - provider: npm
           skip_cleanup: true

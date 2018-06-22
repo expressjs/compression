@@ -3,7 +3,10 @@
 The original [shrink-ray](https://www.npmjs.com/package/shrink-ray) appears to be abandoned.
 This mirror has all the dependencies up-to-date.
 
-Note for Node 10.0 and up: `node-zopfli` now fails to install from the network. You must pass the `--build-from-source` flag to `npm install`.
+Note for Node 10.0 and up: `node-zopfli` now fails to install from the network. You must pass the `--build-from-source` flag to `npm install` and have all the native addon build requirements met:
+
+  - Python 2.7
+  - A C++ build environment (e.g. GCC)
 
 [![Version](https://img.shields.io/npm/v/shrink-ray-current.svg?style=flat-square)](https://www.npmjs.com/package/shrink-ray-current)
 [![License](https://img.shields.io/npm/l/shrink-ray-current.svg?style=flat-square)](https://www.npmjs.com/package/shrink-ray-current)
