@@ -6,6 +6,7 @@ unreleased
   * deps: compressible@~2.0.14
     - Mark all XML-derived types as compressible
     - deps: mime-db@'>= 1.34.0 < 2'
+  * deps: safe-buffer@5.1.2
 
 1.7.2 / 2018-02-18
 ==================
