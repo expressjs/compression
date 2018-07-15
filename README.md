@@ -126,8 +126,8 @@ is not set appropriately.
 ##### threshold
 
 The byte threshold for the response body size before compression is considered
-for the response, defaults to `1kb`. This is a number of bytes, any string
-accepted by the [bytes](https://www.npmjs.com/package/bytes) module, or `false`.
+for the response, defaults to `1kb`. This is a number of bytes or any string
+accepted by the [bytes](https://www.npmjs.com/package/bytes) module.
 
 **Note** this is only an advisory setting; if the response size cannot be determined
 at the time the response headers are written, then it is assumed the response is
