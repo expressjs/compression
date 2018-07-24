@@ -24,7 +24,7 @@ const util         = require('util');
 const vary         = require('vary');
 const Writable     = require('stream').Writable;
 const zlib         = require('zlib');
-const zopfli       = require('node-zopfli');
+const zopfli       = require('node-zopfli-es');
 
 /**
  * Module exports.
