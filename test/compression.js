@@ -203,7 +203,7 @@ describe('compression()', function () {
       .request()
       .on('response', function (res) {
         client = res
-        assert.equal(res.headers['content-encoding'], 'gzip')
+        assert.strictEqual(res.headers['content-encoding'], 'gzip')
         res.pause()
         res.on('end', cb)
         pressure()
@@ -523,7 +523,7 @@ describe('compression()', function () {
 
   describe('.filter', function () {
     it('should be a function', function () {
-      assert.equal(typeof compression.filter, 'function')
+      assert.strictEqual(typeof compression.filter, 'function')
     })
 
     it('should return false on empty response', function (done) {
@@ -586,7 +586,7 @@ describe('compression()', function () {
 
       function onchunk (chunk) {
         assert.ok(chunks++ < 2)
-        assert.equal(chunk.length, 1024)
+        assert.strictEqual(chunk.length, 1024)
         next()
       }
 
@@ -609,7 +609,7 @@ describe('compression()', function () {
 
       function onchunk (chunk) {
         assert.ok(chunks++ < 20)
-        assert.equal(chunk.toString(), '..')
+        assert.strictEqual(chunk.toString(), '..')
         next()
       }
 
@@ -632,7 +632,7 @@ describe('compression()', function () {
 
       function onchunk (chunk) {
         assert.ok(chunks++ < 20)
-        assert.equal(chunk.toString(), '..')
+        assert.strictEqual(chunk.toString(), '..')
         next()
       }
 
@@ -663,7 +663,7 @@ function createServer (opts, fn) {
 
 function shouldHaveBodyLength (length) {
   return function (res) {
-    assert.equal(res.text.length, length, 'should have body length of ' + length)
+    assert.strictEqual(res.text.length, length, 'should have body length of ' + length)
   }
 }
 
@@ -688,7 +688,7 @@ function unchunk (encoding, onchunk, onend) {
   return function (res) {
     var stream
 
-    assert.equal(res.headers['content-encoding'], encoding)
+    assert.strictEqual(res.headers['content-encoding'], encoding)
 
     switch (encoding) {
       case 'deflate':
