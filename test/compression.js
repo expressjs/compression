@@ -328,6 +328,14 @@ describe('compression()', function () {
         })
         request.on('response', function (headers) {
           assert.equal(headers['content-encoding'], 'gzip')
+        })
+        request.on('error', function (error) {
+          console.error('An error event occurred on a http2 client request.', error)
+        })
+        request.on('data', function (chunk) {
+          // no-op without which the request will stay open and cause a test timeout
+        })
+        request.on('end', function () {
           closeHttp2(request, client, server, done)
         })
         request.end()
@@ -707,6 +715,12 @@ function createServer (opts, fn) {
 function createHttp2Server (opts, fn) {
   var _compression = compression(opts)
   var server = http2.createServer(function (req, res) {
+    req.on('error', function (error) {
+      console.error('An error event occurred on a http2 request.', error)
+    })
+    res.on('error', function (error) {
+      console.error('An error event occurred on a http2 response.', error)
+    })
     _compression(req, res, function (err) {
       if (err) {
         res.statusCode = err.status || 500
@@ -717,12 +731,21 @@ function createHttp2Server (opts, fn) {
       fn(req, res)
     })
   })
+  server.on('error', function (error) {
+    console.error('An error event occurred on the http2 server.', error)
+  })
+  server.on('sessionError', function (error) {
+    console.error('A sessionError event occurred on the http2 server.', error)
+  })
   server.listen(0, '127.0.0.1')
   return server
 }
 
 function createHttp2Client (port) {
   var client = http2.connect('http://127.0.0.1:' + port)
+  client.on('error', function (error) {
+    console.error('An error event occurred in the http2 client stream.', error)
+  })
   return client
 }
 
@@ -737,9 +760,14 @@ function closeHttp2 (request, client, server, callback) {
       })
     })
   } else {
-    // this is the node v9.x onwards (hopefully) way of closing the connections
+    // this is the node v9.x onwards way of closing the connections
     request.close(http2.constants.NGHTTP2_NO_ERROR, function () {
       client.close(function () {
+        // force existing connections to time out after 1ms.
+        // this is done to force the server to close in some cases where it wouldn't do it otherwise.
+        server.setTimeout(1, function () {
+          console.warn('An http2 connection timed out instead of being closed properly.')
+        })
         server.close(function () {
           callback()
         })
