@@ -10,8 +10,10 @@ node_js:
   - "5.12"
   - "6.14"
   - "7.10"
+  - "8.7" # Keep 8.7 around because it is the last minor on 8.x that didn't have http2
   - "8.11"
   - "9.11"
+  - "10.11"
 sudo: false
 cache:
   directories:
