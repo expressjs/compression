@@ -205,7 +205,9 @@ describe('compression()', function () {
         client = res
         assert.strictEqual(res.headers['content-encoding'], 'gzip')
         res.pause()
-        res.on('end', cb)
+        res.on('end', function () {
+          server.close(cb)
+        })
         pressure()
       })
       .end()
@@ -258,7 +260,9 @@ describe('compression()', function () {
         client = res
         shouldNotHaveHeader('Content-Encoding')(res)
         res.pause()
-        res.on('end', cb)
+        res.on('end', function () {
+          server.close(cb)
+        })
         pressure()
       })
       .end()
@@ -594,7 +598,10 @@ describe('compression()', function () {
         .get('/')
         .set('Accept-Encoding', 'gzip')
         .request()
-        .on('response', unchunk('gzip', onchunk, done))
+        .on('response', unchunk('gzip', onchunk, function (err) {
+          if (err) return done(err)
+          server.close(done)
+        }))
         .end()
     })
 
@@ -617,7 +624,10 @@ describe('compression()', function () {
         .get('/')
         .set('Accept-Encoding', 'gzip')
         .request()
-        .on('response', unchunk('gzip', onchunk, done))
+        .on('response', unchunk('gzip', onchunk, function (err) {
+          if (err) return done(err)
+          server.close(done)
+        }))
         .end()
     })
 
@@ -640,7 +650,10 @@ describe('compression()', function () {
         .get('/')
         .set('Accept-Encoding', 'deflate')
         .request()
-        .on('response', unchunk('deflate', onchunk, done))
+        .on('response', unchunk('deflate', onchunk, function (err) {
+          if (err) return done(err)
+          server.close(done)
+        }))
         .end()
     })
   })
