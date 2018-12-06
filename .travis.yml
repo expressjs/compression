@@ -37,6 +37,18 @@ before_install:
         grep -E '^eslint(-|$)' | \
         xargs npm rm --save-dev
     fi
+  - |
+    # mocha for testing
+    # - use 1.x for Node.js < 0.8
+    # - use 2.x for Node.js < 0.10
+    # - use 3.x for Node.js < 4
+    if [[ "$(cut -d. -f1 <<< "$TRAVIS_NODE_VERSION")" -eq 0 && "$(cut -d. -f2 <<< "$TRAVIS_NODE_VERSION")" -lt 8 ]]; then
+      npm install --save-dev mocha@1.21.5
+    elif [[ "$(cut -d. -f1 <<< "$TRAVIS_NODE_VERSION")" -eq 0 && "$(cut -d. -f2 <<< "$TRAVIS_NODE_VERSION")" -lt 10 ]]; then
+      npm install --save-dev mocha@2.5.3
+    elif [[ "$(cut -d. -f1 <<< "$TRAVIS_NODE_VERSION")" -lt 4 ]]; then
+      npm install --save-dev mocha@3.5.3
+    fi
   # Update Node.js modules
   - |
     # Prune and rebuild node_modules
