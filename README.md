@@ -11,6 +11,7 @@ The following compression codings are supported:
 
   - deflate
   - gzip
+  - brotli
 
 ## Install
 
