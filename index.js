@@ -175,11 +175,20 @@ function compression (options) {
 
       // compression method
       var accept = accepts(req)
-      var method = accept.encoding(['br', 'gzip', 'deflate', 'identity'])
+      var methods = ['gzip', 'deflate', 'identity']
+      var preferredMethods = ['gzip']
+
+      if (zlib.createBrotliDecompress) {
+        methods.unshift('br')
+        preferredMethods.unshift('br')
+      }
+
+      var method = accept.encoding(methods)
 
       // we really don't prefer deflate
-      if (method === 'deflate' && accept.encoding(['br', 'gzip'])) {
-        method = accept.encoding(['br', 'gzip', 'identity'])
+      if (method === 'deflate' && accept.encoding(preferredMethods)) {
+        preferredMethods.push('identity')
+        method = accept.encoding(preferredMethods)
       }
 
       // negotiation failed
