@@ -191,9 +191,9 @@ function compression (options) {
       // compression stream
       debug('%s compression', method)
       switch (method) {
-        case 'br': stream = zlib.createBrotliDecompress(opts);break;
-        case 'gzip': stream = zlib.createGzip(opts);break;
-        case 'deflate': stream = zlib.createDeflate(opts);break;
+        case 'br': stream = zlib.createBrotliDecompress(opts); break
+        case 'gzip': stream = zlib.createGzip(opts); break
+        case 'deflate': stream = zlib.createDeflate(opts); break
       }
 
       // add buffered listeners to stream
