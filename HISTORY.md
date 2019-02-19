@@ -1,8 +1,9 @@
 unreleased
 ==========
 
-  * deps: compressible@~2.0.15
-    - deps: mime-db@'>= 1.36.0 < 2'
+  * deps: compressible@~2.0.16
+    - Mark `text/less` as compressible
+    - deps: mime-db@'>= 1.38.0 < 2'
 
 1.7.3 / 2018-07-15
 ==================
