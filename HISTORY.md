@@ -4,6 +4,8 @@ unreleased
   * deps: compressible@~2.0.16
     - Mark `text/less` as compressible
     - deps: mime-db@'>= 1.38.0 < 2'
+  * deps: on-headers@~1.0.2
+    - Fix `res.writeHead` patch missing return value
 
 1.7.3 / 2018-07-15
 ==================
