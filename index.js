@@ -64,6 +64,7 @@ function compression (options) {
 
     var _end = res.end
     var _on = res.on
+    var _removeListener = res.removeListener
     var _write = res.write
 
     // flush
@@ -129,6 +130,33 @@ function compression (options) {
       listeners.push([type, listener])
 
       return this
+    }
+
+    res.addListener = res.on
+
+    res.removeListener = function removeListener (type, listener) {
+      if (!listeners || type !== 'drain') {
+        return _removeListener.call(this, type, listener)
+      }
+
+      if (stream) {
+        return stream.removeListener(type, listener)
+      }
+
+      // remove buffered listener
+      for (var i = listeners.length - 1; i >= 0; i--) {
+        if (listeners[i][0] === type && listeners[i][1] === listener) {
+          listeners.splice(i, 1)
+        }
+      }
+
+      return this
+    }
+
+    /* istanbul ignore next */
+    if (res.off) {
+      // emitter.off was added in Node.js v10+; don't add it to earlier versions
+      res.off = res.removeListener
     }
 
     function nocompress (msg) {
