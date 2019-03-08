@@ -6,6 +6,7 @@ unreleased
     - deps: mime-db@'>= 1.38.0 < 2'
   * deps: on-headers@~1.0.2
     - Fix `res.writeHead` patch missing return value
+  * perf: prevent unnecessary buffer copy
 
 1.7.3 / 2018-07-15
 ==================
