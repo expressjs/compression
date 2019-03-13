@@ -28,7 +28,7 @@
     "eslint-plugin-standard": "4.0.0",
     "istanbul": "0.4.5",
     "mocha": "6.0.2",
-    "supertest": "3.3.0"
+    "supertest": "4.0.0"
   },
   "files": [
     "LICENSE",
