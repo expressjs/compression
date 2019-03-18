@@ -1,5 +1,5 @@
-unreleased
-==========
+1.7.4 / 2019-03-18
+==================
 
   * deps: compressible@~2.0.16
     - Mark `text/less` as compressible
