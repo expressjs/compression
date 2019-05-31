@@ -175,7 +175,7 @@ function compression(options) {
       }
 
       // brotli support
-      var filterBrotliIfNotSupported = (encoding) => encoding !== 'br' || supportsBrotli ? true : false
+      var filterBrotliIfNotSupported = function (encoding) { return encoding !== 'br' || supportsBrotli ? true : false }
 
       // compression method
       var accept = accepts(req)
