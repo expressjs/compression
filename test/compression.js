@@ -153,7 +153,7 @@ describe('compression()', function () {
 
     request(server)
       .get('/')
-      .end(function () {})
+      .end(function () { })
   })
 
   it('should back-pressure when compressed', function (done) {
@@ -180,7 +180,7 @@ describe('compression()', function () {
       pressure()
     })
 
-    function pressure () {
+    function pressure() {
       if (!buf || !resp || !client) return
 
       assert.ok(!drained)
@@ -237,7 +237,7 @@ describe('compression()', function () {
       pressure()
     })
 
-    function pressure () {
+    function pressure() {
       if (!buf || !resp || !client) return
 
       while (resp.write(buf) !== false) {
@@ -465,6 +465,20 @@ describe('compression()', function () {
     })
   })
 
+  describe('when "Accept-Encoding: br"', function () {
+    it('should respond with br', function (done) {
+      var server = createServer({ threshold: 0 }, function (req, res) {
+        res.setHeader('Content-Type', 'text/plain')
+        res.end('hello, world')
+      })
+
+      request(server)
+        .get('/')
+        .set('Accept-Encoding', 'br')
+        .expect('Content-Encoding', 'br', done)
+    })
+  })
+
   describe('when "Accept-Encoding: gzip, deflate"', function () {
     it('should respond with gzip', function (done) {
       var server = createServer({ threshold: 0 }, function (req, res) {
@@ -588,7 +602,7 @@ describe('compression()', function () {
         next()
       })
 
-      function onchunk (chunk) {
+      function onchunk(chunk) {
         assert.ok(chunks++ < 2)
         assert.strictEqual(chunk.length, 1024)
         next()
@@ -614,7 +628,7 @@ describe('compression()', function () {
         next()
       })
 
-      function onchunk (chunk) {
+      function onchunk(chunk) {
         assert.ok(chunks++ < 20)
         assert.strictEqual(chunk.toString(), '..')
         next()
@@ -640,7 +654,7 @@ describe('compression()', function () {
         next()
       })
 
-      function onchunk (chunk) {
+      function onchunk(chunk) {
         assert.ok(chunks++ < 20)
         assert.strictEqual(chunk.toString(), '..')
         next()
@@ -656,10 +670,36 @@ describe('compression()', function () {
         }))
         .end()
     })
+
+    it('should flush small chunks for br', function (done) {
+      var chunks = 0
+      var next
+      var server = createServer({ threshold: 0 }, function (req, res) {
+        next = writeAndFlush(res, 2, Buffer.from('..'))
+        res.setHeader('Content-Type', 'text/plain')
+        next()
+      })
+
+      function onchunk(chunk) {
+        assert.ok(chunks++ < 20)
+        assert.strictEqual(chunk.toString(), '..')
+        next()
+      }
+
+      request(server)
+        .get('/')
+        .set('Accept-Encoding', 'br')
+        .request()
+        .on('response', unchunk('br', onchunk, function (err) {
+          if (err) return done(err)
+          server.close(done)
+        }))
+        .end()
+    })
   })
 })
 
-function createServer (opts, fn) {
+function createServer(opts, fn) {
   var _compression = compression(opts)
   return http.createServer(function (req, res) {
     _compression(req, res, function (err) {
@@ -674,19 +714,19 @@ function createServer (opts, fn) {
   })
 }
 
-function shouldHaveBodyLength (length) {
+function shouldHaveBodyLength(length) {
   return function (res) {
     assert.strictEqual(res.text.length, length, 'should have body length of ' + length)
   }
 }
 
-function shouldNotHaveHeader (header) {
+function shouldNotHaveHeader(header) {
   return function (res) {
     assert.ok(!(header.toLowerCase() in res.headers), 'should not have header ' + header)
   }
 }
 
-function writeAndFlush (stream, count, buf) {
+function writeAndFlush(stream, count, buf) {
   var writes = 0
 
   return function () {
@@ -697,7 +737,7 @@ function writeAndFlush (stream, count, buf) {
   }
 }
 
-function unchunk (encoding, onchunk, onend) {
+function unchunk(encoding, onchunk, onend) {
   return function (res) {
     var stream
 
@@ -709,6 +749,9 @@ function unchunk (encoding, onchunk, onend) {
         break
       case 'gzip':
         stream = res.pipe(zlib.createGunzip())
+        break
+      case 'br':
+        stream = res.pipe(zlib.createBrotliDecompress())
         break
     }
 
