@@ -174,17 +174,16 @@ function compression (options) {
         return
       }
 
-      // brotli support
-      var filterBrotliIfNotSupported = function (encoding) { return encoding !== 'br' || supportsBrotli }
-
       // compression method
+      var filterBrotliIfNotSupported = function (encoding) { return encoding !== 'br' || supportsBrotli }
+      var checkEncoding = function (accept) { return function (encoding) { return accept.encoding(encoding) } }
       var accept = accepts(req)
-      var method = ['br', 'gzip', 'deflate', 'identity']
+      var method = ['br', 'gzip', 'deflate']
         .filter(filterBrotliIfNotSupported)
-        .filter(a => accept.encoding(a))[0] || 'identity'
+        .filter(checkEncoding(accept))[0] || 'identity'
 
       // negotiation failed
-      if (!method || method === 'identity') {
+      if (method === 'identity') {
         nocompress('not acceptable')
         return
       }
