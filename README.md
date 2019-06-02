@@ -11,7 +11,7 @@ The following compression codings are supported:
 
   - deflate
   - gzip
-  - br (node v10+)
+  - br (node v11+)
 
 ## Install
 

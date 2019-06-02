@@ -45,7 +45,7 @@ var cacheControlNoTransformRegExp = /(?:^|,)\s*?no-transform\s*?(?:,|$)/
  * @public
  */
 
-function compression(options) {
+function compression (options) {
   var opts = options || {}
 
   // options
@@ -57,7 +57,7 @@ function compression(options) {
     threshold = 1024
   }
 
-  return function compression(req, res, next) {
+  return function compression (req, res, next) {
     var ended = false
     var length
     var listeners = []
@@ -68,7 +68,7 @@ function compression(options) {
     var _write = res.write
 
     // flush
-    res.flush = function flush() {
+    res.flush = function flush () {
       if (stream) {
         stream.flush()
       }
@@ -76,7 +76,7 @@ function compression(options) {
 
     // proxy
 
-    res.write = function write(chunk, encoding) {
+    res.write = function write (chunk, encoding) {
       if (ended) {
         return false
       }
@@ -90,7 +90,7 @@ function compression(options) {
         : _write.call(this, chunk, encoding)
     }
 
-    res.end = function end(chunk, encoding) {
+    res.end = function end (chunk, encoding) {
       if (ended) {
         return false
       }
@@ -117,7 +117,7 @@ function compression(options) {
         : stream.end()
     }
 
-    res.on = function on(type, listener) {
+    res.on = function on (type, listener) {
       if (!listeners || type !== 'drain') {
         return _on.call(this, type, listener)
       }
@@ -132,13 +132,13 @@ function compression(options) {
       return this
     }
 
-    function nocompress(msg) {
+    function nocompress (msg) {
       debug('no compression: %s', msg)
       addListeners(res, _on, listeners)
       listeners = null
     }
 
-    onHeaders(res, function onResponseHeaders() {
+    onHeaders(res, function onResponseHeaders () {
       // determine if request is filtered
       if (!filter(req, res)) {
         nocompress('filtered')
@@ -207,17 +207,17 @@ function compression(options) {
       res.removeHeader('Content-Length')
 
       // compression
-      stream.on('data', function onStreamData(chunk) {
+      stream.on('data', function onStreamData (chunk) {
         if (_write.call(res, chunk) === false) {
           stream.pause()
         }
       })
 
-      stream.on('end', function onStreamEnd() {
+      stream.on('end', function onStreamEnd () {
         _end.call(res)
       })
 
-      _on.call(res, 'drain', function onResponseDrain() {
+      _on.call(res, 'drain', function onResponseDrain () {
         stream.resume()
       })
     })
@@ -231,7 +231,7 @@ function compression(options) {
  * @private
  */
 
-function addListeners(stream, on, listeners) {
+function addListeners (stream, on, listeners) {
   for (var i = 0; i < listeners.length; i++) {
     on.apply(stream, listeners[i])
   }
@@ -241,7 +241,7 @@ function addListeners(stream, on, listeners) {
  * Get the length of a given chunk
  */
 
-function chunkLength(chunk, encoding) {
+function chunkLength (chunk, encoding) {
   if (!chunk) {
     return 0
   }
@@ -256,7 +256,7 @@ function chunkLength(chunk, encoding) {
  * @private
  */
 
-function shouldCompress(req, res) {
+function shouldCompress (req, res) {
   var type = res.getHeader('Content-Type')
 
   if (type === undefined || !compressible(type)) {
@@ -272,7 +272,7 @@ function shouldCompress(req, res) {
  * @private
  */
 
-function shouldTransform(req, res) {
+function shouldTransform (req, res) {
   var cacheControl = res.getHeader('Cache-Control')
 
   // Don't compress for Cache-Control: no-transform
@@ -286,7 +286,7 @@ function shouldTransform(req, res) {
  * @private
  */
 
-function toBuffer(chunk, encoding) {
+function toBuffer (chunk, encoding) {
   return !Buffer.isBuffer(chunk)
     ? Buffer.from(chunk, encoding)
     : chunk
