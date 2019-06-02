@@ -181,7 +181,7 @@ describe('compression()', function () {
       pressure()
     })
 
-    function pressure () {
+    function pressure() {
       if (!buf || !resp || !client) return
 
       assert.ok(!drained)
@@ -239,7 +239,7 @@ describe('compression()', function () {
       pressure()
     })
 
-    function pressure () {
+    function pressure() {
       if (!buf || !resp || !client) return
 
       while (resp.write(buf) !== false) {
@@ -507,6 +507,27 @@ describe('compression()', function () {
     })
   })
 
+  describe('when "Accept-Encoding: gzip, deflate, br"', function () {
+    it('should respond with br', function (done) {
+      var server = createServer({ threshold: 0 }, function (req, res) {
+        res.setHeader('Content-Type', 'text/plain')
+        res.end('hello, world')
+      })
+
+      if (zlib.createBrotliCompress) {
+        request(server)
+          .get('/')
+          .set('Accept-Encoding', 'gzip, deflate, br')
+          .expect('Content-Encoding', 'br', done)
+      } else {
+        request(server)
+          .get('/')
+          .set('Accept-Encoding', 'gzip, deflate, br')
+          .expect('Content-Encoding', 'gzip', done)
+      }
+    })
+  })
+
   describe('when "Accept-Encoding: gzip, deflate"', function () {
     it('should respond with gzip', function (done) {
       var server = createServer({ threshold: 0 }, function (req, res) {
@@ -630,7 +651,7 @@ describe('compression()', function () {
         next()
       })
 
-      function onchunk (chunk) {
+      function onchunk(chunk) {
         assert.ok(chunks++ < 2)
         assert.strictEqual(chunk.length, 1024)
         next()
@@ -656,7 +677,7 @@ describe('compression()', function () {
         next()
       })
 
-      function onchunk (chunk) {
+      function onchunk(chunk) {
         assert.ok(chunks++ < 20)
         assert.strictEqual(chunk.toString(), '..')
         next()
@@ -682,7 +703,7 @@ describe('compression()', function () {
         next()
       })
 
-      function onchunk (chunk) {
+      function onchunk(chunk) {
         assert.ok(chunks++ < 20)
         assert.strictEqual(chunk.toString(), '..')
         next()
@@ -708,7 +729,7 @@ describe('compression()', function () {
         next()
       })
 
-      function onchunk (chunk) {
+      function onchunk(chunk) {
         assert.ok(chunks++ < 20)
         assert.strictEqual(chunk.toString(), '..')
         next()
@@ -731,7 +752,7 @@ describe('compression()', function () {
   })
 })
 
-function createServer (opts, fn) {
+function createServer(opts, fn) {
   var _compression = compression(opts)
   return http.createServer(function (req, res) {
     _compression(req, res, function (err) {
@@ -746,19 +767,19 @@ function createServer (opts, fn) {
   })
 }
 
-function shouldHaveBodyLength (length) {
+function shouldHaveBodyLength(length) {
   return function (res) {
     assert.strictEqual(res.text.length, length, 'should have body length of ' + length)
   }
 }
 
-function shouldNotHaveHeader (header) {
+function shouldNotHaveHeader(header) {
   return function (res) {
     assert.ok(!(header.toLowerCase() in res.headers), 'should not have header ' + header)
   }
 }
 
-function writeAndFlush (stream, count, buf) {
+function writeAndFlush(stream, count, buf) {
   var writes = 0
 
   return function () {
@@ -769,7 +790,7 @@ function writeAndFlush (stream, count, buf) {
   }
 }
 
-function unchunk (encoding, onchunk, onend) {
+function unchunk(encoding, onchunk, onend) {
   return function (res) {
     var stream
 
