@@ -181,9 +181,7 @@ function compression (options) {
       var accept = accepts(req)
       var method = ['br', 'gzip', 'deflate', 'identity']
         .filter(filterBrotliIfNotSupported)
-        .filter(a => accept.encoding(a))
-        .reverse()
-        .pop() || 'identity'
+        .filter(a => accept.encoding(a))[0] || 'identity'
 
       // negotiation failed
       if (!method || method === 'identity') {
