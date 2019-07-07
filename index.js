@@ -22,6 +22,7 @@ var debug = require('debug')('compression')
 var onHeaders = require('on-headers')
 var vary = require('vary')
 var zlib = require('zlib')
+var iltorb = require('iltorb')
 
 /**
  * Module exports.
@@ -51,9 +52,34 @@ function compression (options) {
   // options
   var filter = opts.filter || shouldCompress
   var threshold = bytes.parse(opts.threshold)
+  var enableBrotli = opts.enableBrotli || false
+  var useIltorb = enableBrotli && (opts.useIltorb || false)
+  var brotliCompressor
+
+  // remove additional options to avoid conflict with library options
+  delete opts.enableBrotli
+  delete opts.useIltorb
 
   if (threshold == null) {
     threshold = 1024
+  }
+
+  if (enableBrotli) {
+    if (useIltorb || (!zlib.createBrotliCompress || (typeof zlib.createBrotliCompress !== 'function'))) {
+      // fall back to iltorb
+      if (!iltorb.compressStream || (typeof iltorb.compressStream !== 'function')) {
+        debug('no suitable brotli compressor found')
+        useIltorb = false
+        enableBrotli = false
+      } else {
+        brotliCompressor = iltorb.compressStream
+        if (!useIltorb) {
+          debug('no native brotli support, falling back to iltorb')
+        }
+      }
+    } else {
+      brotliCompressor = zlib.createBrotliCompress
+    }
   }
 
   return function compression (req, res, next) {
@@ -175,11 +201,16 @@ function compression (options) {
 
       // compression method
       var accept = accepts(req)
-      var method = accept.encoding(['gzip', 'deflate', 'identity'])
 
-      // we really don't prefer deflate
-      if (method === 'deflate' && accept.encoding(['gzip'])) {
-        method = accept.encoding(['gzip', 'identity'])
+      var method
+      
+      // prefer brotli if it is enabled
+      if (enableBrotli) {
+        method = accept.encodings(['br'])
+      }
+      // if we are not using brotli, or it is not supported, try the others in preference order
+      if (!method) {
+        method = accept.encodings(['gzip']) || accept.encodings(['deflate']) || accept.encodings(['identity'])
       }
 
       // negotiation failed
@@ -190,9 +221,18 @@ function compression (options) {
 
       // compression stream
       debug('%s compression', method)
-      stream = method === 'gzip'
-        ? zlib.createGzip(opts)
-        : zlib.createDeflate(opts)
+      switch (method) {
+        case 'br':
+          stream = brotliCompressor(opts)
+          break
+        case 'gzip':
+          stream = zlib.createGzip(opts)
+          break
+        case 'deflate':
+        default:
+          stream = zlib.createDeflate(opts)
+          break
+      }
 
       // add buffered listeners to stream
       addListeners(stream, stream.on, listeners)

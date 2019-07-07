@@ -13,6 +13,7 @@
     "bytes": "3.0.0",
     "compressible": "~2.0.16",
     "debug": "2.6.9",
+    "iltorb": "2.4.3",
     "on-headers": "~1.0.2",
     "safe-buffer": "5.1.2",
     "vary": "~1.1.2"
@@ -27,7 +28,7 @@
     "eslint-plugin-promise": "4.0.1",
     "eslint-plugin-standard": "4.0.0",
     "istanbul": "0.4.5",
-    "mocha": "6.0.2",
+    "mocha": "6.1.4",
     "supertest": "4.0.0"
   },
   "files": [
