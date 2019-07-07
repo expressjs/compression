@@ -978,6 +978,6 @@ function unchunk (encoding, onchunk, onend) {
   }
 }
 
-function supportsNativeBrotli() {
+function supportsNativeBrotli () {
   return zlib.createBrotliDecompress && (typeof zlib.createBrotliDecompress === 'function')
 }

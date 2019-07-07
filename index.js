@@ -201,9 +201,8 @@ function compression (options) {
 
       // compression method
       var accept = accepts(req)
-
       var method
-      
+
       // prefer brotli if it is enabled
       if (enableBrotli) {
         method = accept.encodings(['br'])
