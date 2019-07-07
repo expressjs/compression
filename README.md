@@ -169,6 +169,11 @@ function shouldCompress (req, res) {
 This module adds a `res.flush()` method to force the partially-compressed
 response to be flushed to the client.
 
+### enableBrotli
+
+This flag is used to opt-in to brotli compression. If native brotli compression is available (in Node v10.16+) it will be used via `require('zlib')`. 
+Otherwise, `iltorb` will be used to provide the compression.
+
 ## Examples
 
 ### express/connect
