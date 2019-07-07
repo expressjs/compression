@@ -67,16 +67,7 @@ function compression (options) {
   if (enableBrotli) {
     if (useIltorb || (!zlib.createBrotliCompress || (typeof zlib.createBrotliCompress !== 'function'))) {
       // fall back to iltorb
-      if (!iltorb.compressStream || (typeof iltorb.compressStream !== 'function')) {
-        debug('no suitable brotli compressor found')
-        useIltorb = false
-        enableBrotli = false
-      } else {
         brotliCompressor = iltorb.compressStream
-        if (!useIltorb) {
-          debug('no native brotli support, falling back to iltorb')
-        }
-      }
     } else {
       brotliCompressor = zlib.createBrotliCompress
     }
