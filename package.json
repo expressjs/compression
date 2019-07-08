@@ -14,7 +14,7 @@
     "compressible": "~2.0.16",
     "debug": "2.6.9",
     "on-headers": "~1.0.2",
-    "safe-buffer": "5.1.2",
+    "safe-buffer": "5.2.0",
     "vary": "~1.1.2"
   },
   "devDependencies": {
