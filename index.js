@@ -68,9 +68,9 @@ function compression (options) {
 
     // prevent compression from being injected twice.
     if (res._compressionEnabled === true) {
-      return;
+      return
     }
-    res._compressionEnabled = true;
+    res._compressionEnabled = true
 
     // flush
     res.flush = function flush () {
