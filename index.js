@@ -66,6 +66,12 @@ function compression (options) {
     var _on = res.on
     var _write = res.write
 
+    // prevent compression from being injected twice.
+    if (res._compressionEnabled === true) {
+      return;
+    }
+    res._compressionEnabled = true;
+
     // flush
     res.flush = function flush () {
       if (stream) {
