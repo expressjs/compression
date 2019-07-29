@@ -1,6 +1,10 @@
 unreleased
 ==========
 
+  * deps: accepts@~1.3.7
+    - Fix sorting encoding with extra parameters
+    - deps: mime-types@~2.1.24
+    - deps: negotiator@0.6.2
   * deps: compressible@~2.0.17
     - deps: mime-db@'>= 1.40.0 < 2'
   * deps: safe-buffer@5.2.0
