@@ -156,6 +156,34 @@ describe('compression()', function () {
       .end(function () {})
   })
 
+  it('should not pause the stream and respond when socket is destroyed', function (done) {
+    var len = bytes('40kb')
+    var buf = Buffer.alloc(len, '.')
+
+    var server = createServerWithCompressionAsLast({ threshold: 0 }, function (req, res) {
+      const oldEnd = res.end
+      res.end = (...args) => {
+        done()
+        return oldEnd.apply(res, args)
+      }
+
+      setTimeout(() => {
+        res.setHeader('Content-Type', 'text/plain')
+        res.write(buf)
+        res.write(buf)
+        res.write(buf)
+        res.write(buf)
+        res.end()
+      }, 500)
+    })
+
+    request(server)
+      .get('/')
+      .timeout({ response: 100, deadline: 110 })
+      .expect(200)
+      .end(function () {})
+  })
+
   it('should back-pressure when compressed', function (done) {
     var buf
     var cb = after(2, done)
@@ -670,6 +698,20 @@ function createServer (opts, fn) {
       }
 
       fn(req, res)
+    })
+  })
+}
+
+function createServerWithCompressionAsLast (opts, fn) {
+  var _compression = compression(opts)
+  return http.createServer(function (req, res) {
+    fn(req, res)
+
+    _compression(req, res, function (err) {
+      if (err) {
+        res.statusCode = err.status || 500
+        res.end(err.message)
+      }
     })
   })
 }

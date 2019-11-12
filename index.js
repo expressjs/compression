@@ -203,6 +203,9 @@ function compression (options) {
 
       // compression
       stream.on('data', function onStreamData (chunk) {
+        if (res.socket.destroyed) {
+          return
+        }
         if (_write.call(res, chunk) === false) {
           stream.pause()
         }
