@@ -55,7 +55,7 @@ function compression (options) {
   var brotliZlib = brotli.zlib || {}
   var threshold = bytes.parse(opts.threshold)
   var supportsBrotli = typeof zlib.createBrotliCompress === 'function'
-  var brotliEnabled = supportsBrotli && brotli.enabled
+  var brotliEnabled = brotli.enabled && supportsBrotli
 
   if (threshold === null) {
     threshold = defaultThreshold
