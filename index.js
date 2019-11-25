@@ -48,7 +48,7 @@ var defaultThreshold = 1024
 
 function compression (options) {
   var opts = options || {}
-  
+
   // options
   var filter = opts.filter || shouldCompress
   var brotli = opts.brotli || {}
@@ -60,7 +60,7 @@ function compression (options) {
   if (threshold === null) {
     threshold = defaultThreshold
   }
-  
+
   return function compression (req, res, next) {
     var ended = false
     var length

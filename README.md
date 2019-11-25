@@ -180,7 +180,7 @@ var compression = require('compression')
 var express = require('express')
 
 var app = express()
-app.use(compression({brotli: { enabled: true, zlib: { ...ZLIB_OPTS } } }))
+app.use(compression({ brotli: { enabled: true, zlib: { } } }))
 ```
 
 ## Examples
