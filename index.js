@@ -36,6 +36,7 @@ module.exports.filter = shouldCompress
  */
 
 var cacheControlNoTransformRegExp = /(?:^|,)\s*?no-transform\s*?(?:,|$)/
+var defaultThreshold = 1024
 
 /**
  * Compress response data with gzip / deflate.
@@ -47,16 +48,19 @@ var cacheControlNoTransformRegExp = /(?:^|,)\s*?no-transform\s*?(?:,|$)/
 
 function compression (options) {
   var opts = options || {}
-
+  
   // options
   var filter = opts.filter || shouldCompress
+  var brotli = opts.brotli || {}
+  var brotliZlib = brotli.zlib || {}
   var threshold = bytes.parse(opts.threshold)
   var supportsBrotli = typeof zlib.createBrotliCompress === 'function'
+  var brotliEnabled = supportsBrotli && brotli.enabled
 
-  if (threshold == null) {
-    threshold = 1024
+  if (threshold === null) {
+    threshold = defaultThreshold
   }
-
+  
   return function compression (req, res, next) {
     var ended = false
     var length
@@ -175,7 +179,7 @@ function compression (options) {
       }
 
       // compression method
-      var filterBrotliIfNotSupported = function (encoding) { return encoding !== 'br' || supportsBrotli }
+      var filterBrotliIfNotSupported = function (encoding) { return encoding !== 'br' || brotliEnabled }
       var checkEncoding = function (accept) { return function (encoding) { return accept.encoding(encoding) } }
       var accept = accepts(req)
       var method = ['br', 'gzip', 'deflate']
@@ -191,7 +195,7 @@ function compression (options) {
       // compression stream
       debug('%s compression', method)
       switch (method) {
-        case 'br': stream = zlib.createBrotliCompress(opts); break
+        case 'br': stream = zlib.createBrotliCompress(brotliZlib); break
         case 'gzip': stream = zlib.createGzip(opts); break
         case 'deflate': stream = zlib.createDeflate(opts); break
       }
