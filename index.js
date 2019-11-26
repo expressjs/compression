@@ -184,10 +184,10 @@ function compression (options) {
       var accept = accepts(req)
 
       var methodDict = {
-        br: function () { stream = zlib.createBrotliCompress(brotliZlib); return true },
-        gzip: function () { stream = zlib.createGzip(opts); return true },
-        deflate: function () { stream = zlib.createDeflate(opts); return true },
-        identity: function () { nocompress('not acceptable'); return false }
+        br: function () { return stream = zlib.createBrotliCompress(brotliZlib) },
+        gzip: function () { return stream = zlib.createGzip(opts) },
+        deflate: function () { return stream = zlib.createDeflate(opts) },
+        identity: function () { nocompress('not acceptable') }
       }
 
       var method = Object.keys(methodDict)
