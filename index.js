@@ -182,21 +182,22 @@ function compression (options) {
       var filterBrotliIfNotSupported = function (encoding) { return encoding !== 'br' || brotliEnabled }
       var checkEncoding = function (accept) { return function (encoding) { return accept.encoding(encoding) } }
       var accept = accepts(req)
-
-      var methodDict = {
-        br: function () { return stream = zlib.createBrotliCompress(brotliZlib) },
-        gzip: function () { return stream = zlib.createGzip(opts) },
-        deflate: function () { return stream = zlib.createDeflate(opts) },
-        identity: function () { nocompress('not acceptable') }
-      }
-
-      var method = Object.keys(methodDict)
+      var method = ['br', 'gzip', 'deflate']
         .filter(filterBrotliIfNotSupported)
         .filter(checkEncoding(accept))[0] || 'identity'
 
-      debug('%s compression', method)
-      if (typeof methodDict[method] === 'function' && !methodDict[method]()) {
+      // negotiation failed
+      if (method === 'identity') {
+        nocompress('not acceptable')
         return
+      }
+
+      // compression stream
+      debug('%s compression', method)
+      switch (method) {
+        case 'br': stream = zlib.createBrotliCompress(brotliZlib); break
+        case 'gzip': stream = zlib.createGzip(opts); break
+        case 'deflate': stream = zlib.createDeflate(opts); break
       }
 
       // add buffered listeners to stream
