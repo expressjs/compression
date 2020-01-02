@@ -469,7 +469,7 @@ describe('compression()', function () {
 
   describe('when "Accept-Encoding: br"', function () {
     it('should respond with br', function (done) {
-      var server = createServer({ threshold: 0 }, function (req, res) {
+      var server = createServer({ threshold: 0, brotli: { enabled: true } }, function (req, res) {
         res.setHeader('Content-Type', 'text/plain')
         res.end('hello, world')
       })
@@ -488,7 +488,7 @@ describe('compression()', function () {
       }
     })
     it('should respond with br, gzip', function (done) {
-      var server = createServer({ threshold: 0 }, function (req, res) {
+      var server = createServer({ threshold: 0, brotli: { enabled: true } }, function (req, res) {
         res.setHeader('Content-Type', 'text/plain')
         res.end('hello, world')
       })
@@ -505,11 +505,30 @@ describe('compression()', function () {
           .expect('Content-Encoding', 'gzip', done)
       }
     })
+
+    it('should respond with gzip when br is disabled disabled', function (done) {
+      var server = createServer({ threshold: 0, brotli: { enabled: false } }, function (req, res) {
+        res.setHeader('Content-Type', 'text/plain')
+        res.end('hello, world')
+      })
+
+      if (zlib.createBrotliCompress) {
+        request(server)
+          .get('/')
+          .set('Accept-Encoding', 'gzip')
+          .expect('Content-Encoding', 'gzip', done)
+      } else {
+        request(server)
+          .get('/')
+          .set('Accept-Encoding', 'gzip')
+          .expect('Content-Encoding', 'gzip', done)
+      }
+    })
   })
 
   describe('when "Accept-Encoding: gzip, deflate, br"', function () {
     it('should respond with br', function (done) {
-      var server = createServer({ threshold: 0 }, function (req, res) {
+      var server = createServer({ threshold: 0, brotli: { enabled: true } }, function (req, res) {
         res.setHeader('Content-Type', 'text/plain')
         res.end('hello, world')
       })
@@ -723,7 +742,7 @@ describe('compression()', function () {
     it('should flush small chunks for br', function (done) {
       var chunks = 0
       var next
-      var server = createServer({ threshold: 0 }, function (req, res) {
+      var server = createServer({ threshold: 0, brotli: { enabled: true } }, function (req, res) {
         next = writeAndFlush(res, 2, Buffer.from('..'))
         res.setHeader('Content-Type', 'text/plain')
         next()
