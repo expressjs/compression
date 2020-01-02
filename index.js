@@ -36,6 +36,7 @@ module.exports.filter = shouldCompress
  */
 
 var cacheControlNoTransformRegExp = /(?:^|,)\s*?no-transform\s*?(?:,|$)/
+var defaultThreshold = 1024
 
 /**
  * Compress response data with gzip / deflate.
@@ -50,10 +51,14 @@ function compression (options) {
 
   // options
   var filter = opts.filter || shouldCompress
+  var brotli = opts.brotli || {}
+  var brotliZlib = brotli.zlib || {}
   var threshold = bytes.parse(opts.threshold)
+  var supportsBrotli = typeof zlib.createBrotliCompress === 'function'
+  var brotliEnabled = brotli.enabled && supportsBrotli
 
-  if (threshold == null) {
-    threshold = 1024
+  if (threshold === null) {
+    threshold = defaultThreshold
   }
 
   return function compression (req, res, next) {
@@ -174,25 +179,26 @@ function compression (options) {
       }
 
       // compression method
+      var filterBrotliIfNotSupported = function (encoding) { return encoding !== 'br' || brotliEnabled }
+      var checkEncoding = function (accept) { return function (encoding) { return accept.encoding(encoding) } }
       var accept = accepts(req)
-      var method = accept.encoding(['gzip', 'deflate', 'identity'])
-
-      // we really don't prefer deflate
-      if (method === 'deflate' && accept.encoding(['gzip'])) {
-        method = accept.encoding(['gzip', 'identity'])
-      }
+      var method = ['br', 'gzip', 'deflate']
+        .filter(filterBrotliIfNotSupported)
+        .filter(checkEncoding(accept))[0] || 'identity'
 
       // negotiation failed
-      if (!method || method === 'identity') {
+      if (method === 'identity') {
         nocompress('not acceptable')
         return
       }
 
       // compression stream
       debug('%s compression', method)
-      stream = method === 'gzip'
-        ? zlib.createGzip(opts)
-        : zlib.createDeflate(opts)
+      switch (method) {
+        case 'br': stream = zlib.createBrotliCompress(brotliZlib); break
+        case 'gzip': stream = zlib.createGzip(opts); break
+        case 'deflate': stream = zlib.createDeflate(opts); break
+      }
 
       // add buffered listeners to stream
       addListeners(stream, stream.on, listeners)

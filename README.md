@@ -11,6 +11,7 @@ The following compression codings are supported:
 
   - deflate
   - gzip
+  - br (requires node v10.16.0 or higher)
 
 ## Install
 
@@ -168,6 +169,19 @@ function shouldCompress (req, res) {
 
 This module adds a `res.flush()` method to force the partially-compressed
 response to be flushed to the client.
+
+#### brotli
+
+The default `filter` function. This is used to construct a custom filter
+function that is an extension of the default function.
+
+```js
+var compression = require('compression')
+var express = require('express')
+
+var app = express()
+app.use(compression({ brotli: { enabled: true, zlib: { } } }))
+```
 
 ## Examples
 
