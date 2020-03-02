@@ -327,7 +327,7 @@ describe('compression()', function () {
           'Accept-Encoding': 'gzip'
         })
         request.on('response', function (headers) {
-          assert.equal(headers['content-encoding'], 'gzip')
+          assert.strictEqual(headers['content-encoding'], 'gzip')
         })
         request.on('error', function (error) {
           console.error('An error event occurred on a http2 client request.', error)
