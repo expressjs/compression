@@ -9,6 +9,12 @@ var zlib = require('zlib')
 
 var compression = require('..')
 
+/**
+ * @const
+ * whether current node version has brotli support
+ */
+var hasBrotliSupport = 'brotli' in process.versions
+
 describe('compression()', function () {
   it('should skip HEAD', function (done) {
     var server = createServer({ threshold: 0 }, function (req, res) {
@@ -465,6 +471,21 @@ describe('compression()', function () {
     })
   })
 
+  describe('when "Accept-Encoding: br"', function () {
+    var brotlit = hasBrotliSupport ? it : it.skip
+    brotlit('should respond with br', function (done) {
+      var server = createServer({ threshold: 0 }, function (req, res) {
+        res.setHeader('Content-Type', 'text/plain')
+        res.end('hello, world')
+      })
+
+      request(server)
+        .get('/')
+        .set('Accept-Encoding', 'br')
+        .expect('Content-Encoding', 'br', done)
+    })
+  })
+
   describe('when "Accept-Encoding: gzip, deflate"', function () {
     it('should respond with gzip', function (done) {
       var server = createServer({ threshold: 0 }, function (req, res) {
@@ -490,6 +511,21 @@ describe('compression()', function () {
         .get('/')
         .set('Accept-Encoding', 'deflate, gzip')
         .expect('Content-Encoding', 'gzip', done)
+    })
+  })
+
+  describe('when "Accept-Encoding: deflate, br"', function () {
+    var brotlit = hasBrotliSupport ? it : it.skip
+    brotlit('should respond with br', function (done) {
+      var server = createServer({ threshold: 0 }, function (req, res) {
+        res.setHeader('Content-Type', 'text/plain')
+        res.end('hello, world')
+      })
+
+      request(server)
+        .get('/')
+        .set('Accept-Encoding', 'deflate, br')
+        .expect('Content-Encoding', 'br', done)
     })
   })
 
@@ -631,6 +667,33 @@ describe('compression()', function () {
         .end()
     })
 
+    var brotlit = hasBrotliSupport ? it : it.skip
+    brotlit('should flush small chunks for brotli', function (done) {
+      var chunks = 0
+      var next
+      var server = createServer({ threshold: 0 }, function (req, res) {
+        next = writeAndFlush(res, 2, Buffer.from('..'))
+        res.setHeader('Content-Type', 'text/plain')
+        next()
+      })
+
+      function onchunk (chunk) {
+        assert.ok(chunks++ < 20)
+        assert.strictEqual(chunk.toString(), '..')
+        next()
+      }
+
+      request(server)
+        .get('/')
+        .set('Accept-Encoding', 'br')
+        .request()
+        .on('response', unchunk('br', onchunk, function (err) {
+          if (err) return done(err)
+          server.close(done)
+        }))
+        .end()
+    })
+
     it('should flush small chunks for deflate', function (done) {
       var chunks = 0
       var next
@@ -709,6 +772,9 @@ function unchunk (encoding, onchunk, onend) {
         break
       case 'gzip':
         stream = res.pipe(zlib.createGunzip())
+        break
+      case 'br':
+        stream = res.pipe(zlib.createBrotliDecompress())
         break
     }
 

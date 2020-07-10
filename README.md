@@ -11,6 +11,9 @@ The following compression codings are supported:
 
   - deflate
   - gzip
+  - br (brotli)
+
+**Note** Brotli provides better and faster compression then gzip or deflate, but is supported only since Node.js versions v11.7.0 and v10.16.0.
 
 ## Install
 
@@ -45,6 +48,9 @@ as compressing will transform the body.
 `compression()` accepts these properties in the options object. In addition to
 those listed below, [zlib](http://nodejs.org/api/zlib.html) options may be
 passed in to the options object.
+
+As for *brotli*, a default is set to compression level 4, unless
+[anything else is specified](https://nodejs.org/api/zlib.html#zlib_class_brotlioptions).
 
 ##### chunkSize
 

@@ -19,6 +19,7 @@ var Buffer = require('safe-buffer').Buffer
 var bytes = require('bytes')
 var compressible = require('compressible')
 var debug = require('debug')('compression')
+var objectAssign = require('object-assign')
 var onHeaders = require('on-headers')
 var vary = require('vary')
 var zlib = require('zlib')
@@ -38,6 +39,24 @@ module.exports.filter = shouldCompress
 var cacheControlNoTransformRegExp = /(?:^|,)\s*?no-transform\s*?(?:,|$)/
 
 /**
+ * @const
+ * whether current node version has brotli support
+ */
+var hasBrotliSupport = 'brotli' in process.versions
+
+var supportedEncodings = hasBrotliSupport
+  ? ['gzip', 'deflate', 'br', 'identity']
+  : ['gzip', 'deflate', 'identity']
+
+var supportedCompressionsNoDeflate = hasBrotliSupport
+  ? ['gzip', 'br']
+  : ['gzip']
+
+var supportedEncodingsNoDeflate = hasBrotliSupport
+  ? ['gzip', 'br', 'identity']
+  : ['gzip', 'identity']
+
+/**
  * Compress response data with gzip / deflate.
  *
  * @param {Object} [options]
@@ -47,6 +66,12 @@ var cacheControlNoTransformRegExp = /(?:^|,)\s*?no-transform\s*?(?:,|$)/
 
 function compression (options) {
   var opts = options || {}
+
+  if (hasBrotliSupport && opts.params === undefined) {
+    opts = objectAssign({}, opts)
+    opts.params = {}
+    opts.params[zlib.constants.BROTLI_PARAM_QUALITY] = 4
+  }
 
   // options
   var filter = opts.filter || shouldCompress
@@ -175,11 +200,11 @@ function compression (options) {
 
       // compression method
       var accept = accepts(req)
-      var method = accept.encoding(['gzip', 'deflate', 'identity'])
+      var method = accept.encoding(supportedEncodings)
 
       // we really don't prefer deflate
-      if (method === 'deflate' && accept.encoding(['gzip'])) {
-        method = accept.encoding(['gzip', 'identity'])
+      if (method === 'deflate' && accept.encoding(supportedCompressionsNoDeflate)) {
+        method = accept.encoding(supportedEncodingsNoDeflate)
       }
 
       // negotiation failed
@@ -192,7 +217,9 @@ function compression (options) {
       debug('%s compression', method)
       stream = method === 'gzip'
         ? zlib.createGzip(opts)
-        : zlib.createDeflate(opts)
+        : method === 'br'
+          ? zlib.createBrotliCompress(opts)
+          : zlib.createDeflate(opts)
 
       // add buffered listeners to stream
       addListeners(stream, stream.on, listeners)
