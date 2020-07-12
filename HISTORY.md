@@ -1,4 +1,3 @@
-=======
 unreleased
 ==========
 
@@ -33,7 +32,6 @@ unreleased
 
 1.7.2 / 2018-02-18
 ==================
-
   * deps: compressible@~2.0.13
     - deps: mime-db@'>= 1.33.0 < 2'
 
