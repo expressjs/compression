@@ -105,7 +105,7 @@ The default value is `zlib.Z_DEFAULT_MEMLEVEL`, or `8`.
 See [Node.js documentation](http://nodejs.org/api/zlib.html#zlib_memory_usage_tuning)
 regarding the usage.
 
-##### params [*(brotli only)*](https://nodejs.org/api/zlib.html#zlib_brotli_constants)
+##### params *(brotli only)* - [key-value object containing indexed Brotli parameters](https://nodejs.org/api/zlib.html#zlib_brotli_constants)
 
   - `zlib.constants.BROTLI_PARAM_MODE`
     - `zlib.constants.BROTLI_MODE_GENERIC` (default)
