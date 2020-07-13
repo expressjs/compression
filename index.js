@@ -67,10 +67,17 @@ var supportedEncodingsNoDeflate = hasBrotliSupport
 function compression (options) {
   var opts = options || {}
 
-  if (hasBrotliSupport && opts.params === undefined) {
-    opts = objectAssign({}, opts)
-    opts.params = {}
-    opts.params[zlib.constants.BROTLI_PARAM_QUALITY] = 4
+  if (hasBrotliSupport) {
+    // set the default level to a reasonable value with balanced speed/ratio
+    if (opts.params === undefined) {
+      opts = objectAssign({}, opts)
+      opts.params = {}
+    }
+
+    if (opts.params[zlib.constants.BROTLI_PARAM_QUALITY] === undefined) {
+      opts.params = objectAssign({}, opts.params)
+      opts.params[zlib.constants.BROTLI_PARAM_QUALITY] = 4
+    }
   }
 
   // options
