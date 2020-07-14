@@ -486,6 +486,24 @@ describe('compression()', function () {
     })
   })
 
+  describe('when "Accept-Encoding: br" and passing compression level', function () {
+    var brotlit = hasBrotliSupport ? it : it.skip
+    brotlit('should respond with br', function (done) {
+      var params = {}
+      params[zlib.constants.BROTLI_PARAM_QUALITY] = 11
+
+      var server = createServer({ threshold: 0, params: params }, function (req, res) {
+        res.setHeader('Content-Type', 'text/plain')
+        res.end('hello, world')
+      })
+
+      request(server)
+        .get('/')
+        .set('Accept-Encoding', 'br')
+        .expect('Content-Encoding', 'br', done)
+    })
+  })
+
   describe('when "Accept-Encoding: gzip, deflate"', function () {
     it('should respond with gzip', function (done) {
       var server = createServer({ threshold: 0 }, function (req, res) {
