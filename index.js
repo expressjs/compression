@@ -66,10 +66,15 @@ function compression (options) {
     var _on = res.on
     var _write = res.write
 
+    var flushCB = function flushCB () {
+      stream.flush()
+    }
+
     // flush
     res.flush = function flush () {
       if (stream) {
-        stream.flush()
+        // call write and pass flushCB to force synchronous behavior
+        stream.write('', flushCB)
       }
     }
 
