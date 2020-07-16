@@ -63,9 +63,22 @@ function compression (options) {
     var stream
 
     var _end = res.end
-    var _on = res.on
     var _removeListener = res.removeListener
     var _write = res.write
+
+    // proxy drain events from stream
+    var _addListener = interceptAddListener(res, function (type, listener) {
+      if (!listeners || type !== 'drain') {
+        // skip intercept
+        return false
+      } else if (stream) {
+        // add listener to stream instead
+        stream.on(type, listener)
+      } else {
+        // buffer listeners for future stream
+        listeners.push([type, listener])
+      }
+    })
 
     // flush
     res.flush = function flush () {
@@ -117,23 +130,6 @@ function compression (options) {
         : stream.end()
     }
 
-    res.on = function on (type, listener) {
-      if (!listeners || type !== 'drain') {
-        return _on.call(this, type, listener)
-      }
-
-      if (stream) {
-        return stream.on(type, listener)
-      }
-
-      // buffer listeners for future stream
-      listeners.push([type, listener])
-
-      return this
-    }
-
-    res.addListener = res.on
-
     res.removeListener = function removeListener (type, listener) {
       if (!listeners || type !== 'drain') {
         return _removeListener.call(this, type, listener)
@@ -161,7 +157,7 @@ function compression (options) {
 
     function nocompress (msg) {
       debug('no compression: %s', msg)
-      addListeners(res, _on, listeners)
+      addListeners(res, _addListener, listeners)
       listeners = null
     }
 
@@ -240,7 +236,7 @@ function compression (options) {
         _end.call(res)
       })
 
-      _on.call(res, 'drain', function onResponseDrain () {
+      _addListener.call(res, 'drain', function onResponseDrain () {
         stream.resume()
       })
     })
@@ -254,9 +250,9 @@ function compression (options) {
  * @private
  */
 
-function addListeners (stream, on, listeners) {
+function addListeners (stream, addListener, listeners) {
   for (var i = 0; i < listeners.length; i++) {
-    on.apply(stream, listeners[i])
+    addListener.apply(stream, listeners[i])
   }
 }
 
@@ -273,6 +269,53 @@ function chunkLength (chunk, encoding) {
     ? Buffer.byteLength(chunk, encoding)
     : chunk.length
 }
+
+/**
+ * Intercept add listener on event emitter.
+ * @private
+ */
+
+function interceptAddListener (ee, fn) {
+  var _addListener = ee.addListener
+  var _on = ee.on
+
+  if (_addListener) {
+    Object.defineProperty(ee, 'addListener', {
+      configurable: true,
+      value: addListener,
+      writable: true
+    })
+  }
+
+  if (_on) {
+    Object.defineProperty(ee, 'on', {
+      configurable: true,
+      value: on,
+      writable: true
+    })
+  }
+
+  return _addListener || _on || noop
+
+  function addListener (type, listener) {
+    return fn.call(this, type, listener) === false
+      ? _addListener.call(this, type, listener)
+      : this
+  }
+
+  function on (type, listener) {
+    return fn.call(this, type, listener) === false
+      ? _on.call(this, type, listener)
+      : this
+  }
+}
+
+/**
+ * Reusable no-op function.
+ * @private
+ */
+
+function noop () {}
 
 /**
  * Default filter function.
