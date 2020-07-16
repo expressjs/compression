@@ -63,7 +63,6 @@ function compression (options) {
     var stream
 
     var _end = res.end
-    var _removeListener = res.removeListener
     var _write = res.write
 
     // proxy drain events from stream
@@ -77,6 +76,23 @@ function compression (options) {
       } else {
         // buffer listeners for future stream
         listeners.push([type, listener])
+      }
+    })
+
+    interceptRemoveListener(res, function (type, listener) {
+      if (!listeners || type !== 'drain') {
+        // skip intercept
+        return false
+      } else if (stream) {
+        // remove listener from stream
+        stream.removeListener(type, listener)
+      } else {
+        // remove buffered listener
+        for (var i = listeners.length - 1; i >= 0; i--) {
+          if (listeners[i][0] === type && listeners[i][1] === listener) {
+            listeners.splice(i, 1)
+          }
+        }
       }
     })
 
@@ -128,31 +144,6 @@ function compression (options) {
       return chunk
         ? stream.end(toBuffer(chunk, encoding))
         : stream.end()
-    }
-
-    res.removeListener = function removeListener (type, listener) {
-      if (!listeners || type !== 'drain') {
-        return _removeListener.call(this, type, listener)
-      }
-
-      if (stream) {
-        return stream.removeListener(type, listener)
-      }
-
-      // remove buffered listener
-      for (var i = listeners.length - 1; i >= 0; i--) {
-        if (listeners[i][0] === type && listeners[i][1] === listener) {
-          listeners.splice(i, 1)
-        }
-      }
-
-      return this
-    }
-
-    /* istanbul ignore next */
-    if (res.off) {
-      // emitter.off was added in Node.js v10+; don't add it to earlier versions
-      res.off = res.removeListener
     }
 
     function nocompress (msg) {
@@ -306,6 +297,46 @@ function interceptAddListener (ee, fn) {
   function on (type, listener) {
     return fn.call(this, type, listener) === false
       ? _on.call(this, type, listener)
+      : this
+  }
+}
+
+/**
+ * Intercept add listener on event emitter.
+ * @private
+ */
+
+function interceptRemoveListener (ee, fn) {
+  var _removeListener = ee.removeListener
+  var _off = ee.off
+
+  if (_removeListener) {
+    Object.defineProperty(ee, 'removeListener', {
+      configurable: true,
+      value: removeListener,
+      writable: true
+    })
+  }
+
+  if (_off) {
+    Object.defineProperty(ee, 'off', {
+      configurable: true,
+      value: off,
+      writable: true
+    })
+  }
+
+  return _removeListener || _off || noop
+
+  function removeListener (type, listener) {
+    return fn.call(this, type, listener) === false
+      ? _removeListener.call(this, type, listener)
+      : this
+  }
+
+  function off (type, listener) {
+    return fn.call(this, type, listener) === false
+      ? _off.call(this, type, listener)
       : this
   }
 }
