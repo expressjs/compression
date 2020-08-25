@@ -42,7 +42,7 @@ var cacheControlNoTransformRegExp = /(?:^|,)\s*?no-transform\s*?(?:,|$)/
  * @const
  * whether current node version has brotli support
  */
-var hasBrotliSupport = 'brotli' in process.versions
+var hasBrotliSupport = 'createBrotliCompress' in zlib
 
 var supportedEncodings = hasBrotliSupport
   ? ['gzip', 'deflate', 'br', 'identity']

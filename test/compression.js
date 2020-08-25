@@ -13,7 +13,7 @@ var compression = require('..')
  * @const
  * whether current node version has brotli support
  */
-var hasBrotliSupport = 'brotli' in process.versions
+var hasBrotliSupport = 'createBrotliCompress' in zlib
 
 describe('compression()', function () {
   it('should skip HEAD', function (done) {
