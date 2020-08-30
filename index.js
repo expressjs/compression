@@ -45,16 +45,12 @@ var cacheControlNoTransformRegExp = /(?:^|,)\s*?no-transform\s*?(?:,|$)/
 var hasBrotliSupport = 'createBrotliCompress' in zlib
 
 var supportedEncodings = hasBrotliSupport
-  ? ['gzip', 'deflate', 'br', 'identity']
+  ? ['br', 'gzip', 'deflate', 'identity']
   : ['gzip', 'deflate', 'identity']
 
-var supportedCompressionsNoDeflate = hasBrotliSupport
-  ? ['gzip', 'br']
+var preferredEncodings = hasBrotliSupport
+  ? ['br', 'gzip']
   : ['gzip']
-
-var supportedEncodingsNoDeflate = hasBrotliSupport
-  ? ['gzip', 'br', 'identity']
-  : ['gzip', 'identity']
 
 /**
  * Compress response data with gzip / deflate.
@@ -209,9 +205,14 @@ function compression (options) {
       var accept = accepts(req)
       var method = accept.encoding(supportedEncodings)
 
-      // we really don't prefer deflate
-      if (method === 'deflate' && accept.encoding(supportedCompressionsNoDeflate)) {
-        method = accept.encoding(supportedEncodingsNoDeflate)
+      // we have our own set of preferences, override user-agent preferences
+      for (var i = 0, len = preferredEncodings.length, preferred; i < len; i++) {
+        preferred = preferredEncodings[i]
+
+        if (method !== preferred && accept.encoding(preferred)) {
+          method = preferred
+          break
+        }
       }
 
       // negotiation failed
