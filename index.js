@@ -14,7 +14,6 @@
  * @private
  */
 
-var Encodings = require('koa-compress/lib/encodings')
 var Buffer = require('safe-buffer').Buffer
 var bytes = require('bytes')
 var compressible = require('compressible')
@@ -23,6 +22,8 @@ var objectAssign = require('object-assign')
 var onHeaders = require('on-headers')
 var vary = require('vary')
 var zlib = require('zlib')
+
+var Encodings = require('./lib/encodings')
 
 /**
  * Module exports.
@@ -39,16 +40,6 @@ module.exports.filter = shouldCompress
 var cacheControlNoTransformRegExp = /(?:^|,)\s*?no-transform\s*?(?:,|$)/
 
 /**
- * @const
- * whether current node version has brotli support
- */
-var hasBrotliSupport = 'createBrotliCompress' in zlib
-
-var supportedEncodings = hasBrotliSupport
-  ? ['br', 'gzip', 'deflate', 'identity']
-  : ['gzip', 'deflate', 'identity']
-
-/**
  * Compress response data with gzip / deflate.
  *
  * @param {Object} [options]
@@ -59,7 +50,7 @@ var supportedEncodings = hasBrotliSupport
 function compression (options) {
   var opts = options || {}
 
-  if (hasBrotliSupport) {
+  if (Encodings.hasBrotliSupport) {
     // set the default level to a reasonable value with balanced speed/ratio
     if (opts.params === undefined) {
       opts = objectAssign({}, opts)
@@ -198,9 +189,7 @@ function compression (options) {
       }
 
       // compression method
-      var encodings = new Encodings({
-        preferredEncodings: supportedEncodings
-      })
+      var encodings = new Encodings();
       encodings.parseAcceptEncoding(req.headers['accept-encoding'] || 'identity')
       var method = encodings.getPreferredContentEncoding()
 
