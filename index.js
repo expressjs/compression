@@ -189,7 +189,7 @@ function compression (options) {
       }
 
       // compression method
-      var encodings = new Encodings();
+      var encodings = new Encodings()
       encodings.parseAcceptEncoding(req.headers['accept-encoding'] || 'identity')
       var method = encodings.getPreferredContentEncoding()
 
