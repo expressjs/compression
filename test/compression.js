@@ -577,6 +577,21 @@ describe('compression()', function () {
     })
   })
 
+  describe('when "Accept-Encoding: gzip, br;q=0.8"', function () {
+    var brotlit = hasBrotliSupport ? it : it.skip
+    brotlit('should respond with gzip', function (done) {
+      var server = createServer({ threshold: 0 }, function (req, res) {
+        res.setHeader('Content-Type', 'text/plain')
+        res.end('hello, world')
+      })
+
+      request(server)
+        .get('/')
+        .set('Accept-Encoding', 'gzip, br;q=0.8')
+        .expect('Content-Encoding', 'gzip', done)
+    })
+  })
+
   describe('when "Accept-Encoding: deflate, br"', function () {
     var brotlit = hasBrotliSupport ? it : it.skip
     brotlit('should respond with br', function (done) {
