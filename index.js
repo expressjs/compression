@@ -14,7 +14,8 @@
  * @private
  */
 
-var accepts = require('accepts')
+// var accepts = require('accepts')
+var Encodings = require('koa-compress/lib/encodings');
 var Buffer = require('safe-buffer').Buffer
 var bytes = require('bytes')
 var compressible = require('compressible')
@@ -202,18 +203,11 @@ function compression (options) {
       }
 
       // compression method
-      var accept = accepts(req)
-      var method = accept.encoding(supportedEncodings)
-
-      // we have our own set of preferences, override user-agent preferences
-      for (var i = 0, len = preferredEncodings.length, preferred; i < len; i++) {
-        preferred = preferredEncodings[i]
-
-        if (method !== preferred && accept.encoding(preferred)) {
-          method = preferred
-          break
-        }
-      }
+      var encodings = new Encodings({
+        preferredEncodings: supportedEncodings
+      })
+      encodings.parseAcceptEncoding(req.headers['accept-encoding'] || 'identity')
+      var method = encodings.getPreferredContentEncoding()
 
       // negotiation failed
       if (!method || method === 'identity') {
