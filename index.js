@@ -14,8 +14,7 @@
  * @private
  */
 
-// var accepts = require('accepts')
-var Encodings = require('koa-compress/lib/encodings');
+var Encodings = require('koa-compress/lib/encodings')
 var Buffer = require('safe-buffer').Buffer
 var bytes = require('bytes')
 var compressible = require('compressible')
@@ -48,10 +47,6 @@ var hasBrotliSupport = 'createBrotliCompress' in zlib
 var supportedEncodings = hasBrotliSupport
   ? ['br', 'gzip', 'deflate', 'identity']
   : ['gzip', 'deflate', 'identity']
-
-var preferredEncodings = hasBrotliSupport
-  ? ['br', 'gzip']
-  : ['gzip']
 
 /**
  * Compress response data with gzip / deflate.
