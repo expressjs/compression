@@ -22,6 +22,7 @@ var debug = require('debug')('compression')
 var onHeaders = require('on-headers')
 var vary = require('vary')
 var zlib = require('zlib')
+var objectAssign = require('object-assign')
 
 /**
  * Module exports.
@@ -29,6 +30,17 @@ var zlib = require('zlib')
 
 module.exports = compression
 module.exports.filter = shouldCompress
+
+/**
+ * @const
+ * whether current node version has brotli support
+ */
+var hasBrotliSupport = 'createBrotliCompress' in zlib
+
+var preferredEncodings = ['gzip', 'deflate', 'identity']
+if (hasBrotliSupport) {
+  preferredEncodings.unshift('br')
+}
 
 /**
  * Module variables.
@@ -47,6 +59,17 @@ var cacheControlNoTransformRegExp = /(?:^|,)\s*?no-transform\s*?(?:,|$)/
 
 function compression (options) {
   var opts = options || {}
+
+  if (hasBrotliSupport) {
+    // set the default level to a reasonable value with balanced speed/ratio
+    if (opts.params === undefined) {
+      opts.params = {}
+    }
+
+    if (opts.params[zlib.constants.BROTLI_PARAM_QUALITY] === undefined) {
+      opts.params[zlib.constants.BROTLI_PARAM_QUALITY] = 4
+    }
+  }
 
   // options
   var filter = opts.filter || shouldCompress
@@ -173,14 +196,12 @@ function compression (options) {
         return
       }
 
-      // compression method
-      var accept = accepts(req)
-      var method = accept.encoding(['gzip', 'deflate', 'identity'])
+      // force proper priorization
+      var headers = objectAssign({}, req.headers, options.prioritizeClient ? null : { 'accept-encoding': prioritize(req.headers['accept-encoding']) })
 
-      // we really don't prefer deflate
-      if (method === 'deflate' && accept.encoding(['gzip'])) {
-        method = accept.encoding(['gzip', 'identity'])
-      }
+      // compression method
+      var accept = accepts({ headers: headers })
+      var method = accept.encoding(preferredEncodings)
 
       // negotiation failed
       if (!method || method === 'identity') {
@@ -192,7 +213,9 @@ function compression (options) {
       debug('%s compression', method)
       stream = method === 'gzip'
         ? zlib.createGzip(opts)
-        : zlib.createDeflate(opts)
+        : method === 'br'
+          ? zlib.createBrotliCompress(opts)
+          : zlib.createDeflate(opts)
 
       // add buffered listeners to stream
       addListeners(stream, stream.on, listeners)
@@ -285,4 +308,49 @@ function toBuffer (chunk, encoding) {
   return !Buffer.isBuffer(chunk)
     ? Buffer.from(chunk, encoding)
     : chunk
+}
+
+/**
+ * Most browsers send "br" (brotli) as the last value in
+ * in the 'Accept-Encoding' header which causes it to be
+ * deprioritized according to the spec.
+ *
+ * This is typically not what end users actually want so here
+ * we force the "br" (brotli) value to first in the list so that
+ * it will get properly prioritized and used.
+ *
+ * It's worth noting that although this is not "spec compliant",
+ * we belive it follows a well-established convention.
+ *
+ * @private
+ */
+function prioritize (str) {
+  return str && str.toLowerCase()
+    .split(',')
+    .sort(sortEncodings)
+    .join(',')
+}
+
+/**
+ * Sort compression encodings in order of our preference:
+ * br > gzip > deflate
+ *
+ * @private
+ */
+function sortEncodings (a, b) {
+  if (a.indexOf('br') >= 0) {
+    return -1
+  }
+  if (a.indexOf('gzip') >= 0) {
+    return b.indexOf('br') >= 0 ? 1 : -1
+  }
+  // we need these inverse rules to fix a stable sort bug
+  // found in node 10.x
+  if (b.indexOf('br') >= 0) {
+    return 1
+  }
+  if (b.indexOf('gzip') >= 0) {
+    return 1
+  }
+  return 0
 }

@@ -11,6 +11,9 @@ The following compression codings are supported:
 
   - deflate
   - gzip
+  - br (brotli)
+
+**Note** Brotli is supported only since Node.js versions v11.7.0 and v10.16.0.
 
 ## Install
 
@@ -44,7 +47,8 @@ as compressing will transform the body.
 
 `compression()` accepts these properties in the options object. In addition to
 those listed below, [zlib](http://nodejs.org/api/zlib.html) options may be
-passed in to the options object.
+passed in to the options object or
+[brotli](https://nodejs.org/api/zlib.html#zlib_class_brotlioptions) options.
 
 ##### chunkSize
 
@@ -101,6 +105,20 @@ The default value is `zlib.Z_DEFAULT_MEMLEVEL`, or `8`.
 See [Node.js documentation](http://nodejs.org/api/zlib.html#zlib_memory_usage_tuning)
 regarding the usage.
 
+##### params *(brotli only)* - [key-value object containing indexed Brotli parameters](https://nodejs.org/api/zlib.html#zlib_brotli_constants)
+
+  - `zlib.constants.BROTLI_PARAM_MODE`
+    - `zlib.constants.BROTLI_MODE_GENERIC` (default)
+    - `zlib.constants.BROTLI_MODE_TEXT`, adjusted for UTF-8 text
+    - `zlib.constants.BROTLI_MODE_FONT`, adjusted for WOFF 2.0 fonts
+  - `zlib.constants.BROTLI_PARAM_QUALITY`
+    - Ranges from `zlib.constants.BROTLI_MIN_QUALITY` to
+      `zlib.constants.BROTLI_MAX_QUALITY`, with a default of
+      `4` (which is not node's default but the most optimal).
+
+Note that here the default is set to compression level 4. This is a balanced setting with a very good speed and a very good
+compression ratio.
+
 ##### strategy
 
 This is used to tune the compression algorithm. This value only affects the
@@ -140,6 +158,14 @@ The default value is `zlib.Z_DEFAULT_WINDOWBITS`, or `15`.
 
 See [Node.js documentation](http://nodejs.org/api/zlib.html#zlib_memory_usage_tuning)
 regarding the usage.
+
+##### preferClient
+
+This library by default will prioritize the optimal compression encoding algorithm if the client has
+given more than one encoding the same explicit "quality". This is generally what users want and it 
+follows an established pattern used by other popular web servers. If you would like to opt-out of this
+behavior (and therefore be more spec compliant), you can set `preferClient` to "true" and when
+two encodings have the same "quality" the first one will be used.
 
 #### .filter
 

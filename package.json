@@ -13,6 +13,7 @@
     "bytes": "3.0.0",
     "compressible": "~2.0.17",
     "debug": "2.6.9",
+    "object-assign": "4.1.1",
     "on-headers": "~1.0.2",
     "safe-buffer": "5.2.0",
     "vary": "~1.1.2"
