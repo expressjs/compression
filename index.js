@@ -341,8 +341,8 @@ function prioritize (str) {
  * @private
  */
 function sortEncodings (a, b) {
-  var al = a.toLowerCase();
-  var bl = b.toLowerCase();
+  var al = a.toLowerCase()
+  var bl = b.toLowerCase()
   if (al.indexOf('br') >= 0) {
     return -1
   }
