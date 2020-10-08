@@ -199,8 +199,11 @@ function compression (options) {
       // force proper priorization
       var headers = objectAssign({}, req.headers, options.prioritizeClient ? null : { 'accept-encoding': prioritize(req.headers['accept-encoding']) })
 
-      // compression method
+      // the accepts function takes in a request object but only reads the headers
+      // So, to save a bit of memory, we send an object with only the headers propery
+      // this way we don't have to clone the entire request
       var accept = accepts({ headers: headers })
+      // compression method
       var method = accept.encoding(preferredEncodings)
 
       // negotiation failed
@@ -325,7 +328,7 @@ function toBuffer (chunk, encoding) {
  * @private
  */
 function prioritize (str) {
-  return str && str.toLowerCase()
+  return str
     .split(',')
     .sort(sortEncodings)
     .join(',')
@@ -338,18 +341,20 @@ function prioritize (str) {
  * @private
  */
 function sortEncodings (a, b) {
-  if (a.indexOf('br') >= 0) {
+  var al = a.toLowerCase();
+  var bl = b.toLowerCase();
+  if (al.indexOf('br') >= 0) {
     return -1
   }
-  if (a.indexOf('gzip') >= 0) {
-    return b.indexOf('br') >= 0 ? 1 : -1
+  if (al.indexOf('gzip') >= 0) {
+    return bl.indexOf('br') >= 0 ? 1 : -1
   }
   // we need these inverse rules to fix a stable sort bug
   // found in node 10.x
-  if (b.indexOf('br') >= 0) {
+  if (bl.indexOf('br') >= 0) {
     return 1
   }
-  if (b.indexOf('gzip') >= 0) {
+  if (bl.indexOf('gzip') >= 0) {
     return 1
   }
   return 0
