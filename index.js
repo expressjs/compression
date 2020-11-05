@@ -328,6 +328,9 @@ function toBuffer (chunk, encoding) {
  * @private
  */
 function prioritize (str) {
+  if(str == undefined) {
+    return undefined
+  }
   return str
     .split(',')
     .sort(sortEncodings)
