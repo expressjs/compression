@@ -22,8 +22,8 @@ var objectAssign = require('object-assign')
 var onHeaders = require('on-headers')
 var vary = require('vary')
 var zlib = require('zlib')
-
-var Encodings = require('./lib/encodings')
+var hasBrotliSupport = require('./encoding_negotiator').hasBrotliSupport
+var negotiateEncoding = require('./encoding_negotiator').negotiateEncoding
 
 /**
  * Module exports.
@@ -50,7 +50,7 @@ var cacheControlNoTransformRegExp = /(?:^|,)\s*?no-transform\s*?(?:,|$)/
 function compression (options) {
   var opts = options || {}
 
-  if (Encodings.hasBrotliSupport) {
+  if (hasBrotliSupport) {
     // set the default level to a reasonable value with balanced speed/ratio
     if (opts.params === undefined) {
       opts = objectAssign({}, opts)
@@ -189,12 +189,10 @@ function compression (options) {
       }
 
       // compression method
-      var encodings = new Encodings()
-      encodings.parseAcceptEncoding(req.headers['accept-encoding'] || 'identity')
-      var method = encodings.getPreferredContentEncoding()
+      var method = negotiateEncoding(req.headers['accept-encoding']) || 'identity'
 
       // negotiation failed
-      if (!method || method === 'identity') {
+      if (method === 'identity') {
         nocompress('not acceptable')
         return
       }
