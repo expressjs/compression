@@ -8,14 +8,14 @@ node_js:
   - "3.3"
   - "4.9"
   - "5.12"
-  - "6.16"
+  - "6.17"
   - "7.10"
   - "8.7" # Keep 8.7 around because it is the last minor on 8.x that didn't have http2
-  - "8.15"
+  - "8.16"
   - "9.11"
-  - "10.11"
-  - "10.15"
-  - "11.10"
+  - "10.16"
+  - "11.15"
+  - "12.9"
 sudo: false
 cache:
   directories:
@@ -64,7 +64,7 @@ before_install:
     fi
   - |
     # Configure eslint for linting
-    if node_version_lt '6.0'; then npm_remove_module_re '^eslint(-|$)'
+    if node_version_lt '8.0'; then npm_remove_module_re '^eslint(-|$)'
     fi
   - |
     # Configure mocha for testing
