@@ -79,7 +79,7 @@ jobs:
           node-version: "11.15"
 
         - name: Node.js 12.x
-          node-version: "12.9"
+          node-version: "12.22"
 
     steps:
     - uses: actions/checkout@v2
