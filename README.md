@@ -24,8 +24,6 @@ $ npm install compression
 
 ## API
 
-<!-- eslint-disable no-unused-vars -->
-
 ```js
 var compression = require('compression')
 ```
