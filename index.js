@@ -99,9 +99,14 @@ function compression (options) {
         return false
       }
 
-      if (!cb && typeof encoding === 'function') {
-        cb = encoding
-        encoding = undefined
+      if (!cb) {
+        if (typeof chunk === 'function') {
+          cb = chunk
+          chunk = encoding = undefined
+        } else if (typeof encoding === 'function') {
+          cb = encoding
+          encoding = undefined
+        }
       }
 
       if (!this._header) {
