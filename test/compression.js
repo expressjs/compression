@@ -11,10 +11,12 @@ var compression = require('..')
 
 describe('compression()', function () {
   it('request should end', function (done) {
+    var reponseText = 'hello, world'
+
     var server = createServer({ threshold: 0 }, function (req, res) {
       res.setHeader('Content-Type', 'text/plain')
 
-      res.write(Buffer.from('hello, world'), (err) => {
+      res.write(Buffer.from(reponseText), (err) => {
         if (err) {
           console.error('err', err)
         }
@@ -26,7 +28,7 @@ describe('compression()', function () {
     request(server)
       .get('/')
       .set('Accept-Encoding', 'gzip')
-      .expect(shouldNotHaveHeader('Content-Encoding'))
+      .expect(shouldHaveBodyLength(reponseText.length))
       .expect(200, done)
   })
 
