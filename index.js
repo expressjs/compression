@@ -85,8 +85,8 @@ function compression (options) {
       }
 
       return stream
-        ? stream.write(toBuffer(chunk, encoding), cb || encoding)
-        : _write.call(this, chunk, encoding)
+        ? stream.write(toBuffer(chunk, encoding), encoding, cb)
+        : _write.call(this, chunk, encoding, cb)
     }
 
     res.end = function end (chunk, encoding, cb) {
@@ -104,7 +104,7 @@ function compression (options) {
       }
 
       if (!stream) {
-        return _end.call(this, chunk, encoding)
+        return _end.call(this, chunk, encoding, cb)
       }
 
       // mark ended
@@ -112,7 +112,7 @@ function compression (options) {
 
       // write Buffer for Node.js 0.8
       return chunk
-        ? stream.end(toBuffer(chunk, encoding), cb || encoding)
+        ? stream.end(toBuffer(chunk, encoding), encoding, cb)
         : stream.end()
     }
 
