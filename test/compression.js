@@ -28,6 +28,7 @@ describe('compression()', function () {
     request(server)
       .get('/')
       .set('Accept-Encoding', 'gzip')
+      .expect(shouldHaveHeader('Content-Encoding'))
       .expect(shouldHaveBodyLength(reponseText.length))
       .expect(200, done)
   })
@@ -699,6 +700,12 @@ function createServer (opts, fn) {
 function shouldHaveBodyLength (length) {
   return function (res) {
     assert.strictEqual(res.text.length, length, 'should have body length of ' + length)
+  }
+}
+
+function shouldHaveHeader (header) {
+  return function (res) {
+    assert.ok((header.toLowerCase() in res.headers), 'should have header ' + header)
   }
 }
 
