@@ -80,6 +80,11 @@ function compression (options) {
         return false
       }
 
+      if (!cb && typeof encoding === 'function') {
+        cb = encoding
+        encoding = undefined
+      }
+
       if (!this._header) {
         this._implicitHeader()
       }
@@ -92,6 +97,11 @@ function compression (options) {
     res.end = function end (chunk, encoding, cb) {
       if (ended) {
         return false
+      }
+
+      if (!cb && typeof encoding === 'function') {
+        cb = encoding
+        encoding = undefined
       }
 
       if (!this._header) {
@@ -113,7 +123,7 @@ function compression (options) {
       // write Buffer for Node.js 0.8
       return chunk
         ? stream.end(toBuffer(chunk, encoding), encoding, cb)
-        : stream.end()
+        : stream.end(cb)
     }
 
     res.on = function on (type, listener) {
