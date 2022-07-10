@@ -10,6 +10,26 @@ var zlib = require('zlib')
 var compression = require('..')
 
 describe('compression()', function () {
+  it('request should end', function (done) {
+    var server = createServer({ threshold: 0 }, function (req, res) {
+      res.setHeader('Content-Type', 'text/plain')
+
+      res.write(Buffer.from('hello, world'), (err) => {
+        if (err) {
+          console.error('err', err)
+        }
+
+        res.end()
+      })
+    })
+
+    request(server)
+      .get('/')
+      .set('Accept-Encoding', 'gzip')
+      .expect(shouldNotHaveHeader('Content-Encoding'))
+      .expect(200, done)
+  })
+
   it('should skip HEAD', function (done) {
     var server = createServer({ threshold: 0 }, function (req, res) {
       res.setHeader('Content-Type', 'text/plain')
