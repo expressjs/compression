@@ -116,7 +116,7 @@ describe('compression()', function () {
       res.setHeader('Content-Type', 'text/plain')
       res.end('hello world')
 
-      server.on('close', () => {
+      server.on('close', function () {
         res.write('hello world', function (err) {
           assert.ok(err.code === 'ERR_STREAM_DESTROYED')
         })
