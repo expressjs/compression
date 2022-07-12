@@ -22,6 +22,8 @@ var debug = require('debug')('compression')
 var onHeaders = require('on-headers')
 var vary = require('vary')
 var zlib = require('zlib')
+var isUint8Array = require('@stdlib/assert-is-uint8array')
+const { ServerResponse } = require('http')
 
 /**
  * Module exports.
@@ -56,6 +58,8 @@ function compression (options) {
     threshold = 1024
   }
 
+  function noop () { }
+
   return function compression (req, res, next) {
     var ended = false
     var length
@@ -75,14 +79,37 @@ function compression (options) {
 
     // proxy
 
-    res.write = function write (chunk, encoding, cb) {
-      if (ended) {
-        return false
+    res.write = function write (chunk, encoding, callback) {
+      if (chunk === null) {
+        // throw ERR_STREAM_NULL_VALUES
+        return _write.call(this, chunk, encoding, callback)
+      } else if (typeof chunk === 'string' || isUint8Array(chunk)) {
+        // noop
+      } else {
+        // throw ERR_INVALID_ARG_TYPE
+        return _write.call(this, chunk, encoding, callback)
       }
 
-      if (!cb && typeof encoding === 'function') {
-        cb = encoding
+      if (!callback && typeof encoding === 'function') {
+        callback = encoding
         encoding = undefined
+      }
+
+      if (typeof callback !== 'function') {
+        callback = noop
+      }
+
+      if (res.destroyed || res.finished || ended) {
+        // HACK: node doesn't expose internal errors,
+        // we need to fake response to throw underlying errors type
+        var fakeRes = new ServerResponse({})
+        if (!res.destroyed) {
+          fakeRes.destroyed = fakeRes.finished = true
+        } else {
+          fakeRes.destroyed = true
+        }
+        // throw ERR_STREAM_DESTROYED or ERR_STREAM_WRITE_AFTER_END
+        return _write.call(fakeRes, chunk, encoding, callback)
       }
 
       if (!this._header) {
@@ -90,23 +117,29 @@ function compression (options) {
       }
 
       return stream
-        ? stream.write(toBuffer(chunk, encoding), encoding, cb)
-        : _write.call(this, chunk, encoding, cb)
+        ? stream.write(toBuffer(chunk, encoding), encoding, callback)
+        : _write.call(this, chunk, encoding, callback)
     }
 
-    res.end = function end (chunk, encoding, cb) {
-      if (ended) {
-        return false
-      }
-
-      if (!cb) {
+    res.end = function end (chunk, encoding, callback) {
+      if (!callback) {
         if (typeof chunk === 'function') {
-          cb = chunk
+          callback = chunk
           chunk = encoding = undefined
         } else if (typeof encoding === 'function') {
-          cb = encoding
+          callback = encoding
           encoding = undefined
         }
+      }
+
+      if (typeof callback !== 'function') {
+        callback = noop
+      }
+
+      if (this.destroyed || this.finished || ended) {
+        this.finished = ended
+        // throw ERR_STREAM_WRITE_AFTER_END or ERR_STREAM_ALREADY_FINISHED
+        return _end.call(this, chunk, encoding, callback)
       }
 
       if (!this._header) {
@@ -119,7 +152,7 @@ function compression (options) {
       }
 
       if (!stream) {
-        return _end.call(this, chunk, encoding, cb)
+        return _end.call(this, chunk, encoding, callback)
       }
 
       // mark ended
@@ -127,8 +160,8 @@ function compression (options) {
 
       // write Buffer for Node.js 0.8
       return chunk
-        ? stream.end(toBuffer(chunk, encoding), encoding, cb)
-        : stream.end(cb)
+        ? stream.end(toBuffer(chunk, encoding), encoding, callback)
+        : stream.end(callback)
     }
 
     res.on = function on (type, listener) {

@@ -6,21 +6,136 @@ var crypto = require('crypto')
 var http = require('http')
 var request = require('supertest')
 var zlib = require('zlib')
+var sinon = require('sinon')
 
 var compression = require('..')
 
 describe('compression()', function () {
-  it('request should end', function (done) {
-    var reponseText = 'hello, world'
+  describe('should work with valid types (string, Buffer, Uint8Array)', function () {
+    it('res.write(string)', function (done) {
+      var server = createServer({ threshold: 0 }, function (req, res) {
+        res.setHeader('Content-Type', 'text/plain')
+        res.end('hello world')
+      })
 
+      request(server)
+        .get('/')
+        .set('Accept-Encoding', 'gzip')
+        .expect('Content-Encoding', 'gzip')
+        .expect(200, done)
+    })
+
+    it('res.write(Buffer)', function (done) {
+      var server = createServer({ threshold: 0 }, function (req, res) {
+        res.setHeader('Content-Type', 'text/plain')
+        res.end(Buffer.from('hello world'))
+      })
+
+      request(server)
+        .get('/')
+        .set('Accept-Encoding', 'gzip')
+        .expect('Content-Encoding', 'gzip')
+        .expect(200, done)
+    })
+
+    it('res.write(Uint8Array)', function (done) {
+      var server = createServer({ threshold: 0 }, function (req, res) {
+        res.setHeader('Content-Type', 'text/plain')
+        res.end(new Uint8Array(1))
+      })
+
+      request(server)
+        .get('/')
+        .set('Accept-Encoding', 'gzip')
+        .expect('Content-Encoding', 'gzip')
+        .expect(200, done)
+    })
+  })
+
+  describe('should throw with invalid types', function () {
+    it('res.write(1) should fire ERR_INVALID_ARG_TYPE', function (done) {
+      var server = createServer({ threshold: 0 }, function (req, res) {
+        res.setHeader('Content-Type', 'text/plain')
+        try {
+          res.write(1)
+        } catch (err) {
+          assert.ok(err.code === 'ERR_INVALID_ARG_TYPE')
+          res.statusCode = 500
+          res.flush()
+          res.end()
+        }
+      })
+
+      request(server)
+        .get('/')
+        .set('Accept-Encoding', 'gzip')
+        .expect(500, done)
+    })
+
+    it('res.write({}) should fire ERR_INVALID_ARG_TYPE', function (done) {
+      var server = createServer({ threshold: 0 }, function (req, res) {
+        res.setHeader('Content-Type', 'text/plain')
+        try {
+          res.write({})
+        } catch (err) {
+          assert.ok(err.code === 'ERR_INVALID_ARG_TYPE')
+          res.statusCode = 500
+          res.flush()
+          res.end()
+        }
+      })
+
+      request(server)
+        .get('/')
+        .set('Accept-Encoding', 'gzip')
+        .expect(500, done)
+    })
+
+    it('res.write(null) should fire ERR_STREAM_NULL_VALUES', function (done) {
+      var server = createServer({ threshold: 0 }, function (req, res) {
+        res.setHeader('Content-Type', 'text/plain')
+        try {
+          res.write(null)
+        } catch (err) {
+          assert.ok(err.code === 'ERR_STREAM_NULL_VALUES')
+          res.statusCode = 500
+          res.flush()
+          res.end()
+        }
+      })
+
+      request(server)
+        .get('/')
+        .set('Accept-Encoding', 'gzip')
+        .expect(500, done)
+    })
+  })
+
+  it('res.write() should throw ERR_STREAM_DESTROYED when destoyed stream', function (done) {
+    var server = createServer({ threshold: 0 }, function (req, res) {
+      res.setHeader('Content-Type', 'text/plain')
+      res.end('hello world')
+
+      server.on('close', () => {
+        res.write('hello world', function (err) {
+          assert.ok(err.code === 'ERR_STREAM_DESTROYED')
+        })
+      })
+    })
+
+    request(server)
+      .get('/')
+      .set('Accept-Encoding', 'gzip')
+      .expect(shouldHaveHeader('Content-Encoding'))
+      .expect(shouldHaveBodyLength('hello world'.length))
+      .expect(200, done)
+  })
+
+  it('res.write() should call callback if passsed', function (done) {
     var server = createServer({ threshold: 0 }, function (req, res) {
       res.setHeader('Content-Type', 'text/plain')
 
-      res.write(Buffer.from(reponseText), (err) => {
-        if (err) {
-          console.error('err', err)
-        }
-
+      res.write('hello, world', function () {
         res.end()
       })
     })
@@ -29,8 +144,30 @@ describe('compression()', function () {
       .get('/')
       .set('Accept-Encoding', 'gzip')
       .expect(shouldHaveHeader('Content-Encoding'))
-      .expect(shouldHaveBodyLength(reponseText.length))
+      .expect(shouldHaveBodyLength('hello, world'.length))
       .expect(200, done)
+  })
+
+  it('res.write() should call callback with error after end', function (done) {
+    var onError = sinon.spy(function (err) {
+      assert.ok(err.code === 'ERR_STREAM_WRITE_AFTER_END')
+    })
+
+    var server = createServer({ threshold: 0 }, function (req, res) {
+      res.setHeader('Content-Type', 'text/plain')
+      res.end()
+
+      res.write('hello, world', onError)
+
+      process.nextTick(function () {
+        assert.ok(onError.callCount > 0)
+      })
+    })
+
+    request(server)
+      .get('/')
+      .set('Accept-Encoding', 'gzip')
+      .end(done)
   })
 
   it('should skip HEAD', function (done) {
@@ -460,17 +597,28 @@ describe('compression()', function () {
     })
 
     it('should return false writing after end', function (done) {
+      var onError = sinon.spy(function (err) {
+        assert.ok(err.code === 'ERR_STREAM_WRITE_AFTER_END')
+      })
+
       var server = createServer({ threshold: 0 }, function (req, res) {
+        res.on('error', onError)
         res.setHeader('Content-Type', 'text/plain')
+
         res.end('hello, world')
-        assert.ok(res.write() === false)
-        assert.ok(res.end() === false)
+
+        assert.ok(res.write('', onError) === false)
+
+        process.nextTick(function () {
+          assert.ok(onError.callCount > 0)
+        })
       })
 
       request(server)
         .get('/')
         .set('Accept-Encoding', 'gzip')
-        .expect('Content-Encoding', 'gzip', done)
+        .expect('Content-Encoding', 'gzip')
+        .end(done)
     })
   })
 
@@ -682,9 +830,12 @@ describe('compression()', function () {
   })
 })
 
-function createServer (opts, fn) {
+function createServer (opts, fn, t) {
   var _compression = compression(opts)
   return http.createServer(function (req, res) {
+    if (t) {
+      res.on('finish', function () { console.log(t.title, 'server closed') })
+    }
     _compression(req, res, function (err) {
       if (err) {
         res.statusCode = err.status || 500
@@ -705,7 +856,8 @@ function shouldHaveBodyLength (length) {
 
 function shouldHaveHeader (header) {
   return function (res) {
-    assert.ok((header.toLowerCase() in res.headers), 'should have header ' + header)
+    var ok = (header.toLowerCase() in res.headers)
+    assert.ok(ok, 'should have header ' + header)
   }
 }
 
