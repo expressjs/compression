@@ -15,21 +15,21 @@
     "compressible": "~2.0.17",
     "debug": "2.6.9",
     "on-headers": "~1.0.2",
-    "safe-buffer": "5.2.0",
+    "safe-buffer": "5.2.1",
     "vary": "~1.1.2"
   },
   "devDependencies": {
     "after": "0.8.2",
-    "eslint": "6.3.0",
-    "eslint-config-standard": "14.0.1",
-    "eslint-plugin-import": "2.18.2",
+    "eslint": "7.32.0",
+    "eslint-config-standard": "14.1.1",
+    "eslint-plugin-import": "2.25.3",
     "eslint-plugin-markdown": "1.0.0",
     "eslint-plugin-node": "9.2.0",
     "eslint-plugin-promise": "4.2.1",
     "eslint-plugin-standard": "4.0.1",
     "istanbul": "0.4.5",
-    "mocha": "6.2.0",
-    "supertest": "4.0.2",
+    "mocha": "6.2.3",
+    "supertest": "4.0.2"
     "sinon": "^4.0.0"
   },
   "files": [
@@ -43,7 +43,7 @@
   "scripts": {
     "lint": "eslint --plugin markdown --ext js,md .",
     "test": "mocha --check-leaks --reporter spec --bail",
-    "test-cov": "istanbul cover node_modules/mocha/bin/_mocha -- --check-leaks --reporter dot",
-    "test-travis": "istanbul cover node_modules/mocha/bin/_mocha --report lcovonly -- --check-leaks --reporter spec"
+    "test-ci": "istanbul cover node_modules/mocha/bin/_mocha --report lcovonly -- --check-leaks --reporter spec",
+    "test-cov": "istanbul cover node_modules/mocha/bin/_mocha -- --check-leaks --reporter dot"
   }
 }
