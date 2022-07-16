@@ -30,7 +30,7 @@
     "istanbul": "0.4.5",
     "mocha": "6.2.3",
     "supertest": "4.0.2",
-    "sinon": "^4.0.0"
+    "sinon": "4.5.0"
   },
   "files": [
     "LICENSE",
