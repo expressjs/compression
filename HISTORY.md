@@ -1,12 +1,14 @@
 unreleased
 ==========
 
-  * deps: accepts@~1.3.7
+  * deps: accepts@~1.3.8
     - Fix sorting encoding with extra parameters
-    - deps: mime-types@~2.1.24
-    - deps: negotiator@0.6.2
-  * deps: compressible@~2.0.17
-    - deps: mime-db@'>= 1.40.0 < 2'
+    - deps: mime-types@~2.1.34
+    - deps: negotiator@0.6.3
+  * deps: compressible@~2.0.18
+    - Mark `font/ttf` as compressible
+    - Remove compressible from `multipart/mixed`
+    - deps: mime-db@'>= 1.43.0 < 2'
   * deps: safe-buffer@5.2.1
 
 1.7.4 / 2019-03-18
