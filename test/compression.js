@@ -329,12 +329,12 @@ describe('compression()', function () {
         request.on('response', function (headers) {
           assert.strictEqual(headers['content-encoding'], 'gzip')
         })
-        var chunks = [];
+        var chunks = []
         request.on('data', function (chunk) {
-          chunks.push(chunk);
+          chunks.push(chunk)
         })
         request.on('end', function () {
-          zlib.gunzip(Buffer.concat(chunks), function(err, data) { 
+          zlib.gunzip(Buffer.concat(chunks), function (err, data) { 
             assert.strictEqual(data.toString(), 'hello, world')
             closeHttp2(client, server, done)
           })
@@ -737,20 +737,20 @@ function createHttp2Client (port) {
 function closeHttp2 (client, server, callback) {
   if (typeof client.shutdown === 'function') {
     // this is the node v8.x way of closing the connections
-      client.shutdown({}, function () {
-        server.close(function () {
-          callback()
-        })
+    client.shutdown({}, function () {
+      server.close(function () {
+        callback()
       })
+    })
   } else {
     // this is the node v9.x onwards way of closing the connections
-      client.close(function () {
-        // force existing connections to time out after 1ms.
-        // this is done to force the server to close in some cases where it wouldn't do it otherwise.
-        server.close(function () {
-          callback()
-        })
+    client.close(function () {
+      // force existing connections to time out after 1ms.
+      // this is done to force the server to close in some cases where it wouldn't do it otherwise.
+      server.close(function () {
+        callback()
       })
+    })
   }
 }
 
