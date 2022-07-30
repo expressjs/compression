@@ -329,11 +329,15 @@ describe('compression()', function () {
         request.on('response', function (headers) {
           assert.strictEqual(headers['content-encoding'], 'gzip')
         })
+        var chunks = [];
         request.on('data', function (chunk) {
-          // no-op without which the request will stay open and cause a test timeout
+          chunks.push(chunk);
         })
         request.on('end', function () {
-          closeHttp2(request, client, server, done)
+          zlib.gunzip(Buffer.concat(chunks), function(err, data) { 
+            assert.strictEqual(data.toString(), 'hello, world')
+            closeHttp2(client, server, done)
+          })
         })
         request.end()
       })
@@ -730,19 +734,16 @@ function createHttp2Client (port) {
   return http2.connect('http://127.0.0.1:' + port)
 }
 
-function closeHttp2 (request, client, server, callback) {
+function closeHttp2 (client, server, callback) {
   if (typeof client.shutdown === 'function') {
     // this is the node v8.x way of closing the connections
-    request.destroy(http2.constants.NGHTTP2_NO_ERROR, function () {
       client.shutdown({}, function () {
         server.close(function () {
           callback()
         })
       })
-    })
   } else {
     // this is the node v9.x onwards way of closing the connections
-    request.close(http2.constants.NGHTTP2_NO_ERROR, function () {
       client.close(function () {
         // force existing connections to time out after 1ms.
         // this is done to force the server to close in some cases where it wouldn't do it otherwise.
@@ -750,7 +751,6 @@ function closeHttp2 (request, client, server, callback) {
           callback()
         })
       })
-    })
   }
 }
 
