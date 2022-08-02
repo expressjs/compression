@@ -334,9 +334,12 @@ describe('compression()', function () {
           chunks.push(chunk)
         })
         request.on('end', function () {
-          zlib.gunzip(Buffer.concat(chunks), function (err, data) { 
-            assert.strictEqual(data.toString(), 'hello, world')
-            closeHttp2(client, server, done)
+          closeHttp2(client, server, function () {
+            zlib.gunzip(Buffer.concat(chunks), function (err, data) {
+              assert.ok(!err)
+              assert.strictEqual(data.toString(), 'hello, world')
+              done()
+            })
           })
         })
         request.end()
