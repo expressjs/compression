@@ -318,16 +318,18 @@ describe('compression()', function () {
   describeHttp2('http2', function () {
     it('should work with http2 server', function (done) {
       var server = createHttp2Server({ threshold: 0 }, function (req, res) {
-        res.setHeader('Content-Type', 'text/plain')
+        res.setHeader(http2.constants.HTTP2_HEADER_CONTENT_TYPE, 'text/plain')
         res.end('hello, world')
       })
       server.on('listening', function () {
         var client = createHttp2Client(server.address().port)
         var request = client.request({
-          'Accept-Encoding': 'gzip'
+          [http2.constants.HTTP2_HEADER_ACCEPT_ENCODING]: 'gzip'
         })
         request.on('response', function (headers) {
-          assert.strictEqual(headers['content-encoding'], 'gzip')
+          assert.strictEqual(headers[http2.constants.HTTP2_HEADER_STATUS], 200)
+          assert.strictEqual(headers[http2.constants.HTTP2_HEADER_CONTENT_TYPE], 'text/plain')
+          assert.strictEqual(headers[http2.constants.HTTP2_HEADER_CONTENT_ENCODING], 'gzip')
         })
         var chunks = []
         request.on('data', function (chunk) {
