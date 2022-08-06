@@ -155,8 +155,9 @@ describe('compression()', function () {
     }
 
     var server = createServer({ threshold: 0 }, function (req, res) {
+      res.on('error', onError)
       res.setHeader('Content-Type', 'text/plain')
-      res.end()
+      res.end('hello, world')
 
       res.write('hello, world', onError)
 
