@@ -86,7 +86,7 @@ function compression (options) {
       if (chunk === null) {
         // throw ERR_STREAM_NULL_VALUES
         return _write.call(this, chunk, encoding, callback)
-      } else if (typeof chunk === 'string' || isUint8Array(chunk)) {
+      } else if (typeof chunk === 'string' || typeof chunk.fill === 'function' || isUint8Array(chunk)) {
         // noop
       } else {
         // throw ERR_INVALID_ARG_TYPE
@@ -120,8 +120,15 @@ function compression (options) {
         this._implicitHeader()
       }
 
+      if (chunk) {
+        chunk = toBuffer(chunk, encoding)
+        if (/^v0\.8\./.test(process.version) && stream) {
+          encoding = callback
+        }
+      }
+
       return stream
-        ? stream.write(toBuffer(chunk, encoding), encoding, callback)
+        ? stream.write(chunk, encoding, callback)
         : _write.call(this, chunk, encoding, callback)
     }
 
@@ -162,10 +169,17 @@ function compression (options) {
       // mark ended
       ended = true
 
+      if (chunk) {
+        chunk = toBuffer(chunk, encoding)
+        if (/^v0\.8\./.test(process.version) && stream && chunk) {
+          encoding = callback
+        }
+      }
+
       // write Buffer for Node.js 0.8
       return chunk
-        ? stream.end(toBuffer(chunk, encoding), encoding, callback)
-        : stream.end(callback)
+        ? stream.end(chunk, encoding, callback)
+        : stream.end(chunk, callback)
     }
 
     res.on = function on (type, listener) {
