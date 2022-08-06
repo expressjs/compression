@@ -153,7 +153,7 @@ describe('compression()', function () {
       .expect(200, done)
   })
 
-  var run = /^v0\.12\./.test(process.version) ? it : it.skip
+  run = /^v0\.12\./.test(process.version) ? it : it.skip
   run('res.write() should call callback with error after end', function (done) {
     var onErrorCalled = false
     var onError = function (err) {
