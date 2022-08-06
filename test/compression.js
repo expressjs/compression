@@ -111,26 +111,6 @@ describe('compression()', function () {
     })
   })
 
-  it('res.write() should throw ERR_STREAM_DESTROYED when stream is already destroyed', function (done) {
-    var server = createServer({ threshold: 0 }, function (req, res) {
-      res.setHeader('Content-Type', 'text/plain')
-      res.end('hello world')
-
-      server.on('close', function () {
-        res.write('hello world', function (err) {
-          assert.ok(err.code === 'ERR_STREAM_DESTROYED')
-        })
-      })
-    })
-
-    request(server)
-      .get('/')
-      .set('Accept-Encoding', 'gzip')
-      .expect(shouldHaveHeader('Content-Encoding'))
-      .expect(shouldHaveBodyLength('hello world'.length))
-      .expect(200, done)
-  })
-
   it('res.write() should throw ERR_STREAM_ALREADY_FINISHED when stream is already finished', function (done) {
     var server = createServer({ threshold: 0 }, function (req, res) {
       res.setHeader('Content-Type', 'text/plain')

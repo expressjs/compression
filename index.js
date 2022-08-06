@@ -22,8 +22,7 @@ var debug = require('debug')('compression')
 var onHeaders = require('on-headers')
 var vary = require('vary')
 var zlib = require('zlib')
-var isUint8Array = require('@stdlib/assert-is-uint8array')
-const { ServerResponse } = require('http')
+var { ServerResponse } = require('http')
 
 /**
  * Module exports.
@@ -38,6 +37,10 @@ module.exports.filter = shouldCompress
  */
 
 var cacheControlNoTransformRegExp = /(?:^|,)\s*?no-transform\s*?(?:,|$)/
+var hasUint8Array = (typeof Uint8Array === 'function')
+function isUint8Array (arg) {
+  return hasUint8Array && arg && (arg instanceof Uint8Array || arg.toString() === '[object Uint8Array]')
+}
 
 /**
  * Compress response data with gzip / deflate.
