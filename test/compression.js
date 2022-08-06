@@ -6,7 +6,6 @@ var crypto = require('crypto')
 var http = require('http')
 var request = require('supertest')
 var zlib = require('zlib')
-var sinon = require('sinon')
 
 var compression = require('..')
 
@@ -149,9 +148,11 @@ describe('compression()', function () {
   })
 
   it('res.write() should call callback with error after end', function (done) {
-    var onError = sinon.spy(function (err) {
+    var onErrorCalled = false
+    var onError = function (err) {
       assert.ok(err.code === 'ERR_STREAM_WRITE_AFTER_END')
-    })
+      onErrorCalled = true
+    }
 
     var server = createServer({ threshold: 0 }, function (req, res) {
       res.setHeader('Content-Type', 'text/plain')
@@ -160,7 +161,7 @@ describe('compression()', function () {
       res.write('hello, world', onError)
 
       process.nextTick(function () {
-        assert.ok(onError.callCount > 0)
+        assert.ok(onErrorCalled)
       })
     })
 
@@ -597,9 +598,11 @@ describe('compression()', function () {
     })
 
     it('should return false writing after end', function (done) {
-      var onError = sinon.spy(function (err) {
+      var onErrorCalled = false
+      var onError = function (err) {
         assert.ok(err.code === 'ERR_STREAM_WRITE_AFTER_END')
-      })
+        onErrorCalled = true
+      }
 
       var server = createServer({ threshold: 0 }, function (req, res) {
         res.on('error', onError)
@@ -610,7 +613,7 @@ describe('compression()', function () {
         assert.ok(res.write('', onError) === false)
 
         process.nextTick(function () {
-          assert.ok(onError.callCount > 0)
+          assert.ok(onErrorCalled)
         })
       })
 
