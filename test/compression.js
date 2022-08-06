@@ -59,7 +59,6 @@ describe('compression()', function () {
           res.write(1)
         } catch (err) {
           assert.ok(err.code === 'ERR_INVALID_ARG_TYPE')
-          res.statusCode = 500
           res.flush()
           res.end()
         }
@@ -68,7 +67,7 @@ describe('compression()', function () {
       request(server)
         .get('/')
         .set('Accept-Encoding', 'gzip')
-        .expect(500, done)
+        .expect(200, done)
     })
 
     it('res.write({}) should fire ERR_INVALID_ARG_TYPE', function (done) {
@@ -78,7 +77,6 @@ describe('compression()', function () {
           res.write({})
         } catch (err) {
           assert.ok(err.code === 'ERR_INVALID_ARG_TYPE')
-          res.statusCode = 500
           res.flush()
           res.end()
         }
@@ -87,17 +85,16 @@ describe('compression()', function () {
       request(server)
         .get('/')
         .set('Accept-Encoding', 'gzip')
-        .expect(500, done)
+        .expect(200, done)
     })
 
-    it('res.write(null) should fire ERR_STREAM_NULL_VALUES', function (done) {
+    it('res.write(null) should fire ERR_INVALID_ARG_TYPE or ERR_STREAM_NULL_VALUES', function (done) {
       var server = createServer({ threshold: 0 }, function (req, res) {
         res.setHeader('Content-Type', 'text/plain')
         try {
           res.write(null)
         } catch (err) {
-          assert.ok(err.code === 'ERR_STREAM_NULL_VALUES')
-          res.statusCode = 500
+          assert.ok(err.code === 'ERR_INVALID_ARG_TYPE' || err.code === 'ERR_STREAM_NULL_VALUES')
           res.flush()
           res.end()
         }
@@ -106,7 +103,7 @@ describe('compression()', function () {
       request(server)
         .get('/')
         .set('Accept-Encoding', 'gzip')
-        .expect(500, done)
+        .expect(200, done)
     })
   })
 

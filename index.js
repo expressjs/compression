@@ -106,13 +106,14 @@ function compression (options) {
         // HACK: node doesn't expose internal errors,
         // we need to fake response to throw underlying errors type
         var fakeRes = new ServerResponse({})
-        if (!res.destroyed) {
-          fakeRes.destroyed = fakeRes.finished = true
-        } else {
-          fakeRes.destroyed = true
-        }
+        fakeRes.on('error', function (err) {
+          res.emit('error', err)
+        })
+        fakeRes.destroyed = res.destroyed
+        fakeRes.finished = res.finished || ended
         // throw ERR_STREAM_DESTROYED or ERR_STREAM_WRITE_AFTER_END
-        return _write.call(fakeRes, chunk, encoding, callback)
+        _write.call(fakeRes, chunk, encoding, callback)
+        return false
       }
 
       if (!this._header) {
