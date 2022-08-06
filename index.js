@@ -22,7 +22,7 @@ var debug = require('debug')('compression')
 var onHeaders = require('on-headers')
 var vary = require('vary')
 var zlib = require('zlib')
-var { ServerResponse } = require('http')
+var ServerResponse = require('http').ServerResponse
 
 /**
  * Module exports.
