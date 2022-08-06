@@ -129,10 +129,7 @@ describe('compression()', function () {
       .set('Accept-Encoding', 'gzip')
       .expect(shouldHaveHeader('Content-Encoding'))
       .expect(shouldHaveBodyLength('hello world'.length))
-      .expect(200, function (err) {
-        console.log(1)
-        done(err)
-      })
+      .expect(200, done)
   })
 
   var run = /^v0\.12\./.test(process.version) ? it : it.skip
