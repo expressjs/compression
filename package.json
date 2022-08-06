@@ -28,7 +28,6 @@
     "eslint-plugin-standard": "4.1.0",
     "mocha": "9.2.2",
     "nyc": "15.1.0",
-
     "sinon": "4.5.0",
     "supertest": "6.2.3"
   },
@@ -42,7 +41,7 @@
   },
   "scripts": {
     "lint": "eslint .",
-    "test": "mocha --check-leaks -reporter spec --bail",
+    "test": "mocha --check-leaks --reporter spec --bail",
     "test-ci": "nyc --reporter=lcovonly --reporter=text npm test",
     "test-cov": "nyc --reporter=html --reporter=text npm test"
   }
