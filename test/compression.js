@@ -147,7 +147,7 @@ describe('compression()', function () {
   it('res.write() should call callback with error after end', function (done) {
     var onErrorCalled = false
     var onError = function (err) {
-      assert.ok(err.code === 'ERR_STREAM_WRITE_AFTER_END')
+      assert.ok(err.message === 'write after end' || err.code === 'ERR_STREAM_WRITE_AFTER_END')
       onErrorCalled = true
     }
 
@@ -598,7 +598,7 @@ describe('compression()', function () {
     it('should return false writing after end', function (done) {
       var onErrorCalled = false
       var onError = function (err) {
-        assert.ok(err.code === 'ERR_STREAM_WRITE_AFTER_END')
+        assert.ok(err.message === 'write after end' || err.code === 'ERR_STREAM_WRITE_AFTER_END')
         onErrorCalled = true
       }
 

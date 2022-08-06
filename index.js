@@ -254,6 +254,10 @@ function compression (options) {
       res.removeHeader('Content-Length')
 
       // compression
+      stream.on('error', function (err) {
+        res.emit('error', err)
+      })
+
       stream.on('data', function onStreamData (chunk) {
         if (_write.call(res, chunk) === false) {
           stream.pause()
