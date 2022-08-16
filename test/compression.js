@@ -37,6 +37,47 @@ describe('compression()', function () {
         .expect(200, done)
     })
 
+    it('res.end(cb)', function (done) {
+      var callbackCalled = false
+
+      var server = createServer({ threshold: 0 }, function (req, res) {
+        res.setHeader('Content-Type', 'text/plain')
+        res.write(Buffer.from('hello world'))
+        res.end(function () {
+          callbackCalled = true
+        })
+      })
+
+      request(server)
+        .get('/')
+        .set('Accept-Encoding', 'gzip')
+        .expect('Content-Encoding', 'gzip')
+        .expect(200, function () {
+          assert.ok(callbackCalled)
+          done()
+        })
+    })
+
+    it('res.end(string, cb)', function (done) {
+      var callbackCalled = false
+
+      var server = createServer({ threshold: 0 }, function (req, res) {
+        res.setHeader('Content-Type', 'text/plain')
+        res.end(Buffer.from('hello world'), function () {
+          callbackCalled = true
+        })
+      })
+
+      request(server)
+        .get('/')
+        .set('Accept-Encoding', 'gzip')
+        .expect('Content-Encoding', 'gzip')
+        .expect(200, function () {
+          assert.ok(callbackCalled)
+          done()
+        })
+    })
+
     var run = /^v0\.12\./.test(process.version) ? it : it.skip
     run('res.write(Uint8Array)', function (done) {
       var server = createServer({ threshold: 0 }, function (req, res) {

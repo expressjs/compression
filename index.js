@@ -171,7 +171,7 @@ function compression (options) {
 
       if (chunk) {
         chunk = toBuffer(chunk, encoding)
-        if (/^v0\.8\./.test(process.version) && stream && chunk) {
+        if (/^v0\.8\./.test(process.version) && stream) {
           encoding = callback
         }
       }
