@@ -24,6 +24,8 @@ var vary = require('vary')
 var zlib = require('zlib')
 var ServerResponse = require('http').ServerResponse
 
+var isOldRuntime = /^v0\.8\./.test(process.version)
+
 /**
  * Module exports.
  */
@@ -122,7 +124,7 @@ function compression (options) {
 
       if (chunk) {
         chunk = toBuffer(chunk, encoding)
-        if (/^v0\.8\./.test(process.version) && stream) {
+        if (isOldRuntime && stream) {
           encoding = callback
         }
       }
@@ -171,7 +173,7 @@ function compression (options) {
 
       if (chunk) {
         chunk = toBuffer(chunk, encoding)
-        if (/^v0\.8\./.test(process.version) && stream) {
+        if (isOldRuntime && stream) {
           encoding = callback
         }
       }
