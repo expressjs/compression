@@ -1,9 +1,15 @@
 unreleased
 ==========
 
-  * deps: compressible@~2.0.17
-    - deps: mime-db@'>= 1.40.0 < 2'
-  * deps: safe-buffer@5.2.0
+  * deps: accepts@~1.3.8
+    - Fix sorting encoding with extra parameters
+    - deps: mime-types@~2.1.34
+    - deps: negotiator@0.6.3
+  * deps: compressible@~2.0.18
+    - Mark `font/ttf` as compressible
+    - Remove compressible from `multipart/mixed`
+    - deps: mime-db@'>= 1.43.0 < 2'
+  * deps: safe-buffer@5.2.1
   * deps: debug@^4.1.1
     - Update to latest debug version in accordance to their recommendation
     - Adds support for latest Node versions
@@ -32,6 +38,7 @@ unreleased
 
 1.7.2 / 2018-02-18
 ==================
+
   * deps: compressible@~2.0.13
     - deps: mime-db@'>= 1.33.0 < 2'
 

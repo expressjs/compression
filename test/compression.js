@@ -174,7 +174,7 @@ describe('compression()', function () {
       pressure()
     })
 
-    crypto.pseudoRandomBytes(1024 * 128, function (err, chunk) {
+    crypto.randomBytes(1024 * 128, function (err, chunk) {
       if (err) return done(err)
       buf = chunk
       pressure()
@@ -231,7 +231,7 @@ describe('compression()', function () {
       pressure()
     })
 
-    crypto.pseudoRandomBytes(1024 * 128, function (err, chunk) {
+    crypto.randomBytes(1024 * 128, function (err, chunk) {
       if (err) return done(err)
       buf = chunk
       pressure()
