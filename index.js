@@ -22,6 +22,9 @@ var debug = require('debug')('compression')
 var onHeaders = require('on-headers')
 var vary = require('vary')
 var zlib = require('zlib')
+var ServerResponse = require('http').ServerResponse
+
+var isOldRuntime = /^v0\.8\./.test(process.version)
 
 /**
  * Module exports.
@@ -36,6 +39,10 @@ module.exports.filter = shouldCompress
  */
 
 var cacheControlNoTransformRegExp = /(?:^|,)\s*?no-transform\s*?(?:,|$)/
+var hasUint8Array = (typeof Uint8Array === 'function')
+function isUint8Array (arg) {
+  return hasUint8Array && arg && (arg instanceof Uint8Array || arg.toString() === '[object Uint8Array]')
+}
 
 /**
  * Compress response data with gzip / deflate.
@@ -56,6 +63,8 @@ function compression (options) {
     threshold = 1024
   }
 
+  function noop () { }
+
   return function compression (req, res, next) {
     var ended = false
     var length
@@ -75,8 +84,37 @@ function compression (options) {
 
     // proxy
 
-    res.write = function write (chunk, encoding) {
-      if (ended) {
+    res.write = function write (chunk, encoding, callback) {
+      if (chunk === null) {
+        // throw ERR_STREAM_NULL_VALUES
+        return _write.call(this, chunk, encoding, callback)
+      } else if (typeof chunk === 'string' || typeof chunk.fill === 'function' || isUint8Array(chunk)) {
+        // noop
+      } else {
+        // throw ERR_INVALID_ARG_TYPE
+        return _write.call(this, chunk, encoding, callback)
+      }
+
+      if (!callback && typeof encoding === 'function') {
+        callback = encoding
+        encoding = undefined
+      }
+
+      if (typeof callback !== 'function') {
+        callback = noop
+      }
+
+      if (res.destroyed || res.finished || ended) {
+        // HACK: node doesn't expose internal errors,
+        // we need to fake response to throw underlying errors type
+        var fakeRes = new ServerResponse({})
+        fakeRes.on('error', function (err) {
+          res.emit('error', err)
+        })
+        fakeRes.destroyed = res.destroyed
+        fakeRes.finished = res.finished || ended
+        // throw ERR_STREAM_DESTROYED or ERR_STREAM_WRITE_AFTER_END
+        _write.call(fakeRes, chunk, encoding, callback)
         return false
       }
 
@@ -84,14 +122,37 @@ function compression (options) {
         this._implicitHeader()
       }
 
+      if (chunk) {
+        chunk = toBuffer(chunk, encoding)
+        if (isOldRuntime && stream) {
+          encoding = callback
+        }
+      }
+
       return stream
-        ? stream.write(toBuffer(chunk, encoding))
-        : _write.call(this, chunk, encoding)
+        ? stream.write(chunk, encoding, callback)
+        : _write.call(this, chunk, encoding, callback)
     }
 
-    res.end = function end (chunk, encoding) {
-      if (ended) {
-        return false
+    res.end = function end (chunk, encoding, callback) {
+      if (!callback) {
+        if (typeof chunk === 'function') {
+          callback = chunk
+          chunk = encoding = undefined
+        } else if (typeof encoding === 'function') {
+          callback = encoding
+          encoding = undefined
+        }
+      }
+
+      if (typeof callback !== 'function') {
+        callback = noop
+      }
+
+      if (this.destroyed || this.finished || ended) {
+        this.finished = ended
+        // throw ERR_STREAM_WRITE_AFTER_END or ERR_STREAM_ALREADY_FINISHED
+        return _end.call(this, chunk, encoding, callback)
       }
 
       if (!this._header) {
@@ -104,16 +165,23 @@ function compression (options) {
       }
 
       if (!stream) {
-        return _end.call(this, chunk, encoding)
+        return _end.call(this, chunk, encoding, callback)
       }
 
       // mark ended
       ended = true
 
+      if (chunk) {
+        chunk = toBuffer(chunk, encoding)
+        if (isOldRuntime && stream) {
+          encoding = callback
+        }
+      }
+
       // write Buffer for Node.js 0.8
       return chunk
-        ? stream.end(toBuffer(chunk, encoding))
-        : stream.end()
+        ? stream.end(chunk, encoding, callback)
+        : stream.end(chunk, callback)
     }
 
     res.on = function on (type, listener) {
@@ -202,6 +270,10 @@ function compression (options) {
       res.removeHeader('Content-Length')
 
       // compression
+      stream.on('error', function (err) {
+        res.emit('error', err)
+      })
+
       stream.on('data', function onStreamData (chunk) {
         if (_write.call(res, chunk) === false) {
           stream.pause()
