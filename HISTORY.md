@@ -10,6 +10,11 @@ unreleased
     - Remove compressible from `multipart/mixed`
     - deps: mime-db@'>= 1.43.0 < 2'
   * deps: safe-buffer@5.2.1
+  * deps: debug@^4.1.1
+    - Update to latest debug version in accordance to their recommendation
+    - Adds support for latest Node versions
+    - Drops support for old (v4 and v5) Node versions
+    - deps: ms@^2.1.1
 
 1.7.4 / 2019-03-18
 ==================
