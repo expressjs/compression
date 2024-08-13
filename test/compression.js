@@ -3,6 +3,7 @@ var assert = require('assert')
 var bytes = require('bytes')
 var crypto = require('crypto')
 var http = require('http')
+var net = require('net')
 var request = require('supertest')
 var zlib = require('zlib')
 var http2 = require('http2')
@@ -953,6 +954,113 @@ describe('compression()', function () {
         .expect(200, done)
     })
   })
+
+  describe('when the client closes the connection before consuming the response', function () {
+    it('should call the original res.end() if connection is cut early on', function (done) {
+      var server = http.createServer(function (req, res) {
+        var originalResEnd = res.end
+        var originalResEndCalledTimes = 0
+        res.end = function () {
+          originalResEndCalledTimes++
+          return originalResEnd.apply(this, arguments)
+        }
+
+        compression({ threshold: 0 })(req, res, function () {
+          socket.end()
+
+          res.setHeader('Content-Type', 'text/plain')
+          res.write('hello, ')
+          setTimeout(function () {
+            res.end('world!')
+
+            setTimeout(function () {
+              server.close(function () {
+                if (originalResEndCalledTimes === 1) {
+                  done()
+                } else {
+                  done(new Error('The original res.end() was called ' + originalResEndCalledTimes + ' times'))
+                }
+              })
+            }, 5)
+          }, 5)
+        })
+      })
+
+      server.listen()
+
+      var port = server.address().port
+      var socket = openSocketWithRequest(port)
+    })
+
+    it('should call the original res.end() if connection is cut after an initial write', function (done) {
+      var server = http.createServer(function (req, res) {
+        var originalResEnd = res.end
+        var originalResEndCalledTimes = 0
+        res.end = function () {
+          originalResEndCalledTimes++
+          return originalResEnd.apply(this, arguments)
+        }
+
+        compression({ threshold: 0 })(req, res, function () {
+          res.setHeader('Content-Type', 'text/plain')
+          res.write('hello, ')
+          socket.end()
+
+          setTimeout(function () {
+            res.end('world!')
+
+            setTimeout(function () {
+              server.close(function () {
+                if (originalResEndCalledTimes === 1) {
+                  done()
+                } else {
+                  done(new Error('The original res.end() was called ' + originalResEndCalledTimes + ' times'))
+                }
+              })
+            }, 5)
+          }, 5)
+        })
+      })
+
+      server.listen()
+
+      var port = server.address().port
+      var socket = openSocketWithRequest(port)
+    })
+
+    it('should call the original res.end() if connection is cut just after response body was generated', function (done) {
+      var server = http.createServer(function (req, res) {
+        var originalResEnd = res.end
+        var originalResEndCalledTimes = 0
+        res.end = function () {
+          originalResEndCalledTimes++
+          return originalResEnd.apply(this, arguments)
+        }
+
+        compression({ threshold: 0 })(req, res, function () {
+          res.setHeader('Content-Type', 'text/plain')
+          res.write('hello, ')
+          res.end('world!')
+          socket.end()
+
+          setTimeout(function () {
+            server.close(function () {
+              if (originalResEndCalledTimes === 1) {
+                done()
+              } else {
+                done(new Error('The original res.end() was called ' + originalResEndCalledTimes + ' times'))
+              }
+            })
+          }, 5)
+        })
+      })
+
+      server.listen()
+
+      var port = server.address().port
+      var socket = openSocketWithRequest(port)
+    })
+  })
 })
 
 function createServer (opts, fn) {
@@ -1055,4 +1163,17 @@ function unchunk (encoding, onchunk, onend) {
     stream.on('data', onchunk)
     stream.on('end', onend)
   }
+}
+
+function openSocketWithRequest (port) {
+  var socket = net.connect(port, function onConnect () {
+    socket.write('GET / HTTP/1.1\r\n')
+    socket.write('Accept-Encoding: gzip\r\n')
+    socket.write('Host: localhost:' + port + '\r\n')
+    socket.write('Content-Type: text/plain\r\n')
+    socket.write('Content-Length: 0\r\n')
+    socket.write('Connection: keep-alive\r\n')
+    socket.write('\r\n')
+  })
+  return socket
 }
