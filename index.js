@@ -77,6 +77,14 @@ function compression (options) {
     var _on = res.on
     var _write = res.write
 
+    var endCalled = false
+    function endOnce () {
+      if (!endCalled) {
+        endCalled = true
+        _end.apply(this, arguments)
+      }
+    }
+
     // flush
     res.flush = function flush () {
       if (stream) {
@@ -115,14 +123,14 @@ function compression (options) {
       }
 
       if (!stream) {
-        return _end.call(this, chunk, encoding)
+        return endOnce.call(this, chunk, encoding)
       }
 
       // mark ended
       ended = true
 
       if (onFinished.isFinished(this)) {
-        return _end.call(this)
+        return endOnce.call(this)
       }
 
       // write Buffer for Node.js 0.8
@@ -226,7 +234,7 @@ function compression (options) {
       })
 
       stream.on('end', function onStreamEnd () {
-        _end.call(res)
+        endOnce.call(res)
       })
 
       _on.call(res, 'drain', function onResponseDrain () {
@@ -235,7 +243,7 @@ function compression (options) {
 
       onFinished(res, function onFinished () {
         if (ended) {
-          _end.call(res)
+          endOnce.call(res)
         }
       })
     })
