@@ -37,6 +37,8 @@ module.exports.filter = shouldCompress
 
 var cacheControlNoTransformRegExp = /(?:^|,)\s*?no-transform\s*?(?:,|$)/
 
+var encodingSupported = ['gzip', 'deflate', 'identity']
+
 /**
  * Compress response data with gzip / deflate.
  *
@@ -51,6 +53,7 @@ function compression (options) {
   // options
   var filter = opts.filter || shouldCompress
   var threshold = bytes.parse(opts.threshold)
+  var defaultEncoding = opts.defaultEncoding || 'identity'
 
   if (threshold == null) {
     threshold = 1024
@@ -182,10 +185,19 @@ function compression (options) {
         method = accept.encoding(['gzip', 'identity'])
       }
 
+      // if no method is found, use the default encoding
+      if (encodingSupported.indexOf(defaultEncoding) !== -1 && req.headers['accept-encoding'].split(',')[0] === '') {
+        method = defaultEncoding
+      }
+
       // negotiation failed
       if (!method || method === 'identity') {
         nocompress('not acceptable')
         return
+      }
+
+      if (opts.defaultEncoding) {
+        opts.defaultEncoding = undefined
       }
 
       // compression stream
