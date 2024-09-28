@@ -186,7 +186,7 @@ function compression (options) {
       }
 
       // if no method is found, use the default encoding
-      if (encodingSupported.indexOf(defaultEncoding) !== -1 && req.headers['accept-encoding'].split(',')[0] === '') {
+      if (encodingSupported.indexOf(defaultEncoding) !== -1 && !req.headers['accept-encoding']) {
         method = defaultEncoding === '*' ? 'gzip' : defaultEncoding
       }
 
