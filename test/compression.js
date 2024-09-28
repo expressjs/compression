@@ -723,6 +723,19 @@ describe('compression()', function () {
         .expect(shouldNotHaveHeader('Content-Encoding'))
         .expect(200, 'hello, world', done)
     })
+
+    it('should be gzip if no accept-encoding is sent when defaultEncoding is *', function (done) {
+      var server = createServer({ threshold: 0, defaultEncoding: '*' }, function (req, res) {
+        res.setHeader('Content-Type', 'text/plain')
+        res.end('hello, world')
+      })
+
+      request(server)
+        .get('/')
+        .set('Accept-Encoding', '')
+        .expect('Content-Encoding', 'gzip')
+        .expect(200, 'hello, world', done)
+    })
   })
 })
 
