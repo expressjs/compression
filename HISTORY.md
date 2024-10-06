@@ -1,6 +1,6 @@
 unreleased
 ==========
-
+  * Add the defaultEncoding option for requests without `Accept-Encoding` header
   * deps: accepts@~1.3.8
     - Fix sorting encoding with extra parameters
     - deps: mime-types@~2.1.34
