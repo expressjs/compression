@@ -38,7 +38,7 @@ module.exports.filter = shouldCompress
 var cacheControlNoTransformRegExp = /(?:^|,)\s*?no-transform\s*?(?:,|$)/
 
 /**
- * Compress response data with gzip / deflate.
+ * Compress response data with gzip / deflate / brotli.
  *
  * @param {Object} [options]
  * @return {Function} middleware
@@ -175,11 +175,20 @@ function compression (options) {
 
       // compression method
       var accept = accepts(req)
-      var method = accept.encoding(['gzip', 'deflate', 'identity'])
+      var methods = ['gzip', 'deflate', 'identity']
+      var preferredMethods = ['gzip']
+
+      if (zlib.createBrotliCompress) {
+        methods.unshift('br')
+        preferredMethods.unshift('br')
+      }
+
+      var method = accept.encoding(methods)
 
       // we really don't prefer deflate
-      if (method === 'deflate' && accept.encoding(['gzip'])) {
-        method = accept.encoding(['gzip', 'identity'])
+      if (method === 'deflate' && accept.encoding(preferredMethods)) {
+        preferredMethods.push('identity')
+        method = accept.encoding(preferredMethods)
       }
 
       // negotiation failed
@@ -190,9 +199,11 @@ function compression (options) {
 
       // compression stream
       debug('%s compression', method)
-      stream = method === 'gzip'
-        ? zlib.createGzip(opts)
-        : zlib.createDeflate(opts)
+      switch (method) {
+        case 'br': stream = zlib.createBrotliCompress(opts); break
+        case 'gzip': stream = zlib.createGzip(opts); break
+        case 'deflate': stream = zlib.createDeflate(opts); break
+      }
 
       // add buffered listeners to stream
       addListeners(stream, stream.on, listeners)
