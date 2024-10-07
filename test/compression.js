@@ -7,6 +7,16 @@ var http = require('http')
 var request = require('supertest')
 var zlib = require('zlib')
 
+var describeHttp2 = describe.skip
+try {
+  var http2 = require('http2')
+  describeHttp2 = describe
+} catch (err) {
+  if (err) {
+    console.log('http2 tests disabled.')
+  }
+}
+
 var compression = require('..')
 
 describe('compression()', function () {
@@ -303,6 +313,41 @@ describe('compression()', function () {
       .expect('Content-Encoding', 'gzip')
       .expect(shouldHaveBodyLength(len * 4))
       .expect(200, done)
+  })
+
+  describeHttp2('http2', function () {
+    it('should work with http2 server', function (done) {
+      var server = createHttp2Server({ threshold: 0 }, function (req, res) {
+        res.setHeader(http2.constants.HTTP2_HEADER_CONTENT_TYPE, 'text/plain')
+        res.end('hello, world')
+      })
+      server.on('listening', function () {
+        var client = createHttp2Client(server.address().port)
+        // using ES5 as Node.js <=4.0.0 does not have Computed Property Names
+        var reqHeaders = {}
+        reqHeaders[http2.constants.HTTP2_HEADER_ACCEPT_ENCODING] = 'gzip'
+        var request = client.request(reqHeaders)
+        request.on('response', function (headers) {
+          assert.strictEqual(headers[http2.constants.HTTP2_HEADER_STATUS], 200)
+          assert.strictEqual(headers[http2.constants.HTTP2_HEADER_CONTENT_TYPE], 'text/plain')
+          assert.strictEqual(headers[http2.constants.HTTP2_HEADER_CONTENT_ENCODING], 'gzip')
+        })
+        var chunks = []
+        request.on('data', function (chunk) {
+          chunks.push(chunk)
+        })
+        request.on('end', function () {
+          closeHttp2(client, server, function () {
+            zlib.gunzip(Buffer.concat(chunks), function (err, data) {
+              assert.ok(!err)
+              assert.strictEqual(data.toString(), 'hello, world')
+              done()
+            })
+          })
+        })
+        request.end()
+      })
+    })
   })
 
   describe('threshold', function () {
@@ -672,6 +717,47 @@ function createServer (opts, fn) {
       fn(req, res)
     })
   })
+}
+
+function createHttp2Server (opts, fn) {
+  var _compression = compression(opts)
+  var server = http2.createServer(function (req, res) {
+    _compression(req, res, function (err) {
+      if (err) {
+        res.statusCode = err.status || 500
+        res.end(err.message)
+        return
+      }
+
+      fn(req, res)
+    })
+  })
+  server.listen(0, '127.0.0.1')
+  return server
+}
+
+function createHttp2Client (port) {
+  return http2.connect('http://127.0.0.1:' + port)
+}
+
+function closeHttp2 (client, server, callback) {
+  if (typeof client.shutdown === 'function') {
+    // this is the node v8.x way of closing the connections
+    client.shutdown({}, function () {
+      server.close(function () {
+        callback()
+      })
+    })
+  } else {
+    // this is the node v9.x onwards way of closing the connections
+    client.close(function () {
+      // force existing connections to time out after 1ms.
+      // this is done to force the server to close in some cases where it wouldn't do it otherwise.
+      server.close(function () {
+        callback()
+      })
+    })
+  }
 }
 
 function shouldHaveBodyLength (length) {
