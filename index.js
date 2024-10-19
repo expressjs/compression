@@ -189,10 +189,15 @@ function compression (options) {
       }
 
       // compression method
-      var method = negotiateEncoding(req.headers['accept-encoding']) || 'identity'
+      var method = negotiateEncoding(req, ['br', 'gzip', 'deflate', 'identity'])
+
+      // we really don't prefer deflate
+      if (method === 'deflate' && negotiateEncoding(req, ['gzip'])) {
+        method = negotiateEncoding(req, ['br', 'gzip', 'identity'])
+      }
 
       // negotiation failed
-      if (method === 'identity') {
+      if (!method || method === 'identity') {
         nocompress('not acceptable')
         return
       }
