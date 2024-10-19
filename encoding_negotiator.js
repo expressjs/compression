@@ -48,7 +48,7 @@ function negotiateEncoding (header) {
     decoded.push({ encoding: encoding, q: q, i: i })
   }
 
-  decoded.sort((a, b) => {
+  decoded.sort(function (a, b) {
     if (a.q !== b.q) {
       return b.q - a.q // higher quality first
     }
