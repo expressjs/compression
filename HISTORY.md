@@ -5,6 +5,10 @@ unreleased
     - Fix sorting encoding with extra parameters
     - deps: mime-types@~2.1.34
     - deps: negotiator@0.6.3
+  * deps: bytes@3.1.2
+    - Add petabyte (`pb`) support
+    - Fix "thousandsSeparator" incorrecting formatting fractional part
+    - Fix return value for un-parsable strings
   * deps: compressible@~2.0.18
     - Mark `font/ttf` as compressible
     - Remove compressible from `multipart/mixed`
