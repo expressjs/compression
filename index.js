@@ -19,6 +19,7 @@ var Buffer = require('safe-buffer').Buffer
 var bytes = require('bytes')
 var compressible = require('compressible')
 var debug = require('debug')('compression')
+var onFinished = require('on-finished')
 var onHeaders = require('on-headers')
 var vary = require('vary')
 var zlib = require('zlib')
@@ -66,6 +67,14 @@ function compression (options) {
     var _on = res.on
     var _write = res.write
 
+    var endCalled = false
+    function endOnce () {
+      if (!endCalled) {
+        endCalled = true
+        _end.apply(this, arguments)
+      }
+    }
+
     // flush
     res.flush = function flush () {
       if (stream) {
@@ -104,11 +113,15 @@ function compression (options) {
       }
 
       if (!stream) {
-        return _end.call(this, chunk, encoding)
+        return endOnce.call(this, chunk, encoding)
       }
 
       // mark ended
       ended = true
+
+      if (onFinished.isFinished(this)) {
+        return endOnce.call(this)
+      }
 
       // write Buffer for Node.js 0.8
       return chunk
@@ -209,11 +222,17 @@ function compression (options) {
       })
 
       stream.on('end', function onStreamEnd () {
-        _end.call(res)
+        endOnce.call(res)
       })
 
       _on.call(res, 'drain', function onResponseDrain () {
         stream.resume()
+      })
+
+      onFinished(res, function onFinished () {
+        if (ended) {
+          endOnce.call(res)
+        }
       })
     })
 
