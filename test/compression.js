@@ -559,6 +559,20 @@ describe('compression()', function () {
         .set('Accept-Encoding', 'gzip, br')
         .expect('Content-Encoding', 'br', done)
     })
+
+    brotlit = hasBrotliSupport ? it.skip : it
+
+    brotlit('should respond with gzip', function (done) {
+      var server = createServer({ threshold: 0 }, function (req, res) {
+        res.setHeader('Content-Type', 'text/plain')
+        res.end('hello, world')
+      })
+
+      request(server)
+        .get('/')
+        .set('Accept-Encoding', 'br, gzip')
+        .expect('Content-Encoding', 'gzip', done)
+    })
   })
 
   describe('when "Accept-Encoding: deflate, gzip, br"', function () {
