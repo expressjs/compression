@@ -14,7 +14,7 @@
  * @private
  */
 
-var accepts = require('accepts')
+var Negotiator = require('negotiator')
 var Buffer = require('safe-buffer').Buffer
 var bytes = require('bytes')
 var compressible = require('compressible')
@@ -174,13 +174,8 @@ function compression (options) {
       }
 
       // compression method
-      var accept = accepts(req)
-      var method = accept.encoding(['gzip', 'deflate', 'identity'])
-
-      // we really don't prefer deflate
-      if (method === 'deflate' && accept.encoding(['gzip'])) {
-        method = accept.encoding(['gzip', 'identity'])
-      }
+      var negotiator = new Negotiator(req)
+      var method = negotiator.encoding(['gzip', 'deflate', 'identity'], ['gzip'])
 
       // negotiation failed
       if (!method || method === 'identity') {
