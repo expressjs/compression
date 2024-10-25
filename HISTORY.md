@@ -1,6 +1,7 @@
 unreleased
 ==========
 
+  * support brotli encoding
   * deps: accepts@~1.3.8
     - Fix sorting encoding with extra parameters
     - deps: mime-types@~2.1.34
