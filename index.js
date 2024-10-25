@@ -14,6 +14,7 @@
  * @private
  */
 
+var Negotiator = require('negotiator')
 var Buffer = require('safe-buffer').Buffer
 var bytes = require('bytes')
 var compressible = require('compressible')
@@ -23,7 +24,6 @@ var onHeaders = require('on-headers')
 var vary = require('vary')
 var zlib = require('zlib')
 var hasBrotliSupport = require('./encoding_negotiator').hasBrotliSupport
-var negotiateEncoding = require('./encoding_negotiator').negotiateEncoding
 
 /**
  * Module exports.
@@ -189,12 +189,8 @@ function compression (options) {
       }
 
       // compression method
-      var method = negotiateEncoding(req, ['br', 'gzip', 'deflate', 'identity'])
-
-      // we really don't prefer deflate
-      if (method === 'deflate' && negotiateEncoding(req, ['gzip'])) {
-        method = negotiateEncoding(req, ['br', 'gzip', 'identity'])
-      }
+      var negotiator = new Negotiator(req)
+      var method = negotiator.encoding(['gzip', 'deflate', 'identity'], ['gzip'])
 
       // negotiation failed
       if (!method || method === 'identity') {

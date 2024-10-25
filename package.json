@@ -9,11 +9,10 @@
   "license": "MIT",
   "repository": "expressjs/compression",
   "dependencies": {
-    "negotiator": "0.6.4",
     "bytes": "3.1.2",
     "compressible": "~2.0.18",
     "debug": "2.6.9",
-    "object-assign": "4.1.1",
+    "negotiator": "~0.6.4",
     "on-headers": "~1.0.2",
     "safe-buffer": "5.2.1",
     "vary": "~1.1.2"
@@ -41,7 +40,7 @@
   },
   "scripts": {
     "lint": "eslint .",
-    "test": "mocha --check-leaks --reporter spec --bail",
+    "test": "mocha --check-leaks --reporter spec",
     "test-ci": "nyc --reporter=lcovonly --reporter=text npm test",
     "test-cov": "nyc --reporter=html --reporter=text npm test"
   }
