@@ -23,7 +23,6 @@ var objectAssign = require('object-assign')
 var onHeaders = require('on-headers')
 var vary = require('vary')
 var zlib = require('zlib')
-var hasBrotliSupport = require('./encoding_negotiator').hasBrotliSupport
 
 /**
  * Module exports.
@@ -33,11 +32,18 @@ module.exports = compression
 module.exports.filter = shouldCompress
 
 /**
+ * @const
+ * whether current node version has brotli support
+ */
+var hasBrotliSupport = 'createBrotliCompress' in zlib
+
+/**
  * Module variables.
  * @private
  */
-
 var cacheControlNoTransformRegExp = /(?:^|,)\s*?no-transform\s*?(?:,|$)/
+var SUPPORTED_ENCODING = hasBrotliSupport ? ['br', 'gzip', 'deflate', 'identity'] : ['gzip', 'deflate', 'identity']
+var PREFERRED_ENCODING = hasBrotliSupport ? ['br', 'gzip'] : ['gzip']
 
 /**
  * Compress response data with gzip / deflate.
@@ -190,7 +196,7 @@ function compression (options) {
 
       // compression method
       var negotiator = new Negotiator(req)
-      var method = negotiator.encoding(['gzip', 'deflate', 'identity'], ['gzip'])
+      var method = negotiator.encoding(SUPPORTED_ENCODING, PREFERRED_ENCODING)
 
       // negotiation failed
       if (!method || method === 'identity') {
