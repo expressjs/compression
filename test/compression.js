@@ -501,6 +501,21 @@ describe('compression()', function () {
         .set('Accept-Encoding', 'br')
         .expect('Content-Encoding', 'br', done)
     })
+
+    brotlit('should don\' break compression when gzip is requested', function (done) {
+      var params = {}
+      params[zlib.constants.BROTLI_PARAM_QUALITY] = 8
+
+      var server = createServer({ threshold: 0, params: params }, function (req, res) {
+        res.setHeader('Content-Type', 'text/plain')
+        res.end('hello, world')
+      })
+
+      request(server)
+        .get('/')
+        .set('Accept-Encoding', 'gzip')
+        .expect('Content-Encoding', 'gzip', done)
+    })
   })
 
   describe('when "Accept-Encoding: gzip, deflate"', function () {
