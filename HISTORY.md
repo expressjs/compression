@@ -14,6 +14,7 @@ unreleased
     - Remove compressible from `multipart/mixed`
     - deps: mime-db@'>= 1.43.0 < 2'
   * deps: safe-buffer@5.2.1
+  * deps: vary@^1.1.2
 
 1.7.4 / 2019-03-18
 ==================
