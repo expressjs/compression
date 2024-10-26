@@ -502,7 +502,7 @@ describe('compression()', function () {
         .expect('Content-Encoding', 'br', done)
     })
 
-    brotlit('should don\' break compression when gzip is requested', function (done) {
+    brotlit('shouldn\'t break compression when gzip is requested', function (done) {
       var params = {}
       params[zlib.constants.BROTLI_PARAM_QUALITY] = 8
 
