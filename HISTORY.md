@@ -1,11 +1,10 @@
 unreleased
 ==========
 
+
   * support brotli encoding
-  * deps: accepts@~1.3.8
-    - Fix sorting encoding with extra parameters
-    - deps: mime-types@~2.1.34
-    - deps: negotiator@0.6.3
+  * deps: Replace accepts with negotiator@~0.6.4
+    - Add preference option
   * deps: bytes@3.1.2
     - Add petabyte (`pb`) support
     - Fix "thousandsSeparator" incorrecting formatting fractional part
