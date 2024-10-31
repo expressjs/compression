@@ -1,4 +1,4 @@
-unreleased
+1.7.5 / 2024-10-31
 ==========
 
   * deps: Replace accepts with negotiator@~0.6.4
