@@ -277,7 +277,7 @@ function shouldTransform (req, res) {
  */
 
 function toBuffer (chunk, encoding) {
-  return !Buffer.isBuffer(chunk)
-    ? Buffer.from(chunk, encoding)
-    : chunk
+  return Buffer.isBuffer(chunk)
+    ? chunk
+    : Buffer.from(chunk, encoding)
 }
