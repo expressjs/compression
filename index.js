@@ -14,7 +14,7 @@
  * @private
  */
 
-var accepts = require('accepts')
+var Negotiator = require('negotiator')
 var Buffer = require('safe-buffer').Buffer
 var bytes = require('bytes')
 var compressible = require('compressible')
@@ -177,13 +177,8 @@ function compression (options) {
       }
 
       // compression method
-      var accept = accepts(req)
-      var method = accept.encoding(['gzip', 'deflate', 'identity'])
-
-      // we really don't prefer deflate
-      if (method === 'deflate' && accept.encoding(['gzip'])) {
-        method = accept.encoding(['gzip', 'identity'])
-      }
+      var negotiator = new Negotiator(req)
+      var method = negotiator.encoding(['gzip', 'deflate', 'identity'], ['gzip'])
 
       // if no method is found, use the default encoding
       if (encodingSupported.indexOf(defaultEncoding) !== -1 && !req.headers['accept-encoding']) {
@@ -253,9 +248,9 @@ function chunkLength (chunk, encoding) {
     return 0
   }
 
-  return !Buffer.isBuffer(chunk)
-    ? Buffer.byteLength(chunk, encoding)
-    : chunk.length
+  return Buffer.isBuffer(chunk)
+    ? chunk.length
+    : Buffer.byteLength(chunk, encoding)
 }
 
 /**
@@ -294,7 +289,7 @@ function shouldTransform (req, res) {
  */
 
 function toBuffer (chunk, encoding) {
-  return !Buffer.isBuffer(chunk)
-    ? Buffer.from(chunk, encoding)
-    : chunk
+  return Buffer.isBuffer(chunk)
+    ? chunk
+    : Buffer.from(chunk, encoding)
 }
