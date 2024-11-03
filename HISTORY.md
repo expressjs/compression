@@ -1,3 +1,30 @@
+unreleased
+==========
+
+  * deps: accepts@~1.3.8
+    - Fix sorting encoding with extra parameters
+    - deps: mime-types@~2.1.34
+    - deps: negotiator@0.6.3
+  * deps: bytes@3.1.2
+    - Add petabyte (`pb`) support
+    - Fix "thousandsSeparator" incorrecting formatting fractional part
+    - Fix return value for un-parsable strings
+  * deps: compressible@~2.0.18
+    - Mark `font/ttf` as compressible
+    - Remove compressible from `multipart/mixed`
+    - deps: mime-db@'>= 1.43.0 < 2'
+  * deps: safe-buffer@5.2.1
+
+1.7.4 / 2019-03-18
+==================
+
+  * deps: compressible@~2.0.16
+    - Mark `text/less` as compressible
+    - deps: mime-db@'>= 1.38.0 < 2'
+  * deps: on-headers@~1.0.2
+    - Fix `res.writeHead` patch missing return value
+  * perf: prevent unnecessary buffer copy
+
 1.7.3 / 2018-07-15
 ==================
 

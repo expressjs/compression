@@ -174,7 +174,7 @@ describe('compression()', function () {
       pressure()
     })
 
-    crypto.pseudoRandomBytes(1024 * 128, function (err, chunk) {
+    crypto.randomBytes(1024 * 128, function (err, chunk) {
       if (err) return done(err)
       buf = chunk
       pressure()
@@ -203,9 +203,11 @@ describe('compression()', function () {
       .request()
       .on('response', function (res) {
         client = res
-        assert.equal(res.headers['content-encoding'], 'gzip')
+        assert.strictEqual(res.headers['content-encoding'], 'gzip')
         res.pause()
-        res.on('end', cb)
+        res.on('end', function () {
+          server.close(cb)
+        })
         pressure()
       })
       .end()
@@ -229,7 +231,7 @@ describe('compression()', function () {
       pressure()
     })
 
-    crypto.pseudoRandomBytes(1024 * 128, function (err, chunk) {
+    crypto.randomBytes(1024 * 128, function (err, chunk) {
       if (err) return done(err)
       buf = chunk
       pressure()
@@ -258,7 +260,9 @@ describe('compression()', function () {
         client = res
         shouldNotHaveHeader('Content-Encoding')(res)
         res.pause()
-        res.on('end', cb)
+        res.on('end', function () {
+          server.close(cb)
+        })
         pressure()
       })
       .end()
@@ -523,7 +527,7 @@ describe('compression()', function () {
 
   describe('.filter', function () {
     it('should be a function', function () {
-      assert.equal(typeof compression.filter, 'function')
+      assert.strictEqual(typeof compression.filter, 'function')
     })
 
     it('should return false on empty response', function (done) {
@@ -586,7 +590,7 @@ describe('compression()', function () {
 
       function onchunk (chunk) {
         assert.ok(chunks++ < 2)
-        assert.equal(chunk.length, 1024)
+        assert.strictEqual(chunk.length, 1024)
         next()
       }
 
@@ -594,7 +598,10 @@ describe('compression()', function () {
         .get('/')
         .set('Accept-Encoding', 'gzip')
         .request()
-        .on('response', unchunk('gzip', onchunk, done))
+        .on('response', unchunk('gzip', onchunk, function (err) {
+          if (err) return done(err)
+          server.close(done)
+        }))
         .end()
     })
 
@@ -609,7 +616,7 @@ describe('compression()', function () {
 
       function onchunk (chunk) {
         assert.ok(chunks++ < 20)
-        assert.equal(chunk.toString(), '..')
+        assert.strictEqual(chunk.toString(), '..')
         next()
       }
 
@@ -617,7 +624,10 @@ describe('compression()', function () {
         .get('/')
         .set('Accept-Encoding', 'gzip')
         .request()
-        .on('response', unchunk('gzip', onchunk, done))
+        .on('response', unchunk('gzip', onchunk, function (err) {
+          if (err) return done(err)
+          server.close(done)
+        }))
         .end()
     })
 
@@ -632,7 +642,7 @@ describe('compression()', function () {
 
       function onchunk (chunk) {
         assert.ok(chunks++ < 20)
-        assert.equal(chunk.toString(), '..')
+        assert.strictEqual(chunk.toString(), '..')
         next()
       }
 
@@ -640,7 +650,10 @@ describe('compression()', function () {
         .get('/')
         .set('Accept-Encoding', 'deflate')
         .request()
-        .on('response', unchunk('deflate', onchunk, done))
+        .on('response', unchunk('deflate', onchunk, function (err) {
+          if (err) return done(err)
+          server.close(done)
+        }))
         .end()
     })
   })
@@ -663,7 +676,7 @@ function createServer (opts, fn) {
 
 function shouldHaveBodyLength (length) {
   return function (res) {
-    assert.equal(res.text.length, length, 'should have body length of ' + length)
+    assert.strictEqual(res.text.length, length, 'should have body length of ' + length)
   }
 }
 
@@ -688,7 +701,7 @@ function unchunk (encoding, onchunk, onend) {
   return function (res) {
     var stream
 
-    assert.equal(res.headers['content-encoding'], encoding)
+    assert.strictEqual(res.headers['content-encoding'], encoding)
 
     switch (encoding) {
       case 'deflate':
