@@ -236,9 +236,9 @@ function chunkLength (chunk, encoding) {
     return 0
   }
 
-  return !Buffer.isBuffer(chunk)
-    ? Buffer.byteLength(chunk, encoding)
-    : chunk.length
+  return Buffer.isBuffer(chunk)
+    ? chunk.length
+    : Buffer.byteLength(chunk, encoding)
 }
 
 /**
@@ -277,9 +277,9 @@ function shouldTransform (req, res) {
  */
 
 function toBuffer (chunk, encoding) {
-  return !Buffer.isBuffer(chunk)
-    ? Buffer.from(chunk, encoding)
-    : chunk
+  return Buffer.isBuffer(chunk)
+    ? chunk
+    : Buffer.from(chunk, encoding)
 }
 
 /**
