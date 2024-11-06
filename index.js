@@ -53,7 +53,7 @@ function compression (options) {
   // options
   var filter = opts.filter || shouldCompress
   var threshold = bytes.parse(opts.threshold)
-  var defaultEncoding = opts.defaultEncoding || 'identity'
+  var enforceEncoding = opts.enforceEncoding || 'identity'
 
   if (threshold == null) {
     threshold = 1024
@@ -181,18 +181,14 @@ function compression (options) {
       var method = negotiator.encoding(['gzip', 'deflate', 'identity'], ['gzip'])
 
       // if no method is found, use the default encoding
-      if (encodingSupported.indexOf(defaultEncoding) !== -1 && !req.headers['accept-encoding']) {
-        method = defaultEncoding === '*' ? 'gzip' : defaultEncoding
+      if (encodingSupported.indexOf(enforceEncoding) !== -1 && !req.headers['accept-encoding']) {
+        method = enforceEncoding === '*' ? 'gzip' : enforceEncoding
       }
 
       // negotiation failed
       if (!method || method === 'identity') {
         nocompress('not acceptable')
         return
-      }
-
-      if (opts.defaultEncoding) {
-        opts.defaultEncoding = undefined
       }
 
       // compression stream

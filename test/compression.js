@@ -658,9 +658,9 @@ describe('compression()', function () {
     })
   })
 
-  describe('defaultEncoding', function () {
+  describe('enforceEncoding', function () {
     it('should compress the provided encoding and not the default encoding', function (done) {
-      var server = createServer({ threshold: 0, defaultEncoding: 'deflate' }, function (req, res) {
+      var server = createServer({ threshold: 0, enforceEncoding: 'deflate' }, function (req, res) {
         res.setHeader('Content-Type', 'text/plain')
         res.end('hello, world')
       })
@@ -672,8 +672,8 @@ describe('compression()', function () {
         .expect(200, 'hello, world', done)
     })
 
-    it('should not compress when defaultEncoding is identity', function (done) {
-      var server = createServer({ threshold: 0, defaultEncoding: 'identity' }, function (req, res) {
+    it('should not compress when enforceEncoding is identity', function (done) {
+      var server = createServer({ threshold: 0, enforceEncoding: 'identity' }, function (req, res) {
         res.setHeader('Content-Type', 'text/plain')
         res.end('hello, world')
       })
@@ -685,8 +685,8 @@ describe('compression()', function () {
         .expect(200, 'hello, world', done)
     })
 
-    it('should compress when defaultEncoding is gzip', function (done) {
-      var server = createServer({ threshold: 0, defaultEncoding: 'gzip' }, function (req, res) {
+    it('should compress when enforceEncoding is gzip', function (done) {
+      var server = createServer({ threshold: 0, enforceEncoding: 'gzip' }, function (req, res) {
         res.setHeader('Content-Type', 'text/plain')
         res.end('hello, world')
       })
@@ -698,8 +698,8 @@ describe('compression()', function () {
         .expect(200, 'hello, world', done)
     })
 
-    it('should compress when defaultEncoding is deflate', function (done) {
-      var server = createServer({ threshold: 0, defaultEncoding: 'deflate' }, function (req, res) {
+    it('should compress when enforceEncoding is deflate', function (done) {
+      var server = createServer({ threshold: 0, enforceEncoding: 'deflate' }, function (req, res) {
         res.setHeader('Content-Type', 'text/plain')
         res.end('hello, world')
       })
@@ -711,8 +711,8 @@ describe('compression()', function () {
         .expect(200, 'hello, world', done)
     })
 
-    it('should not compress when defaultEncoding is unknown', function (done) {
-      var server = createServer({ threshold: 0, defaultEncoding: 'bogus' }, function (req, res) {
+    it('should not compress when enforceEncoding is unknown', function (done) {
+      var server = createServer({ threshold: 0, enforceEncoding: 'bogus' }, function (req, res) {
         res.setHeader('Content-Type', 'text/plain')
         res.end('hello, world')
       })
@@ -724,8 +724,8 @@ describe('compression()', function () {
         .expect(200, 'hello, world', done)
     })
 
-    it('should be gzip if no accept-encoding is sent when defaultEncoding is *', function (done) {
-      var server = createServer({ threshold: 0, defaultEncoding: '*' }, function (req, res) {
+    it('should be gzip if no accept-encoding is sent when enforceEncoding is *', function (done) {
+      var server = createServer({ threshold: 0, enforceEncoding: '*' }, function (req, res) {
         res.setHeader('Content-Type', 'text/plain')
         res.end('hello, world')
       })
