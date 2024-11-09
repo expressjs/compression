@@ -81,7 +81,7 @@ function compression (options) {
       }
 
       if (!headersSent(res)) {
-         this.writeHead(this.statusCode)
+        this.writeHead(this.statusCode)
       }
 
       return stream
