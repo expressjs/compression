@@ -1,3 +1,7 @@
+unreleased
+==========
+  * Use `res.headersSent` when available
+
 1.7.5 / 2024-10-31
 ==========
 
