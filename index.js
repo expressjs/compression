@@ -19,7 +19,6 @@ var Buffer = require('safe-buffer').Buffer
 var bytes = require('bytes')
 var compressible = require('compressible')
 var debug = require('debug')('compression')
-var objectAssign = require('object-assign')
 var onHeaders = require('on-headers')
 var vary = require('vary')
 var zlib = require('zlib')
@@ -55,17 +54,16 @@ var PREFERRED_ENCODING = hasBrotliSupport ? ['br', 'gzip'] : ['gzip']
 
 function compression (options) {
   var opts = options || {}
+  var optsBrotli = opts.brotli || {}
 
   if (hasBrotliSupport) {
     // set the default level to a reasonable value with balanced speed/ratio
-    if (opts.params === undefined) {
-      opts = objectAssign({}, opts)
-      opts.params = {}
+    if (optsBrotli.params === undefined) {
+      optsBrotli.params = {}
     }
 
-    if (opts.params[zlib.constants.BROTLI_PARAM_QUALITY] === undefined) {
-      opts.params = objectAssign({}, opts.params)
-      opts.params[zlib.constants.BROTLI_PARAM_QUALITY] = 4
+    if (optsBrotli.params[zlib.constants.BROTLI_PARAM_QUALITY] === undefined) {
+      optsBrotli.params[zlib.constants.BROTLI_PARAM_QUALITY] = 4
     }
   }
 
@@ -203,13 +201,12 @@ function compression (options) {
         nocompress('not acceptable')
         return
       }
-
       // compression stream
       debug('%s compression', method)
       stream = method === 'gzip'
         ? zlib.createGzip(opts)
         : method === 'br'
-          ? zlib.createBrotliCompress(opts)
+          ? zlib.createBrotliCompress(optsBrotli)
           : zlib.createDeflate(opts)
 
       // add buffered listeners to stream
