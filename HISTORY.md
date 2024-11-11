@@ -1,8 +1,11 @@
 unreleased
 ==========
+  * Use `res.headersSent` when available
+  * add brotli support for versions of node that support it
 
+1.7.5 / 2024-10-31
+==========
 
-  * support brotli encoding
   * deps: Replace accepts with negotiator@~0.6.4
     - Add preference option
   * deps: bytes@3.1.2
