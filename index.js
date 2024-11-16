@@ -14,7 +14,7 @@
  * @private
  */
 
-var accepts = require('accepts')
+var Negotiator = require('negotiator')
 var Buffer = require('safe-buffer').Buffer
 var bytes = require('bytes')
 var compressible = require('compressible')
@@ -110,8 +110,8 @@ function compression (options) {
         return false
       }
 
-      if (!this._header) {
-        this._implicitHeader()
+      if (!headersSent(res)) {
+        this.writeHead(this.statusCode)
       }
 
       return stream
@@ -124,13 +124,13 @@ function compression (options) {
         return false
       }
 
-      if (!this._header) {
+      if (!headersSent(res)) {
         // estimate the length
         if (!this.getHeader('Content-Length')) {
           length = chunkLength(chunk, encoding)
         }
 
-        this._implicitHeader()
+        this.writeHead(this.statusCode)
       }
 
       if (!stream) {
@@ -189,13 +189,8 @@ function compression (options) {
       }
 
       // compression method
-      var accept = accepts(req)
-      var method = accept.encoding(['gzip', 'deflate', 'identity'])
-
-      // we really don't prefer deflate
-      if (method === 'deflate' && accept.encoding(['gzip'])) {
-        method = accept.encoding(['gzip', 'identity'])
-      }
+      var negotiator = new Negotiator(req)
+      var method = negotiator.encoding(['gzip', 'deflate', 'identity'], ['gzip'])
 
       // negotiation failed
       if (!method || method === 'identity') {
@@ -256,9 +251,9 @@ function chunkLength (chunk, encoding) {
     return 0
   }
 
-  return !Buffer.isBuffer(chunk)
-    ? Buffer.byteLength(chunk, encoding)
-    : chunk.length
+  return Buffer.isBuffer(chunk)
+    ? chunk.length
+    : Buffer.byteLength(chunk, encoding)
 }
 
 /**
@@ -384,7 +379,21 @@ function shouldTransform (req, res) {
  */
 
 function toBuffer (chunk, encoding) {
-  return !Buffer.isBuffer(chunk)
-    ? Buffer.from(chunk, encoding)
-    : chunk
+  return Buffer.isBuffer(chunk)
+    ? chunk
+    : Buffer.from(chunk, encoding)
+}
+
+/**
+ * Determine if the response headers have been sent.
+ *
+ * @param {object} res
+ * @returns {boolean}
+ * @private
+ */
+
+function headersSent (res) {
+  return typeof res.headersSent !== 'boolean'
+    ? Boolean(res._header)
+    : res.headersSent
 }

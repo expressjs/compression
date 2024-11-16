@@ -2,7 +2,7 @@
 
 [![NPM Version][npm-image]][npm-url]
 [![NPM Downloads][downloads-image]][downloads-url]
-[![Build Status][travis-image]][travis-url]
+[![Build Status][github-actions-ci-image]][github-actions-ci-url]
 [![Test Coverage][coveralls-image]][coveralls-url]
 
 Node.js compression middleware.
@@ -24,8 +24,6 @@ $ npm install compression
 
 ## API
 
-<!-- eslint-disable no-unused-vars -->
-
 ```js
 var compression = require('compression')
 ```
@@ -33,7 +31,7 @@ var compression = require('compression')
 ### compression([options])
 
 Returns the compression middleware using the given `options`. The middleware
-will attempt to compress response bodies for all request that traverse through
+will attempt to compress response bodies for all requests that traverse through
 the middleware, based on the given `options`.
 
 This middleware will never compress responses that include a `Cache-Control`
@@ -232,9 +230,9 @@ app.get('/events', function (req, res) {
 
 [npm-image]: https://img.shields.io/npm/v/compression.svg
 [npm-url]: https://npmjs.org/package/compression
-[travis-image]: https://img.shields.io/travis/expressjs/compression/master.svg
-[travis-url]: https://travis-ci.org/expressjs/compression
 [coveralls-image]: https://img.shields.io/coveralls/expressjs/compression/master.svg
 [coveralls-url]: https://coveralls.io/r/expressjs/compression?branch=master
 [downloads-image]: https://img.shields.io/npm/dm/compression.svg
 [downloads-url]: https://npmjs.org/package/compression
+[github-actions-ci-image]: https://badgen.net/github/checks/expressjs/compression/master?label=ci
+[github-actions-ci-url]: https://github.com/expressjs/compression/actions?query=workflow%3Aci

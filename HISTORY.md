@@ -1,9 +1,21 @@
 unreleased
 ==========
+  * Use `res.headersSent` when available
 
-  * deps: compressible@~2.0.17
-    - deps: mime-db@'>= 1.40.0 < 2'
-  * deps: safe-buffer@5.2.0
+1.7.5 / 2024-10-31
+==========
+
+  * deps: Replace accepts with negotiator@~0.6.4
+    - Add preference option
+  * deps: bytes@3.1.2
+    - Add petabyte (`pb`) support
+    - Fix "thousandsSeparator" incorrecting formatting fractional part
+    - Fix return value for un-parsable strings
+  * deps: compressible@~2.0.18
+    - Mark `font/ttf` as compressible
+    - Remove compressible from `multipart/mixed`
+    - deps: mime-db@'>= 1.43.0 < 2'
+  * deps: safe-buffer@5.2.1
 
 1.7.4 / 2019-03-18
 ==================
