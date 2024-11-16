@@ -181,7 +181,7 @@ function compression (options) {
       var method = negotiator.encoding(['gzip', 'deflate', 'identity'], ['gzip'])
 
       // if no method is found, use the default encoding
-      if (encodingSupported.indexOf(enforceEncoding) !== -1 && !req.headers['accept-encoding']) {
+      if (!req.headers['accept-encoding'] && encodingSupported.indexOf(enforceEncoding) !== -1) {
         method = enforceEncoding === '*' ? 'gzip' : enforceEncoding
       }
 
