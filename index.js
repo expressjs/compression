@@ -18,6 +18,7 @@ var Negotiator = require('negotiator')
 var Buffer = require('safe-buffer').Buffer
 var bytes = require('bytes')
 var compressible = require('compressible')
+var objectAssign = require('object-assign')
 var debug = require('debug')('compression')
 var onHeaders = require('on-headers')
 var vary = require('vary')
@@ -54,14 +55,14 @@ var PREFERRED_ENCODING = hasBrotliSupport ? ['br', 'gzip'] : ['gzip']
 
 function compression (options) {
   var opts = options || {}
-  var optsBrotli = opts.brotli || {}
+  var optsBrotli = objectAssign({}, opts.brotli)
 
   if (hasBrotliSupport) {
-    // set the default level to a reasonable value with balanced speed/ratio
     if (optsBrotli.params === undefined) {
       optsBrotli.params = {}
     }
 
+    // set the default level to a reasonable value with balanced speed/ratio
     if (optsBrotli.params[zlib.constants.BROTLI_PARAM_QUALITY] === undefined) {
       optsBrotli.params[zlib.constants.BROTLI_PARAM_QUALITY] = 4
     }
