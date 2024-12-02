@@ -58,14 +58,11 @@ function compression (options) {
   var optsBrotli = objectAssign({}, opts.brotli)
 
   if (hasBrotliSupport) {
-    if (optsBrotli.params === undefined) {
-      optsBrotli.params = {}
-    }
+    var brotliParams = {}
+    brotliParams[zlib.constants.BROTLI_PARAM_QUALITY] = 4
 
     // set the default level to a reasonable value with balanced speed/ratio
-    if (optsBrotli.params[zlib.constants.BROTLI_PARAM_QUALITY] === undefined) {
-      optsBrotli.params[zlib.constants.BROTLI_PARAM_QUALITY] = 4
-    }
+    optsBrotli.params = Object.assign(brotliParams, optsBrotli.params)
   }
 
   // options
