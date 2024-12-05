@@ -702,6 +702,86 @@ describe('compression()', function () {
         .end()
     })
   })
+
+  describe('enforceEncoding', function () {
+    it('should compress the provided encoding and not the default encoding', function (done) {
+      var server = createServer({ threshold: 0, enforceEncoding: 'deflate' }, function (req, res) {
+        res.setHeader('Content-Type', 'text/plain')
+        res.end('hello, world')
+      })
+
+      request(server)
+        .get('/')
+        .set('Accept-Encoding', 'gzip')
+        .expect('Content-Encoding', 'gzip')
+        .expect(200, 'hello, world', done)
+    })
+
+    it('should not compress when enforceEncoding is identity', function (done) {
+      var server = createServer({ threshold: 0, enforceEncoding: 'identity' }, function (req, res) {
+        res.setHeader('Content-Type', 'text/plain')
+        res.end('hello, world')
+      })
+
+      request(server)
+        .get('/')
+        .set('Accept-Encoding', '')
+        .expect(shouldNotHaveHeader('Content-Encoding'))
+        .expect(200, 'hello, world', done)
+    })
+
+    it('should compress when enforceEncoding is gzip', function (done) {
+      var server = createServer({ threshold: 0, enforceEncoding: 'gzip' }, function (req, res) {
+        res.setHeader('Content-Type', 'text/plain')
+        res.end('hello, world')
+      })
+
+      request(server)
+        .get('/')
+        .set('Accept-Encoding', '')
+        .expect('Content-Encoding', 'gzip')
+        .expect(200, 'hello, world', done)
+    })
+
+    it('should compress when enforceEncoding is deflate', function (done) {
+      var server = createServer({ threshold: 0, enforceEncoding: 'deflate' }, function (req, res) {
+        res.setHeader('Content-Type', 'text/plain')
+        res.end('hello, world')
+      })
+
+      request(server)
+        .get('/')
+        .set('Accept-Encoding', '')
+        .expect('Content-Encoding', 'deflate')
+        .expect(200, 'hello, world', done)
+    })
+
+    it('should not compress when enforceEncoding is unknown', function (done) {
+      var server = createServer({ threshold: 0, enforceEncoding: 'bogus' }, function (req, res) {
+        res.setHeader('Content-Type', 'text/plain')
+        res.end('hello, world')
+      })
+
+      request(server)
+        .get('/')
+        .set('Accept-Encoding', '')
+        .expect(shouldNotHaveHeader('Content-Encoding'))
+        .expect(200, 'hello, world', done)
+    })
+
+    it('should be gzip if no accept-encoding is sent when enforceEncoding is *', function (done) {
+      var server = createServer({ threshold: 0, enforceEncoding: '*' }, function (req, res) {
+        res.setHeader('Content-Type', 'text/plain')
+        res.end('hello, world')
+      })
+
+      request(server)
+        .get('/')
+        .set('Accept-Encoding', '')
+        .expect('Content-Encoding', 'gzip')
+        .expect(200, 'hello, world', done)
+    })
+  })
 })
 
 function createServer (opts, fn) {

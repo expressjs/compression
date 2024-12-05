@@ -139,6 +139,12 @@ The default value is `zlib.Z_DEFAULT_WINDOWBITS`, or `15`.
 See [Node.js documentation](http://nodejs.org/api/zlib.html#zlib_memory_usage_tuning)
 regarding the usage.
 
+##### enforceEncoding
+
+This is the default encoding to use when the client does not specify an encoding in the request's [Accept-Encoding](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Accept-Encoding) header.
+
+The default value is `identity`.
+
 #### .filter
 
 The default `filter` function. This is used to construct a custom filter
