@@ -256,9 +256,15 @@ function chunkLength (chunk, encoding) {
 
 function shouldCompress (req, res) {
   var type = res.getHeader('Content-Type')
+  var noCompressionHeader = res.getHeader('x-no-compression')
 
   if (type === undefined || !compressible(type)) {
     debug('%s not compressible', type)
+    return false
+  }
+
+  if (noCompressionHeader) {
+    debug('%s not compressed', type)
     return false
   }
 
