@@ -2,10 +2,10 @@ unreleased
 ==========
   * Use `res.headersSent` when available
   * add brotli support for versions of node that support it
+  * Add the enforceEncoding option for requests without `Accept-Encoding` header
 
 1.7.5 / 2024-10-31
 ==========
-
   * deps: Replace accepts with negotiator@~0.6.4
     - Add preference option
   * deps: bytes@3.1.2

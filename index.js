@@ -45,6 +45,8 @@ var cacheControlNoTransformRegExp = /(?:^|,)\s*?no-transform\s*?(?:,|$)/
 var SUPPORTED_ENCODING = hasBrotliSupport ? ['br', 'gzip', 'deflate', 'identity'] : ['gzip', 'deflate', 'identity']
 var PREFERRED_ENCODING = hasBrotliSupport ? ['br', 'gzip'] : ['gzip']
 
+var encodingSupported = ['*', 'gzip', 'deflate', 'identity']
+
 /**
  * Compress response data with gzip / deflate.
  *
@@ -68,6 +70,7 @@ function compression (options) {
   // options
   var filter = opts.filter || shouldCompress
   var threshold = bytes.parse(opts.threshold)
+  var enforceEncoding = opts.enforceEncoding || 'identity'
 
   if (threshold == null) {
     threshold = 1024
@@ -98,7 +101,7 @@ function compression (options) {
       }
 
       if (!headersSent(res)) {
-        this._implicitHeader()
+        this.writeHead(this.statusCode)
       }
 
       return stream
@@ -117,7 +120,7 @@ function compression (options) {
           length = chunkLength(chunk, encoding)
         }
 
-        this._implicitHeader()
+        this.writeHead(this.statusCode)
       }
 
       if (!stream) {
@@ -193,6 +196,11 @@ function compression (options) {
       // compression method
       var negotiator = new Negotiator(req)
       var method = negotiator.encoding(SUPPORTED_ENCODING, PREFERRED_ENCODING)
+
+      // if no method is found, use the default encoding
+      if (!req.headers['accept-encoding'] && encodingSupported.indexOf(enforceEncoding) !== -1) {
+        method = enforceEncoding === '*' ? 'gzip' : enforceEncoding
+      }
 
       // negotiation failed
       if (!method || method === 'identity') {
