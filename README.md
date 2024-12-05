@@ -5,6 +5,8 @@
 [![NPM Downloads][downloads-image]][downloads-url]
 [![Build Status][github-actions-ci-image]][github-actions-ci-url]
 [![OpenSSF Scorecard Badge][ossf-scorecard-badge]][ossf-scorecard-visualizer]
+[![Funding][funding-image]][funding-url]
+
 
 Node.js compression middleware.
 
@@ -292,3 +294,5 @@ See the [Contributing Guide](https://github.com/expressjs/express/blob/master/Co
 [github-actions-ci-url]: https://github.com/expressjs/compression/actions?query=workflow%3Aci
 [ossf-scorecard-badge]: https://api.scorecard.dev/projects/github.com/expressjs/compression/badge
 [ossf-scorecard-visualizer]: https://ossf.github.io/scorecard-visualizer/#/projects/github.com/expressjs/compression
+[funding-url]: https://opencollective.com/express
+[funding-image]: https://badgen.net/badge/icon/sponsor/pink?icon=github&label=Open%20Collective
