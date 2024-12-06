@@ -934,6 +934,19 @@ describe('compression()', function () {
         .expect(200, 'hello, world', done)
     })
 
+    brotli('should compress when enforceEncoding is brotli', function (done) {
+      var server = createServer({ threshold: 0, enforceEncoding: 'br' }, function (req, res) {
+        res.setHeader('Content-Type', 'text/plain')
+        res.end('hello, world')
+      })
+
+      request(server)
+        .get('/')
+        .set('Accept-Encoding', '')
+        .expect('Content-Encoding', 'br')
+        .expect(200, done)
+    })
+
     it('should not compress when enforceEncoding is unknown', function (done) {
       var server = createServer({ threshold: 0, enforceEncoding: 'bogus' }, function (req, res) {
         res.setHeader('Content-Type', 'text/plain')
