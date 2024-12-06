@@ -1,6 +1,7 @@
 unreleased
 ==========
   * Use `res.headersSent` when available
+  * add brotli support for versions of node that support it
   * Add the enforceEncoding option for requests without `Accept-Encoding` header
 
 1.7.5 / 2024-10-31
