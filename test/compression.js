@@ -554,7 +554,7 @@ describe('compression()', function () {
         .expect(200, 'hello, world', done)
     })
 
-    it('should not set Vary headerh', function (done) {
+    it('should not set Vary header', function (done) {
       var server = createServer({ threshold: 0 }, function (req, res) {
         res.setHeader('Cache-Control', 'no-transform')
         res.setHeader('Content-Type', 'text/plain')
@@ -565,6 +565,36 @@ describe('compression()', function () {
         .get('/')
         .set('Accept-Encoding', 'gzip')
         .expect('Cache-Control', 'no-transform')
+        .expect(shouldNotHaveHeader('Vary'))
+        .expect(200, done)
+    })
+  })
+
+  describe('when "X-No-Compression" request header', function () {
+    it('should not compress response', function (done) {
+      var server = createServer({ threshold: 0 }, function (req, res) {
+        res.setHeader('X-No-Compression', '0')
+        res.setHeader('Content-Type', 'text/plain')
+        res.end('hello, world')
+      })
+
+      request(server)
+        .get('/')
+        .set('Accept-Encoding', 'gzip, br')
+        .expect(shouldNotHaveHeader('Content-Encoding'))
+        .expect(200, 'hello, world', done)
+    })
+
+    it('should not set Vary header', function (done) {
+      var server = createServer({ threshold: 0 }, function (req, res) {
+        res.setHeader('X-No-Compression', '1')
+        res.setHeader('Content-Type', 'text/plain')
+        res.end('hello, world')
+      })
+
+      request(server)
+        .get('/')
+        .set('Accept-Encoding', 'gzip, br')
         .expect(shouldNotHaveHeader('Vary'))
         .expect(200, done)
     })
