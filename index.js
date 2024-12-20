@@ -31,13 +31,20 @@ module.exports = compression
 module.exports.filter = shouldCompress
 
 /**
+ * @const
+ * whether current node version has brotli support
+ */
+var hasBrotliSupport = 'createBrotliCompress' in zlib
+
+/**
  * Module variables.
  * @private
  */
-
 var cacheControlNoTransformRegExp = /(?:^|,)\s*?no-transform\s*?(?:,|$)/
+var SUPPORTED_ENCODING = hasBrotliSupport ? ['br', 'gzip', 'deflate', 'identity'] : ['gzip', 'deflate', 'identity']
+var PREFERRED_ENCODING = hasBrotliSupport ? ['br', 'gzip'] : ['gzip']
 
-var encodingSupported = ['*', 'gzip', 'deflate', 'identity']
+var encodingSupported = ['*', 'gzip', 'deflate', 'identity', 'br']
 
 /**
  * Compress response data with gzip / deflate.
@@ -49,6 +56,17 @@ var encodingSupported = ['*', 'gzip', 'deflate', 'identity']
 
 function compression (options) {
   var opts = options || {}
+  var optsBrotli = {}
+
+  if (hasBrotliSupport) {
+    Object.assign(optsBrotli, opts.brotli)
+
+    var brotliParams = {}
+    brotliParams[zlib.constants.BROTLI_PARAM_QUALITY] = 4
+
+    // set the default level to a reasonable value with balanced speed/ratio
+    optsBrotli.params = Object.assign(brotliParams, optsBrotli.params)
+  }
 
   // options
   var filter = opts.filter || shouldCompress
@@ -178,7 +196,7 @@ function compression (options) {
 
       // compression method
       var negotiator = new Negotiator(req)
-      var method = negotiator.encoding(['gzip', 'deflate', 'identity'], ['gzip'])
+      var method = negotiator.encoding(SUPPORTED_ENCODING, PREFERRED_ENCODING)
 
       // if no method is found, use the default encoding
       if (!req.headers['accept-encoding'] && encodingSupported.indexOf(enforceEncoding) !== -1) {
@@ -195,7 +213,9 @@ function compression (options) {
       debug('%s compression', method)
       stream = method === 'gzip'
         ? zlib.createGzip(opts)
-        : zlib.createDeflate(opts)
+        : method === 'br'
+          ? zlib.createBrotliCompress(optsBrotli)
+          : zlib.createDeflate(opts)
 
       // add buffered listeners to stream
       addListeners(stream, stream.on, listeners)
