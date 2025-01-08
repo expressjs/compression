@@ -61,6 +61,8 @@ regarding the usage.
 
 ##### filter
 
+Type: `Function`
+
 A function to decide if the response should be considered for compression.
 This function is called as `filter(req, res)` and is expected to return
 `true` to consider the response for compression, or `false` to not compress
@@ -111,10 +113,15 @@ regarding the usage.
 
 ##### brotli
 
+Type: `Object`
+
 This specifies the options for configuring Brotli. See [Node.js documentation](https://nodejs.org/api/zlib.html#class-brotlioptions) for a complete list of available options.
 
 
 ##### strategy
+
+Type: `Number`<br>
+Default: `zlib.constants.Z_DEFAULT_STRATEGY`
 
 This is used to tune the compression algorithm. This value only affects the
 compression ratio, not the correctness of the compressed output, even if it
@@ -130,7 +137,7 @@ is not set appropriately.
   - `zlib.constants.Z_FIXED` Use to prevent the use of dynamic Huffman codes, allowing
     for a simpler decoder for special applications.
   - `zlib.constants.Z_HUFFMAN_ONLY` Use to force Huffman encoding only (no string match).
-  - `zlib.Z_RLE` Use to limit match distances to one (run-length encoding).
+  - `zlib.constants.Z_RLE` Use to limit match distances to one (run-length encoding).
     This is designed to be almost as fast as `zlib.constants.Z_HUFFMAN_ONLY`, but give
     better compression for PNG image data.
 
