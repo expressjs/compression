@@ -1,7 +1,6 @@
 # compression
 
 [![NPM Version][npm-image]][npm-url]
-[![NPM Install Size][npm-install-size-image]][npm-install-size-url]
 [![NPM Downloads][downloads-image]][downloads-url]
 [![Build Status][github-actions-ci-image]][github-actions-ci-url]
 [![OpenSSF Scorecard Badge][ossf-scorecard-badge]][ossf-scorecard-visualizer]
@@ -25,7 +24,7 @@ This is a [Node.js](https://nodejs.org/en/) module available through the
 [`npm install` command](https://docs.npmjs.com/getting-started/installing-npm-packages-locally):
 
 ```bash
-npm install compression
+$ npm install compression
 ```
 
 ## API
@@ -304,8 +303,6 @@ See the [Contributing Guide](https://github.com/expressjs/express/blob/master/Co
 [npm-url]: https://npmjs.org/package/compression
 [downloads-image]: https://badgen.net/npm/dm/compression
 [downloads-url]: https://npmcharts.com/compare/compression?minimal=true
-[npm-install-size-image]: https://badgen.net/packagephobia/install/compression
-[npm-install-size-url]: https://packagephobia.com/result?p=compression
 [github-actions-ci-image]: https://badgen.net/github/checks/expressjs/compression/master?label=CI
 [github-actions-ci-url]: https://github.com/expressjs/compression/actions?query=workflow%3Aci
 [ossf-scorecard-badge]: https://api.scorecard.dev/projects/github.com/expressjs/compression/badge
