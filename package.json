@@ -9,10 +9,6 @@
   "license": "MIT",
   "repository": "expressjs/compression",
   "keywords": ["compression", "gzip", "deflate", "middleware", "express", "brotli", "http", "stream"],
-  "funding": {
-    "type": "opencollective",
-    "url": "https://opencollective.com/express"
-  },
   "dependencies": {
     "bytes": "3.1.2",
     "compressible": "~2.0.18",
