@@ -44,7 +44,7 @@ var cacheControlNoTransformRegExp = /(?:^|,)\s*?no-transform\s*?(?:,|$)/
 var SUPPORTED_ENCODING = hasBrotliSupport ? ['br', 'gzip', 'deflate', 'identity'] : ['gzip', 'deflate', 'identity']
 var PREFERRED_ENCODING = hasBrotliSupport ? ['br', 'gzip'] : ['gzip']
 
-var encodingSupported = ['*', 'gzip', 'deflate', 'identity', 'br']
+var encodingSupported = ['gzip', 'deflate', 'identity', 'br']
 
 /**
  * Compress response data with gzip / deflate.
@@ -200,7 +200,7 @@ function compression (options) {
 
       // if no method is found, use the default encoding
       if (!req.headers['accept-encoding'] && encodingSupported.indexOf(enforceEncoding) !== -1) {
-        method = enforceEncoding === '*' ? 'gzip' : enforceEncoding
+        method = enforceEncoding
       }
 
       // negotiation failed

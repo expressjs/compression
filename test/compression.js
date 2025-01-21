@@ -960,7 +960,7 @@ describe('compression()', function () {
         .expect(200, 'hello, world', done)
     })
 
-    it('should be gzip if no accept-encoding is sent when enforceEncoding is *', function (done) {
+    it('should not compress when enforceEnconding is *', function (done) {
       var server = createServer({ threshold: 0, enforceEncoding: '*' }, function (req, res) {
         res.setHeader('Content-Type', 'text/plain')
         res.end('hello, world')
@@ -969,8 +969,8 @@ describe('compression()', function () {
       request(server)
         .get('/')
         .set('Accept-Encoding', '')
-        .expect('Content-Encoding', 'gzip')
-        .expect(200, 'hello, world', done)
+        .expect(shouldNotHaveHeader('Content-Encoding'))
+        .expect(200, done)
     })
   })
 })
