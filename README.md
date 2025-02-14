@@ -15,8 +15,6 @@ The following compression codings are supported:
   - gzip
   - br (brotli)
 
-**Note** Brotli is supported only since Node.js versions v11.7.0 and v10.16.0.
-
 ## Install
 
 This is a [Node.js](https://nodejs.org/en/) module available through the

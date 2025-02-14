@@ -5,25 +5,9 @@ var crypto = require('crypto')
 var http = require('http')
 var request = require('supertest')
 var zlib = require('zlib')
-
-var describeHttp2 = describe.skip
-try {
-  var http2 = require('http2')
-  describeHttp2 = describe
-} catch (err) {
-  if (err) {
-    console.log('http2 tests disabled.')
-  }
-}
+var http2 = require('http2')
 
 var compression = require('..')
-
-/**
- * @const
- * whether current node version has brotli support
- */
-var hasBrotliSupport = 'createBrotliCompress' in zlib
-var brotli = hasBrotliSupport ? it : it.skip
 
 describe('compression()', function () {
   it('should skip HEAD', function (done) {
@@ -321,7 +305,7 @@ describe('compression()', function () {
       .expect(200, done)
   })
 
-  describeHttp2('http2', function () {
+  describe('http2', function () {
     it('should work with http2 server', function (done) {
       var server = createHttp2Server({ threshold: 0 }, function (req, res) {
         res.setHeader(http2.constants.HTTP2_HEADER_CONTENT_TYPE, 'text/plain')
@@ -517,7 +501,7 @@ describe('compression()', function () {
   })
 
   describe('when "Accept-Encoding: br"', function () {
-    brotli('should respond with br', function (done) {
+    it('should respond with br', function (done) {
       var server = createServer({ threshold: 0 }, function (req, res) {
         res.setHeader('Content-Type', 'text/plain')
         res.end('hello, world')
@@ -531,7 +515,7 @@ describe('compression()', function () {
   })
 
   describe('when "Accept-Encoding: br" and passing compression level', function () {
-    brotli('should respond with br', function (done) {
+    it('should respond with br', function (done) {
       var params = {}
       params[zlib.constants.BROTLI_PARAM_QUALITY] = 11
 
@@ -546,7 +530,7 @@ describe('compression()', function () {
         .expect('Content-Encoding', 'br', done)
     })
 
-    brotli('shouldn\'t break compression when gzip is requested', function (done) {
+    it('shouldn\'t break compression when gzip is requested', function (done) {
       var params = {}
       params[zlib.constants.BROTLI_PARAM_QUALITY] = 8
 
@@ -591,8 +575,7 @@ describe('compression()', function () {
   })
 
   describe('when "Accept-Encoding: gzip, br"', function () {
-    var brotli = hasBrotliSupport ? it : it.skip
-    brotli('should respond with br', function (done) {
+    it('should respond with br', function (done) {
       var server = createServer({ threshold: 0 }, function (req, res) {
         res.setHeader('Content-Type', 'text/plain')
         res.end('hello, world')
@@ -604,9 +587,7 @@ describe('compression()', function () {
         .expect('Content-Encoding', 'br', done)
     })
 
-    brotli = hasBrotliSupport ? it.skip : it
-
-    brotli('should respond with gzip', function (done) {
+    it.skip('should respond with gzip', function (done) {
       var server = createServer({ threshold: 0 }, function (req, res) {
         res.setHeader('Content-Type', 'text/plain')
         res.end('hello, world')
@@ -620,7 +601,7 @@ describe('compression()', function () {
   })
 
   describe('when "Accept-Encoding: deflate, gzip, br"', function () {
-    brotli('should respond with br', function (done) {
+    it('should respond with br', function (done) {
       var server = createServer({ threshold: 0 }, function (req, res) {
         res.setHeader('Content-Type', 'text/plain')
         res.end('hello, world')
@@ -634,7 +615,7 @@ describe('compression()', function () {
   })
 
   describe('when "Accept-Encoding: gzip;q=1, br;q=0.3"', function () {
-    brotli('should respond with gzip', function (done) {
+    it('should respond with gzip', function (done) {
       var server = createServer({ threshold: 0 }, function (req, res) {
         res.setHeader('Content-Type', 'text/plain')
         res.end('hello, world')
@@ -648,7 +629,7 @@ describe('compression()', function () {
   })
 
   describe('when "Accept-Encoding: gzip, br;q=0.8"', function () {
-    brotli('should respond with gzip', function (done) {
+    it('should respond with gzip', function (done) {
       var server = createServer({ threshold: 0 }, function (req, res) {
         res.setHeader('Content-Type', 'text/plain')
         res.end('hello, world')
@@ -662,7 +643,7 @@ describe('compression()', function () {
   })
 
   describe('when "Accept-Encoding: gzip;q=0.001"', function () {
-    brotli('should respond with gzip', function (done) {
+    it('should respond with gzip', function (done) {
       var server = createServer({ threshold: 0 }, function (req, res) {
         res.setHeader('Content-Type', 'text/plain')
         res.end('hello, world')
@@ -676,7 +657,7 @@ describe('compression()', function () {
   })
 
   describe('when "Accept-Encoding: deflate, br"', function () {
-    brotli('should respond with br', function (done) {
+    it('should respond with br', function (done) {
       var server = createServer({ threshold: 0 }, function (req, res) {
         res.setHeader('Content-Type', 'text/plain')
         res.end('hello, world')
@@ -827,7 +808,7 @@ describe('compression()', function () {
         .end()
     })
 
-    brotli('should flush small chunks for brotli', function (done) {
+    it('should flush small chunks for brotli', function (done) {
       var chunks = 0
       var next
       var server = createServer({ threshold: 0 }, function (req, res) {
@@ -933,7 +914,7 @@ describe('compression()', function () {
         .expect(200, 'hello, world', done)
     })
 
-    brotli('should compress when enforceEncoding is brotli', function (done) {
+    it('should compress when enforceEncoding is brotli', function (done) {
       var server = createServer({ threshold: 0, enforceEncoding: 'br' }, function (req, res) {
         res.setHeader('Content-Type', 'text/plain')
         res.end('hello, world')
