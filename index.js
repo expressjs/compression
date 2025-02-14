@@ -31,18 +31,12 @@ module.exports = compression
 module.exports.filter = shouldCompress
 
 /**
- * @const
- * whether current node version has brotli support
- */
-var hasBrotliSupport = 'createBrotliCompress' in zlib
-
-/**
  * Module variables.
  * @private
  */
 var cacheControlNoTransformRegExp = /(?:^|,)\s*?no-transform\s*?(?:,|$)/
-var SUPPORTED_ENCODING = hasBrotliSupport ? ['br', 'gzip', 'deflate', 'identity'] : ['gzip', 'deflate', 'identity']
-var PREFERRED_ENCODING = hasBrotliSupport ? ['br', 'gzip'] : ['gzip']
+var SUPPORTED_ENCODING = ['br', 'gzip', 'deflate', 'identity']
+var PREFERRED_ENCODING = ['br', 'gzip']
 
 var encodingSupported = ['gzip', 'deflate', 'identity', 'br']
 
@@ -56,16 +50,12 @@ var encodingSupported = ['gzip', 'deflate', 'identity', 'br']
 
 function compression (options) {
   var opts = options || {}
-  var optsBrotli = {}
-
-  if (hasBrotliSupport) {
-    Object.assign(optsBrotli, opts.brotli)
-
-    var brotliParams = {}
-    brotliParams[zlib.constants.BROTLI_PARAM_QUALITY] = 4
-
-    // set the default level to a reasonable value with balanced speed/ratio
-    optsBrotli.params = Object.assign(brotliParams, optsBrotli.params)
+  var optsBrotli = {
+    ...opts.brotli,
+    params: {
+      [zlib.constants.BROTLI_PARAM_QUALITY]: 4, // set the default level to a reasonable value with balanced speed/ratio
+      ...opts.brotli?.params
+    }
   }
 
   // options
