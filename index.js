@@ -51,11 +51,12 @@ var encodingSupported = ['gzip', 'deflate', 'identity', 'br']
 
 function compression (options) {
   var opts = options || {}
+  const encodingOpts = opts?.encodings
   var optsBrotli = {
-    ...opts.brotli,
+    ...encodingOpts?.brotli,
     params: {
       [zlib.constants.BROTLI_PARAM_QUALITY]: 4, // set the default level to a reasonable value with balanced speed/ratio
-      ...opts.brotli?.params
+      ...encodingOpts?.brotli?.params
     }
   }
 
@@ -202,11 +203,13 @@ function compression (options) {
 
       // compression stream
       debug('%s compression', method)
-      stream = method === 'gzip'
-        ? zlib.createGzip(opts)
-        : method === 'br'
-          ? zlib.createBrotliCompress(optsBrotli)
-          : zlib.createDeflate(opts)
+      if (method === 'gzip') {
+        stream = zlib.createGzip(encodingOpts?.gzip)
+      } else if (method === 'br') {
+        stream = zlib.createBrotliCompress(optsBrotli)
+      } else {
+        stream = zlib.createDeflate(encodingOpts?.deflate)
+      }
 
       // add buffered listeners to stream
       addListeners(stream, stream.on, listeners)
