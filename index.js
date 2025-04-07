@@ -18,7 +18,6 @@ var Negotiator = require('negotiator')
 var bytes = require('bytes')
 var compressible = require('compressible')
 var debug = require('debug')('compression')
-var onFinished = require('on-finished')
 var onHeaders = require('on-headers')
 var vary = require('vary')
 var zlib = require('zlib')
@@ -129,7 +128,7 @@ function compression (options) {
       // mark ended
       ended = true
 
-      if (onFinished.isFinished(this)) {
+      if (this.writableFinished || !this.socket.writable) {
         return endOnce.call(this)
       }
 
@@ -241,7 +240,7 @@ function compression (options) {
         stream.resume()
       })
 
-      onFinished(res, function onFinished () {
+      res.socket.on('close', function onSocketClose () {
         if (ended) {
           endOnce.call(res)
         }

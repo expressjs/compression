@@ -14,7 +14,6 @@
     "compressible": "~2.0.18",
     "debug": "2.6.9",
     "negotiator": "~0.6.4",
-    "on-finished": "~2.3.0",
     "on-headers": "~1.0.2",
     "vary": "~1.1.2"
   },
