@@ -14,7 +14,7 @@
  * @private
  */
 
-var nodeStream = require('node:stream')
+var { finished } = require('node:stream')
 var Negotiator = require('negotiator')
 var bytes = require('bytes')
 var compressible = require('compressible')
