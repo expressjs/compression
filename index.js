@@ -14,6 +14,7 @@
  * @private
  */
 
+var nodeStream = require('node:stream')
 var Negotiator = require('negotiator')
 var bytes = require('bytes')
 var compressible = require('compressible')
@@ -240,7 +241,7 @@ function compression (options) {
         stream.resume()
       })
 
-      res.socket.on('close', function onSocketClose () {
+      nodeStream.finished(res, function onResponseFinished () {
         if (ended) {
           endOnce.call(res)
         }
