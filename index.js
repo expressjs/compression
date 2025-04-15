@@ -91,7 +91,7 @@ function compression (options) {
         return false
       }
 
-      if (!headersSent(res)) {
+      if (!res.headersSent) {
         this.writeHead(this.statusCode)
       }
 
@@ -105,7 +105,7 @@ function compression (options) {
         return false
       }
 
-      if (!headersSent(res)) {
+      if (!res.headersSent) {
         // estimate the length
         if (!this.getHeader('Content-Length')) {
           length = chunkLength(chunk, encoding)
@@ -302,20 +302,6 @@ function toBuffer (chunk, encoding) {
   return Buffer.isBuffer(chunk)
     ? chunk
     : Buffer.from(chunk, encoding)
-}
-
-/**
- * Determine if the response headers have been sent.
- *
- * @param {object} res
- * @returns {boolean}
- * @private
- */
-
-function headersSent (res) {
-  return typeof res.headersSent !== 'boolean'
-    ? Boolean(res._header)
-    : res.headersSent
 }
 
 /**
