@@ -129,10 +129,6 @@ function compression (options) {
       // mark ended
       ended = true
 
-      if (this.writableFinished || !this.socket.writable) {
-        return endOnce.call(this)
-      }
-
       // write Buffer for Node.js 0.8
       return chunk
         ? stream.end(toBuffer(chunk, encoding))
@@ -228,7 +224,7 @@ function compression (options) {
 
       // compression
       stream.on('data', function onStreamData (chunk) {
-        if (_write.call(res, chunk) === false) {
+        if (_write.call(res, chunk) === false && !isFinished(res)) {
           stream.pause()
         }
       })
@@ -242,9 +238,7 @@ function compression (options) {
       })
 
       finished(res, function onResponseFinished () {
-        if (ended) {
-          endOnce.call(res)
-        }
+        stream.resume()
       })
     })
 
@@ -330,4 +324,15 @@ function headersSent (res) {
   return typeof res.headersSent !== 'boolean'
     ? Boolean(res._header)
     : res.headersSent
+}
+
+/**
+ * Determine if the response is finished.
+ *
+ * @param {object} res
+ * @returns {boolean}
+ * @private
+ */
+function isFinished (res) {
+  return res.writableFinished || !res.socket.writable
 }
