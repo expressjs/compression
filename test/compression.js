@@ -1096,6 +1096,55 @@ describe('compression()', function () {
       var port = server.address().port
       var socket = openSocketWithRequest(port)
     })
+
+    it('should not trigger write errors if connection is cut just after response body was generated', function (done) {
+      var requestCount = 0
+
+      var server = http.createServer(function (req, res) {
+        requestCount += 1
+
+        var originalWrite = res.write
+        var writeError = null
+        res.write = function (chunk, callback) {
+          return originalWrite.call(this, chunk, function (error) {
+            if (error?.code === 'ERR_STREAM_WRITE_AFTER_END') {
+              writeError = error
+            }
+            return callback?.(error)
+          })
+        }
+
+        var originalResEnd = res.end
+        res.end = function () {
+          setTimeout(function () {
+            if (writeError !== null) {
+              server.close(function () {
+                done(new Error(`Write error occurred: ${writeError}`))
+              })
+            } else {
+              if (requestCount < 50) {
+                socket = openSocketWithRequest(port)
+              } else {
+                server.close(done)
+              }
+            }
+          }, 0)
+          return originalResEnd.apply(this, arguments)
+        }
+
+        compression({ threshold: 0 })(req, res, function () {
+          res.setHeader('Content-Type', 'text/plain')
+          res.write('hello, ')
+          res.end('world!')
+          socket.end()
+        })
+      })
+
+      server.listen()
+
+      var port = server.address().port
+      var socket = openSocketWithRequest(port)
+    })
   })
 })
 
