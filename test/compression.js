@@ -992,6 +992,42 @@ describe('compression()', function () {
       var socket = openSocketWithRequest(port)
     })
 
+    it('should call the original res.end() if connection is cut right after setting headers', function (done) {
+      var server = http.createServer(function (req, res) {
+        var originalResEnd = res.end
+        var originalResEndCalledTimes = 0
+        res.end = function () {
+          originalResEndCalledTimes++
+          return originalResEnd.apply(this, arguments)
+        }
+
+        compression({ threshold: 0 })(req, res, function () {
+          res.setHeader('Content-Type', 'text/plain')
+          socket.end()
+
+          res.write('hello, ')
+          setTimeout(function () {
+            res.end('world!')
+
+            setTimeout(function () {
+              server.close(function () {
+                if (originalResEndCalledTimes === 1) {
+                  done()
+                } else {
+                  done(new Error('The original res.end() was called ' + originalResEndCalledTimes + ' times'))
+                }
+              })
+            }, 5)
+          }, 5)
+        })
+      })
+
+      server.listen()
+
+      var port = server.address().port
+      var socket = openSocketWithRequest(port)
+    })
+
     it('should call the original res.end() if connection is cut after an initial write', function (done) {
       var server = http.createServer(function (req, res) {
         var originalResEnd = res.end
