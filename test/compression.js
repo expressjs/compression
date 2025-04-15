@@ -1107,7 +1107,7 @@ describe('compression()', function () {
         var writeError = null
         res.write = function (chunk, callback) {
           return originalWrite.call(this, chunk, function (error) {
-            if (error?.code === 'ERR_STREAM_WRITE_AFTER_END') {
+            if (error) {
               writeError = error
             }
             return callback?.(error)

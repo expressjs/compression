@@ -216,7 +216,10 @@ function compression (options) {
 
       // compression
       stream.on('data', function onStreamData (chunk) {
-        if (_write.call(res, chunk) === false && !isFinished(res)) {
+        if (isFinished(res)) {
+          return
+        }
+        if (_write.call(res, chunk) === false) {
           stream.pause()
         }
       })
