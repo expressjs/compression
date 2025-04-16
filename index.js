@@ -206,7 +206,7 @@ function compression (options) {
         stream = zlib.createGzip(encodingOpts?.gzip)
       } else if (method === 'br') {
         stream = zlib.createBrotliCompress(optsBrotli)
-      } else {
+      } else if (method === 'deflate') {
         stream = zlib.createDeflate(encodingOpts?.deflate)
       }
 
