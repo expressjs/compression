@@ -23,8 +23,6 @@ var vary = require('vary')
 var zlib = require('zlib')
 var ServerResponse = require('http').ServerResponse
 
-var isOldRuntime = /^v0\.8\./.test(process.version)
-
 /**
  * Module exports.
  */
@@ -37,10 +35,7 @@ module.exports.filter = shouldCompress
  * @private
  */
 var cacheControlNoTransformRegExp = /(?:^|,)\s*?no-transform\s*?(?:,|$)/
-var hasUint8Array = (typeof Uint8Array === 'function')
-function isUint8Array (arg) {
-  return hasUint8Array && arg && (arg instanceof Uint8Array || arg.toString() === '[object Uint8Array]')
-}
+
 var SUPPORTED_ENCODING = ['br', 'gzip', 'deflate', 'identity']
 var PREFERRED_ENCODING = ['br', 'gzip']
 
@@ -134,9 +129,6 @@ function compression (options) {
 
       if (chunk) {
         chunk = toBuffer(chunk, encoding)
-        if (isOldRuntime && stream) {
-          encoding = callback
-        }
       }
 
       return stream
@@ -183,9 +175,6 @@ function compression (options) {
 
       if (chunk) {
         chunk = toBuffer(chunk, encoding)
-        if (isOldRuntime && stream) {
-          encoding = callback
-        }
       }
 
       // write Buffer for Node.js 0.8
@@ -369,4 +358,15 @@ function toBuffer (chunk, encoding) {
   return Buffer.isBuffer(chunk)
     ? chunk
     : Buffer.from(chunk, encoding)
+}
+
+/**
+ * Checks if the given argument is an instance of Uint8Array.
+ *
+ * @param {*} arg - The value to check.
+ * @returns {boolean} Returns `true` if the argument is an instance of Uint8Array, otherwise `false`.
+ * @private
+ */
+function isUint8Array (arg) {
+  return arg && arg instanceof Uint8Array
 }
