@@ -835,6 +835,117 @@ describe('compression()', function () {
         .end()
     })
 
+    it('should invoke flush callback when supplied for gzip', function (done) {
+      var chunks = 0; var callbackInvoked = false
+      var resp
+      var server = createServer({ threshold: 0 }, function (req, res) {
+        resp = res
+        res.setHeader('Content-Type', 'text/plain')
+        write()
+      })
+
+      function flushCallback () {
+        callbackInvoked = true
+      }
+
+      function write () {
+        chunks++
+        if (chunks === 20) return resp.end()
+        if (chunks > 20) return chunks--
+        resp.write('..')
+        resp.flush(flushCallback)
+      }
+
+      request(server)
+        .get('/')
+        .set('Accept-Encoding', 'gzip')
+        .request()
+        .on('response', function (res) {
+          assert.equal(res.headers['content-encoding'], 'gzip')
+          res.on('data', write)
+          res.on('end', function () {
+            assert.equal(chunks, 20)
+            assert.equal(callbackInvoked, true)
+            done()
+          })
+        })
+        .end()
+    })
+
+    it('should invoke flush callback when supplied for brotli', function (done) {
+      var chunks = 0; var callbackInvoked = false
+      var resp
+      var server = createServer({ threshold: 0 }, function (req, res) {
+        resp = res
+        res.setHeader('Content-Type', 'text/plain')
+        write()
+      })
+
+      function flushCallback () {
+        callbackInvoked = true
+      }
+
+      function write () {
+        chunks++
+        if (chunks === 20) return resp.end()
+        if (chunks > 20) return chunks--
+        resp.write('..')
+        resp.flush(flushCallback)
+      }
+
+      request(server)
+        .get('/')
+        .set('Accept-Encoding', 'br')
+        .request()
+        .on('response', function (res) {
+          assert.equal(res.headers['content-encoding'], 'br')
+          res.on('data', write)
+          res.on('end', function () {
+            assert.equal(chunks, 20)
+            assert.equal(callbackInvoked, true)
+            done()
+          })
+        })
+        .end()
+    })
+
+    it('should invoke flush callback when supplied for deflate', function (done) {
+      var chunks = 0; var callbackInvoked = false
+      var resp
+      var server = createServer({ threshold: 0 }, function (req, res) {
+        resp = res
+        res.setHeader('Content-Type', 'text/plain')
+        write()
+      })
+
+      function flushCallback () {
+        callbackInvoked = true
+      }
+
+      function write () {
+        chunks++
+        if (chunks === 20) return resp.end()
+        if (chunks > 20) return chunks--
+        resp.write('..')
+        resp.flush(flushCallback)
+      }
+
+      request(server)
+        .get('/')
+        .set('Accept-Encoding', 'deflate')
+        .request()
+        .on('response', function (res) {
+          assert.equal(res.headers['content-encoding'], 'deflate')
+          res.on('data', write)
+          res.on('end', function () {
+            assert.equal(chunks, 20)
+            assert.equal(callbackInvoked, true)
+            done()
+          })
+        })
+        .end()
+    })
+
     it('should flush small chunks for deflate', function (done) {
       var chunks = 0
       var next
