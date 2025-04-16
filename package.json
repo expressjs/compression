@@ -19,6 +19,7 @@
     "debug": "2.6.9",
     "destroy": "1.2.0",
     "negotiator": "~0.6.4",
+    "on-finished": "^2.4.1",
     "on-headers": "~1.1.0",
     "safe-buffer": "5.2.1",
     "vary": "~1.1.2"
