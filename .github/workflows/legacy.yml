@@ -28,7 +28,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest]
+        os: [ubuntu-latest, windows-latest, macos-latest]
         node-version: [11, 12, 14, 15, 16, 17]
         # Node.js release schedule: https://nodejs.org/en/about/releases/
 
