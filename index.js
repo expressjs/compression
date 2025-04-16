@@ -19,6 +19,7 @@ var Negotiator = require('negotiator')
 var bytes = require('bytes')
 var compressible = require('compressible')
 var debug = require('debug')('compression')
+const isFinished = require('on-finished').isFinished
 var onHeaders = require('on-headers')
 var vary = require('vary')
 var zlib = require('zlib')
@@ -217,9 +218,11 @@ function compression (options) {
       // compression
       stream.on('data', function onStreamData (chunk) {
         if (isFinished(res)) {
+          debug('response finished')
           return
         }
         if (_write.call(res, chunk) === false) {
+          debug('pausing compression stream')
           stream.pause()
         }
       })
@@ -310,15 +313,4 @@ function toBuffer (chunk, encoding) {
   return Buffer.isBuffer(chunk)
     ? chunk
     : Buffer.from(chunk, encoding)
-}
-
-/**
- * Determine if the response is finished.
- *
- * @param {object} res
- * @returns {boolean}
- * @private
- */
-function isFinished (res) {
-  return res.writableFinished || !res.socket.writable
 }
