@@ -36,10 +36,8 @@ module.exports.filter = shouldCompress
  * @private
  */
 var cacheControlNoTransformRegExp = /(?:^|,)\s*?no-transform\s*?(?:,|$)/
-var SUPPORTED_ENCODING = ['br', 'gzip', 'deflate', 'identity']
+var ENCONDING_OPTIONS = ['br', 'gzip', 'deflate']
 var PREFERRED_ENCODING = ['br', 'gzip']
-
-var encodingSupported = ['gzip', 'deflate', 'identity', 'br']
 
 /**
  * Compress response data with gzip / deflate.
@@ -50,13 +48,14 @@ var encodingSupported = ['gzip', 'deflate', 'identity', 'br']
  */
 
 function compression (options) {
-  var opts = options || {}
+  const opts = options || {}
   const encodingOpts = opts?.encodings
-  var optsBrotli = {
-    ...encodingOpts?.brotli,
+  const encodingSupported = ENCONDING_OPTIONS.filter(enc => encodingOpts?.[enc] !== false)
+  const optsBrotli = {
+    ...encodingOpts?.br,
     params: {
       [zlib.constants.BROTLI_PARAM_QUALITY]: 4, // set the default level to a reasonable value with balanced speed/ratio
-      ...encodingOpts?.brotli?.params
+      ...encodingOpts?.br?.params
     }
   }
 
@@ -188,7 +187,7 @@ function compression (options) {
 
       // compression method
       var negotiator = new Negotiator(req)
-      var method = negotiator.encoding(SUPPORTED_ENCODING, PREFERRED_ENCODING)
+      var method = negotiator.encoding(encodingSupported, PREFERRED_ENCODING)
 
       // if no method is found, use the default encoding
       if (!req.headers['accept-encoding'] && encodingSupported.indexOf(enforceEncoding) !== -1) {
