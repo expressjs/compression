@@ -1,10 +1,25 @@
 unreleased
-==========
+=================
 
-  * deps: accepts@~1.3.8
-    - Fix sorting encoding with extra parameters
-    - deps: mime-types@~2.1.34
-    - deps: negotiator@0.6.3
+  * deps: remove `safe-buffer`
+
+1.8.0 / 2025-02-10
+==================
+
+  * Use `res.headersSent` when available
+  * Replace `_implicitHeader` with `writeHead` property
+  * add brotli support for versions of node that support it
+  * Add the enforceEncoding option for requests without `Accept-Encoding` header
+
+1.7.5 / 2024-10-31
+==================
+
+  * deps: Replace accepts with negotiator@~0.6.4
+    - Add preference option
+  * deps: bytes@3.1.2
+    - Add petabyte (`pb`) support
+    - Fix "thousandsSeparator" incorrecting formatting fractional part
+    - Fix return value for un-parsable strings
   * deps: compressible@~2.0.18
     - Mark `font/ttf` as compressible
     - Remove compressible from `multipart/mixed`

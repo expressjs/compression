@@ -14,8 +14,7 @@
  * @private
  */
 
-var accepts = require('accepts')
-var Buffer = require('safe-buffer').Buffer
+var Negotiator = require('negotiator')
 var bytes = require('bytes')
 var compressible = require('compressible')
 var debug = require('debug')('compression')
@@ -37,12 +36,15 @@ module.exports.filter = shouldCompress
  * Module variables.
  * @private
  */
-
 var cacheControlNoTransformRegExp = /(?:^|,)\s*?no-transform\s*?(?:,|$)/
 var hasUint8Array = (typeof Uint8Array === 'function')
 function isUint8Array (arg) {
   return hasUint8Array && arg && (arg instanceof Uint8Array || arg.toString() === '[object Uint8Array]')
 }
+var SUPPORTED_ENCODING = ['br', 'gzip', 'deflate', 'identity']
+var PREFERRED_ENCODING = ['br', 'gzip']
+
+var encodingSupported = ['gzip', 'deflate', 'identity', 'br']
 
 /**
  * Compress response data with gzip / deflate.
@@ -54,10 +56,18 @@ function isUint8Array (arg) {
 
 function compression (options) {
   var opts = options || {}
+  var optsBrotli = {
+    ...opts.brotli,
+    params: {
+      [zlib.constants.BROTLI_PARAM_QUALITY]: 4, // set the default level to a reasonable value with balanced speed/ratio
+      ...opts.brotli?.params
+    }
+  }
 
   // options
   var filter = opts.filter || shouldCompress
   var threshold = bytes.parse(opts.threshold)
+  var enforceEncoding = opts.enforceEncoding || 'identity'
 
   if (threshold == null) {
     threshold = 1024
@@ -118,8 +128,8 @@ function compression (options) {
         return false
       }
 
-      if (!this._header) {
-        this._implicitHeader()
+      if (!res.headersSent) {
+        this.writeHead(this.statusCode)
       }
 
       if (chunk) {
@@ -155,13 +165,13 @@ function compression (options) {
         return _end.call(this, chunk, encoding, callback)
       }
 
-      if (!this._header) {
+      if (!res.headersSent) {
         // estimate the length
         if (!this.getHeader('Content-Length')) {
           length = chunkLength(chunk, encoding)
         }
 
-        this._implicitHeader()
+        this.writeHead(this.statusCode)
       }
 
       if (!stream) {
@@ -242,12 +252,12 @@ function compression (options) {
       }
 
       // compression method
-      var accept = accepts(req)
-      var method = accept.encoding(['gzip', 'deflate', 'identity'])
+      var negotiator = new Negotiator(req)
+      var method = negotiator.encoding(SUPPORTED_ENCODING, PREFERRED_ENCODING)
 
-      // we really don't prefer deflate
-      if (method === 'deflate' && accept.encoding(['gzip'])) {
-        method = accept.encoding(['gzip', 'identity'])
+      // if no method is found, use the default encoding
+      if (!req.headers['accept-encoding'] && encodingSupported.indexOf(enforceEncoding) !== -1) {
+        method = enforceEncoding
       }
 
       // negotiation failed
@@ -260,7 +270,9 @@ function compression (options) {
       debug('%s compression', method)
       stream = method === 'gzip'
         ? zlib.createGzip(opts)
-        : zlib.createDeflate(opts)
+        : method === 'br'
+          ? zlib.createBrotliCompress(optsBrotli)
+          : zlib.createDeflate(opts)
 
       // add buffered listeners to stream
       addListeners(stream, stream.on, listeners)
@@ -313,9 +325,9 @@ function chunkLength (chunk, encoding) {
     return 0
   }
 
-  return !Buffer.isBuffer(chunk)
-    ? Buffer.byteLength(chunk, encoding)
-    : chunk.length
+  return Buffer.isBuffer(chunk)
+    ? chunk.length
+    : Buffer.byteLength(chunk, encoding)
 }
 
 /**
@@ -354,7 +366,7 @@ function shouldTransform (req, res) {
  */
 
 function toBuffer (chunk, encoding) {
-  return !Buffer.isBuffer(chunk)
-    ? Buffer.from(chunk, encoding)
-    : chunk
+  return Buffer.isBuffer(chunk)
+    ? chunk
+    : Buffer.from(chunk, encoding)
 }
