@@ -79,7 +79,7 @@ function compression (options) {
     var _write = res.write
 
     // flush
-    res.flush = function flush(cb) {
+    res.flush = function flush (cb) {
       if (stream) {
         stream.flush(cb)
       }
