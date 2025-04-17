@@ -14,6 +14,7 @@
     "compressible": "^2.0.18",
     "debug": "^2.6.9",
     "negotiator": "^0.6.4",
+    "on-finished": "^2.4.1",
     "on-headers": "^1.0.2",
     "vary": "^1.1.2"
   },
@@ -26,7 +27,7 @@
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-promise": "^5.2.0",
     "eslint-plugin-standard": "^4.1.0",
-    "mocha": "^9.2.2",
+    "mocha": "^10.8.2",
     "nyc": "^15.1.0",
     "supertest": "^6.2.3"
   },
@@ -40,7 +41,7 @@
   },
   "scripts": {
     "lint": "eslint .",
-    "test": "mocha --check-leaks --reporter spec",
+    "test": "mocha --check-leaks --exit --reporter spec",
     "test-ci": "nyc --reporter=lcov --reporter=text npm test",
     "test-cov": "nyc --reporter=html --reporter=text npm test"
   }

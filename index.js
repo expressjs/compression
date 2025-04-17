@@ -14,10 +14,12 @@
  * @private
  */
 
+var { finished } = require('node:stream')
 var Negotiator = require('negotiator')
 var bytes = require('bytes')
 var compressible = require('compressible')
 var debug = require('debug')('compression')
+const isFinished = require('on-finished').isFinished
 var onHeaders = require('on-headers')
 var vary = require('vary')
 var zlib = require('zlib')
@@ -81,9 +83,9 @@ function compression (options) {
     var _write = res.write
 
     // flush
-    res.flush = function flush () {
+    res.flush = function flush (cb) {
       if (stream) {
-        stream.flush()
+        stream.flush(cb)
       }
     }
 
@@ -276,7 +278,12 @@ function compression (options) {
       })
 
       stream.on('data', function onStreamData (chunk) {
+        if (isFinished(res)) {
+          debug('response finished')
+          return
+        }
         if (_write.call(res, chunk) === false) {
+          debug('pausing compression stream')
           stream.pause()
         }
       })
@@ -286,6 +293,15 @@ function compression (options) {
       })
 
       _on.call(res, 'drain', function onResponseDrain () {
+        stream.resume()
+      })
+
+      // In case the stream is paused when the response finishes (e.g.  because
+      // the client cuts the connection), its `drain` event may not get emitted.
+      // The following handler is here to ensure that the stream gets resumed so
+      // it ends up emitting its `end` event and calling the original
+      // `res.end()`.
+      finished(res, function onResponseFinished () {
         stream.resume()
       })
     })
