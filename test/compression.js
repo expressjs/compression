@@ -101,7 +101,7 @@ describe('compression()', function () {
         try {
           res.write(1)
         } catch (err) {
-          assert.ok(err.toString().indexOf('TypeError') > -1 || err.code === 'ERR_INVALID_ARG_TYPE')
+          assert.ok(err.code === 'ERR_INVALID_ARG_TYPE')
           res.flush()
           res.end()
         }
@@ -119,7 +119,7 @@ describe('compression()', function () {
         try {
           res.write({})
         } catch (err) {
-          assert.ok(err.toString().indexOf('TypeError') > -1 || err.code === 'ERR_INVALID_ARG_TYPE')
+          assert.ok(err.code === 'ERR_INVALID_ARG_TYPE')
           res.flush()
           res.end()
         }
@@ -131,13 +131,13 @@ describe('compression()', function () {
         .expect(200, done)
     })
 
-    it('res.write(null) should fire ERR_INVALID_ARG_TYPE or ERR_STREAM_NULL_VALUES', function (done) {
+    it('res.write(null) should fire ERR_STREAM_NULL_VALUES', function (done) {
       var server = createServer({ threshold: 0 }, function (req, res) {
         res.setHeader('Content-Type', 'text/plain')
         try {
           res.write(null)
         } catch (err) {
-          assert.ok(err.toString().indexOf('TypeError') > -1 || err.code === 'ERR_INVALID_ARG_TYPE' || err.code === 'ERR_STREAM_NULL_VALUES')
+          assert.ok(err.code === 'ERR_STREAM_NULL_VALUES')
           res.flush()
           res.end()
         }
@@ -194,7 +194,7 @@ describe('compression()', function () {
   it('res.write() should call callback with error after end', function (done) {
     var onErrorCalled = false
     var onError = function (err) {
-      assert.ok(err.toString().indexOf('write after end') > -1 || err.code === 'ERR_STREAM_WRITE_AFTER_END')
+      assert.ok(err.code === 'ERR_STREAM_WRITE_AFTER_END')
       onErrorCalled = true
     }
 

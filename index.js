@@ -70,8 +70,6 @@ function compression (options) {
     threshold = 1024
   }
 
-  function noop () { }
-
   return function compression (req, res, next) {
     var ended = false
     var length
@@ -92,25 +90,6 @@ function compression (options) {
     // proxy
 
     res.write = function write (chunk, encoding, callback) {
-      if (chunk === null) {
-        // throw ERR_STREAM_NULL_VALUES
-        return _write.call(this, chunk, encoding, callback)
-      } else if (typeof chunk === 'string' || typeof chunk.fill === 'function' || isUint8Array(chunk)) {
-        // noop
-      } else {
-        // throw ERR_INVALID_ARG_TYPE
-        return _write.call(this, chunk, encoding, callback)
-      }
-
-      if (!callback && typeof encoding === 'function') {
-        callback = encoding
-        encoding = undefined
-      }
-
-      if (typeof callback !== 'function') {
-        callback = noop
-      }
-
       if (res.destroyed || res.finished || ended) {
         // HACK: node doesn't expose internal errors,
         // we need to fake response to throw underlying errors type
@@ -147,10 +126,6 @@ function compression (options) {
           callback = encoding
           encoding = undefined
         }
-      }
-
-      if (typeof callback !== 'function') {
-        callback = noop
       }
 
       if (this.destroyed || this.finished || ended) {
@@ -374,15 +349,4 @@ function toBuffer (chunk, encoding) {
   return Buffer.isBuffer(chunk)
     ? chunk
     : Buffer.from(chunk, encoding)
-}
-
-/**
- * Checks if the given argument is an instance of Uint8Array.
- *
- * @param {*} arg - The value to check.
- * @returns {boolean} Returns `true` if the argument is an instance of Uint8Array, otherwise `false`.
- * @private
- */
-function isUint8Array (arg) {
-  return arg && arg instanceof Uint8Array
 }
