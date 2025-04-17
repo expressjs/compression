@@ -14,10 +14,12 @@
  * @private
  */
 
-var accepts = require('accepts')
+var { finished } = require('node:stream')
+var Negotiator = require('negotiator')
 var bytes = require('bytes')
 var compressible = require('compressible')
 var debug = require('debug')('compression')
+const isFinished = require('on-finished').isFinished
 var onHeaders = require('on-headers')
 var vary = require('vary')
 var zlib = require('zlib')
@@ -33,8 +35,11 @@ module.exports.filter = shouldCompress
  * Module variables.
  * @private
  */
-
 var cacheControlNoTransformRegExp = /(?:^|,)\s*?no-transform\s*?(?:,|$)/
+var SUPPORTED_ENCODING = ['br', 'gzip', 'deflate', 'identity']
+var PREFERRED_ENCODING = ['br', 'gzip']
+
+var encodingSupported = ['gzip', 'deflate', 'identity', 'br']
 
 /**
  * Compress response data with gzip / deflate.
@@ -46,10 +51,18 @@ var cacheControlNoTransformRegExp = /(?:^|,)\s*?no-transform\s*?(?:,|$)/
 
 function compression (options) {
   var opts = options || {}
+  var optsBrotli = {
+    ...opts.brotli,
+    params: {
+      [zlib.constants.BROTLI_PARAM_QUALITY]: 4, // set the default level to a reasonable value with balanced speed/ratio
+      ...opts.brotli?.params
+    }
+  }
 
   // options
   var filter = opts.filter || shouldCompress
   var threshold = bytes.parse(opts.threshold)
+  var enforceEncoding = opts.enforceEncoding || 'identity'
 
   if (threshold == null) {
     threshold = 1024
@@ -66,9 +79,9 @@ function compression (options) {
     var _write = res.write
 
     // flush
-    res.flush = function flush () {
+    res.flush = function flush (cb) {
       if (stream) {
-        stream.flush()
+        stream.flush(cb)
       }
     }
 
@@ -79,12 +92,12 @@ function compression (options) {
         return false
       }
 
-      if (!this._header) {
-        this._implicitHeader()
+      if (!res.headersSent) {
+        this.writeHead(this.statusCode)
       }
 
       return stream
-        ? stream.write(new Buffer(chunk, encoding), cb)
+        ? stream.write(toBuffer(chunk, encoding), cb)
         : _write.call(this, chunk, encoding, cb)
     }
 
@@ -93,13 +106,13 @@ function compression (options) {
         return false
       }
 
-      if (!this._header) {
+      if (!res.headersSent) {
         // estimate the length
         if (!this.getHeader('Content-Length')) {
           length = chunkLength(chunk, encoding)
         }
 
-        this._implicitHeader()
+        this.writeHead(this.statusCode)
       }
 
       if (!stream) {
@@ -111,7 +124,7 @@ function compression (options) {
 
       // write Buffer for Node.js 0.8
       return chunk
-        ? stream.end(new Buffer(chunk, encoding), cb)
+        ? stream.end(toBuffer(chunk, encoding))
         : stream.end(null, null, cb)
     }
 
@@ -173,12 +186,12 @@ function compression (options) {
       }
 
       // compression method
-      var accept = accepts(req)
-      var method = accept.encoding(['gzip', 'deflate', 'identity'])
+      var negotiator = new Negotiator(req)
+      var method = negotiator.encoding(SUPPORTED_ENCODING, PREFERRED_ENCODING)
 
-      // we really don't prefer deflate
-      if (method === 'deflate' && accept.encoding(['gzip'])) {
-        method = accept.encoding(['gzip', 'identity'])
+      // if no method is found, use the default encoding
+      if (!req.headers['accept-encoding'] && encodingSupported.indexOf(enforceEncoding) !== -1) {
+        method = enforceEncoding
       }
 
       // negotiation failed
@@ -191,7 +204,9 @@ function compression (options) {
       debug('%s compression', method)
       stream = method === 'gzip'
         ? zlib.createGzip(opts)
-        : zlib.createDeflate(opts)
+        : method === 'br'
+          ? zlib.createBrotliCompress(optsBrotli)
+          : zlib.createDeflate(opts)
 
       // add buffered listeners to stream
       addListeners(stream, stream.on, listeners)
@@ -202,7 +217,12 @@ function compression (options) {
 
       // compression
       stream.on('data', function onStreamData (chunk) {
+        if (isFinished(res)) {
+          debug('response finished')
+          return
+        }
         if (_write.call(res, chunk) === false) {
+          debug('pausing compression stream')
           stream.pause()
         }
       })
@@ -212,6 +232,15 @@ function compression (options) {
       })
 
       _on.call(res, 'drain', function onResponseDrain () {
+        stream.resume()
+      })
+
+      // In case the stream is paused when the response finishes (e.g.  because
+      // the client cuts the connection), its `drain` event may not get emitted.
+      // The following handler is here to ensure that the stream gets resumed so
+      // it ends up emitting its `end` event and calling the original
+      // `res.end()`.
+      finished(res, function onResponseFinished () {
         stream.resume()
       })
     })
@@ -240,9 +269,9 @@ function chunkLength (chunk, encoding) {
     return 0
   }
 
-  return !Buffer.isBuffer(chunk)
-    ? Buffer.byteLength(chunk, encoding)
-    : chunk.length
+  return Buffer.isBuffer(chunk)
+    ? chunk.length
+    : Buffer.byteLength(chunk, encoding)
 }
 
 /**
@@ -273,4 +302,15 @@ function shouldTransform (req, res) {
   // https://tools.ietf.org/html/rfc7234#section-5.2.2.4
   return !cacheControl ||
     !cacheControlNoTransformRegExp.test(cacheControl)
+}
+
+/**
+ * Coerce arguments to Buffer
+ * @private
+ */
+
+function toBuffer (chunk, encoding) {
+  return Buffer.isBuffer(chunk)
+    ? chunk
+    : Buffer.from(chunk, encoding)
 }
