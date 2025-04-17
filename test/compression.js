@@ -693,8 +693,6 @@ describe('compression()', function () {
         assert.ok(res.write('', onError) === false)
 
         process.nextTick(function () {
-          var run = /^v0\.12\./.test(process.version)
-          if (!run) return
           assert.ok(onErrorCalled)
         })
       })
