@@ -10,7 +10,7 @@ var http2 = require('http2')
 var compression = require('..')
 
 describe('compression()', function () {
-  describe('should work with valid types (string, Buffer, Uint8Array)', function () {
+  describe('should work end and write with valid types (string, Buffer, Uint8Array)', function () {
     it('res.write(string)', function (done) {
       var server = createServer({ threshold: 0 }, function (req, res) {
         res.setHeader('Content-Type', 'text/plain')
@@ -78,13 +78,13 @@ describe('compression()', function () {
         })
     })
 
-    var run = /^v0\.12\./.test(process.version) ? it : it.skip
-    run('res.write(Uint8Array)', function (done) {
+    it('res.write(Uint8Array)', function (done) {
       var server = createServer({ threshold: 0 }, function (req, res) {
         res.setHeader('Content-Type', 'text/plain')
         res.end(new Uint8Array(1))
       })
 
+      // TODO: see body response
       request(server)
         .get('/')
         .set('Accept-Encoding', 'gzip')
@@ -173,8 +173,7 @@ describe('compression()', function () {
       .expect(200, done)
   })
 
-  var run = /^v0\.12\./.test(process.version) ? it : it.skip
-  run('res.write() should call callback if passsed', function (done) {
+  it('res.write() should call callback if passsed', function (done) {
     var server = createServer({ threshold: 0 }, function (req, res) {
       res.setHeader('Content-Type', 'text/plain')
 
@@ -191,8 +190,7 @@ describe('compression()', function () {
       .expect(200, done)
   })
 
-  run = /^v0\.12\./.test(process.version) ? it : it.skip
-  run('res.write() should call callback with error after end', function (done) {
+  it('res.write() should call callback with error after end', function (done) {
     var onErrorCalled = false
     var onError = function (err) {
       assert.ok(err.toString().indexOf('write after end') > -1 || err.code === 'ERR_STREAM_WRITE_AFTER_END')
@@ -623,9 +621,9 @@ describe('compression()', function () {
         .expect('Content-Encoding', 'gzip', done)
     })
 
+    // TODO: why no set Content-Length?
     // res.end(str, encoding) broken in node.js 0.8
-    var run = /^v0\.8\./.test(process.version) ? it.skip : it
-    run('should handle writing hex data', function (done) {
+    it('should handle writing hex data', function (done) {
       var server = createServer({ threshold: 6 }, function (req, res) {
         res.setHeader('Content-Type', 'text/plain')
         res.end('2e2e2e2e', 'hex')
