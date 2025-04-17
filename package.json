@@ -29,7 +29,7 @@
     "eslint-plugin-standard": "4.1.0",
     "mocha": "9.2.2",
     "nyc": "15.1.0",
-    "supertest": "6.2.3"
+    "supertest": "6.3.4"
   },
   "files": [
     "LICENSE",
