@@ -23,6 +23,7 @@ const isFinished = require('on-finished').isFinished
 var onHeaders = require('on-headers')
 var vary = require('vary')
 var zlib = require('zlib')
+var ServerResponse = require('http').ServerResponse
 
 /**
  * Module exports.
@@ -36,6 +37,7 @@ module.exports.filter = shouldCompress
  * @private
  */
 var cacheControlNoTransformRegExp = /(?:^|,)\s*?no-transform\s*?(?:,|$)/
+
 var SUPPORTED_ENCODING = ['br', 'gzip', 'deflate', 'identity']
 var PREFERRED_ENCODING = ['br', 'gzip']
 
@@ -87,8 +89,18 @@ function compression (options) {
 
     // proxy
 
-    res.write = function write (chunk, encoding) {
-      if (ended) {
+    res.write = function write (chunk, encoding, callback) {
+      if (res.destroyed || res.finished || ended) {
+        // HACK: node doesn't expose internal errors,
+        // we need to fake response to throw underlying errors type
+        var fakeRes = new ServerResponse({})
+        fakeRes.on('error', function (err) {
+          res.emit('error', err)
+        })
+        fakeRes.destroyed = res.destroyed
+        fakeRes.finished = res.finished || ended
+        // throw ERR_STREAM_DESTROYED or ERR_STREAM_WRITE_AFTER_END
+        _write.call(fakeRes, chunk, encoding, callback)
         return false
       }
 
@@ -96,14 +108,30 @@ function compression (options) {
         this.writeHead(this.statusCode)
       }
 
+      if (chunk) {
+        chunk = toBuffer(chunk, encoding)
+      }
+
       return stream
-        ? stream.write(toBuffer(chunk, encoding))
-        : _write.call(this, chunk, encoding)
+        ? stream.write(chunk, encoding, callback)
+        : _write.call(this, chunk, encoding, callback)
     }
 
-    res.end = function end (chunk, encoding) {
-      if (ended) {
-        return false
+    res.end = function end (chunk, encoding, callback) {
+      if (!callback) {
+        if (typeof chunk === 'function') {
+          callback = chunk
+          chunk = encoding = undefined
+        } else if (typeof encoding === 'function') {
+          callback = encoding
+          encoding = undefined
+        }
+      }
+
+      if (this.destroyed || this.finished || ended) {
+        this.finished = ended
+        // throw ERR_STREAM_WRITE_AFTER_END or ERR_STREAM_ALREADY_FINISHED
+        return _end.call(this, chunk, encoding, callback)
       }
 
       if (!res.headersSent) {
@@ -116,16 +144,20 @@ function compression (options) {
       }
 
       if (!stream) {
-        return _end.call(this, chunk, encoding)
+        return _end.call(this, chunk, encoding, callback)
       }
 
       // mark ended
       ended = true
 
+      if (chunk) {
+        chunk = toBuffer(chunk, encoding)
+      }
+
       // write Buffer for Node.js 0.8
       return chunk
-        ? stream.end(toBuffer(chunk, encoding))
-        : stream.end()
+        ? stream.end(chunk, encoding, callback)
+        : stream.end(chunk, callback)
     }
 
     res.on = function on (type, listener) {
@@ -216,6 +248,10 @@ function compression (options) {
       res.removeHeader('Content-Length')
 
       // compression
+      stream.on('error', function (err) {
+        res.emit('error', err)
+      })
+
       stream.on('data', function onStreamData (chunk) {
         if (isFinished(res)) {
           debug('response finished')
