@@ -1144,7 +1144,7 @@ describe('compression()', function () {
           .expect(200, 'hello, world', done)
       })
 
-      it('should skip when defalte is disabled', function (done) {
+      it('should skip when deflate is disabled', function (done) {
         var server = createServer({ threshold: 0, enforceEncoding: 'deflate', encodings: { deflate: false } }, function (req, res) {
           res.setHeader('Content-Type', 'text/plain')
           res.end('hello, world')
