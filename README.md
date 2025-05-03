@@ -64,14 +64,14 @@ app.use(
     encodings: {
       br: {
         params: {
-          [zlib.constants.BROTLI_PARAM_QUALITY]: 6,
-        },
+          [zlib.constants.BROTLI_PARAM_QUALITY]: 6
+        }
       },
       gzip: {
-        level: zlib.constants.Z_BEST_SPEED,
+        level: zlib.constants.Z_BEST_SPEED
       },
-      deflate: false, // Disable Deflate compression
-    },
+      deflate: false // Disable Deflate compression
+    }
   })
 )
 ```
