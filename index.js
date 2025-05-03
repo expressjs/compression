@@ -36,10 +36,8 @@ module.exports.filter = shouldCompress
  * @private
  */
 var cacheControlNoTransformRegExp = /(?:^|,)\s*?no-transform\s*?(?:,|$)/
-var SUPPORTED_ENCODING = ['br', 'gzip', 'deflate', 'identity']
+var ENCODING_OPTIONS = ['br', 'gzip', 'deflate']
 var PREFERRED_ENCODING = ['br', 'gzip']
-
-var encodingSupported = ['gzip', 'deflate', 'identity', 'br']
 
 /**
  * Compress response data with gzip / deflate.
@@ -50,12 +48,14 @@ var encodingSupported = ['gzip', 'deflate', 'identity', 'br']
  */
 
 function compression (options) {
-  var opts = options || {}
-  var optsBrotli = {
-    ...opts.brotli,
+  const opts = options || {}
+  const encodingOpts = opts?.encodings
+  const encodingSupported = ENCODING_OPTIONS.filter(enc => encodingOpts?.[enc] !== false)
+  const optsBrotli = {
+    ...encodingOpts?.br,
     params: {
       [zlib.constants.BROTLI_PARAM_QUALITY]: 4, // set the default level to a reasonable value with balanced speed/ratio
-      ...opts.brotli?.params
+      ...encodingOpts?.br?.params
     }
   }
 
@@ -187,10 +187,10 @@ function compression (options) {
 
       // compression method
       var negotiator = new Negotiator(req)
-      var method = negotiator.encoding(SUPPORTED_ENCODING, PREFERRED_ENCODING)
+      var method = negotiator.encoding(encodingSupported, PREFERRED_ENCODING)
 
       // if no method is found, use the default encoding
-      if (!req.headers['accept-encoding'] && encodingSupported.indexOf(enforceEncoding) !== -1) {
+      if (!req.headers['accept-encoding'] && encodingSupported.includes(enforceEncoding)) {
         method = enforceEncoding
       }
 
@@ -202,11 +202,13 @@ function compression (options) {
 
       // compression stream
       debug('%s compression', method)
-      stream = method === 'gzip'
-        ? zlib.createGzip(opts)
-        : method === 'br'
-          ? zlib.createBrotliCompress(optsBrotli)
-          : zlib.createDeflate(opts)
+      if (method === 'gzip') {
+        stream = zlib.createGzip(encodingOpts?.gzip)
+      } else if (method === 'br') {
+        stream = zlib.createBrotliCompress(optsBrotli)
+      } else if (method === 'deflate') {
+        stream = zlib.createDeflate(encodingOpts?.deflate)
+      }
 
       // add buffered listeners to stream
       addListeners(stream, stream.on, listeners)
