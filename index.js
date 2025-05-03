@@ -23,7 +23,6 @@ const isFinished = require('on-finished').isFinished
 var onHeaders = require('on-headers')
 var vary = require('vary')
 var zlib = require('zlib')
-var ServerResponse = require('http').ServerResponse
 
 /**
  * Module exports.
@@ -90,20 +89,6 @@ function compression (options) {
     // proxy
 
     res.write = function write (chunk, encoding, callback) {
-      if (res.destroyed || res.finished || ended) {
-        // HACK: node doesn't expose internal errors,
-        // we need to fake response to throw underlying errors type
-        var fakeRes = new ServerResponse({})
-        fakeRes.on('error', function (err) {
-          res.emit('error', err)
-        })
-        fakeRes.destroyed = res.destroyed
-        fakeRes.finished = res.finished || ended
-        // throw ERR_STREAM_DESTROYED or ERR_STREAM_WRITE_AFTER_END
-        _write.call(fakeRes, chunk, encoding, callback)
-        return false
-      }
-
       if (!res.headersSent) {
         this.writeHead(this.statusCode)
       }
@@ -113,8 +98,8 @@ function compression (options) {
       }
 
       return stream
-        ? stream.write(chunk, encoding, callback)
-        : _write.call(this, chunk, encoding, callback)
+        ? stream.write.apply(stream, arguments)
+        : _write.apply(this, arguments)
     }
 
     res.end = function end (chunk, encoding, callback) {
@@ -128,12 +113,6 @@ function compression (options) {
         }
       }
 
-      if (this.destroyed || this.finished || ended) {
-        this.finished = ended
-        // throw ERR_STREAM_WRITE_AFTER_END or ERR_STREAM_ALREADY_FINISHED
-        return _end.call(this, chunk, encoding, callback)
-      }
-
       if (!res.headersSent) {
         // estimate the length
         if (!this.getHeader('Content-Length')) {
@@ -144,7 +123,7 @@ function compression (options) {
       }
 
       if (!stream) {
-        return _end.call(this, chunk, encoding, callback)
+        return _end.apply(this, arguments)
       }
 
       // mark ended
@@ -247,11 +226,12 @@ function compression (options) {
       res.setHeader('Content-Encoding', method)
       res.removeHeader('Content-Length')
 
-      // compression
+      // emit error on response
       stream.on('error', function (err) {
         res.emit('error', err)
       })
-
+      
+      // compression
       stream.on('data', function onStreamData (chunk) {
         if (isFinished(res)) {
           debug('response finished')
