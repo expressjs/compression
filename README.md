@@ -43,18 +43,52 @@ as compressing will transform the body.
 
 #### Options
 
-`compression()` accepts these properties in the options object. In addition to
-those listed below, [zlib](http://nodejs.org/api/zlib.html) options may be
-passed in to the options object or
-[brotli](https://nodejs.org/api/zlib.html#zlib_class_brotlioptions) options.
+`compression()` accepts these properties in the options object.
 
-##### chunkSize
+##### encodings
 
-Type: `Number`<br>
-Default: `zlib.constants.Z_DEFAULT_CHUNK`, or `16384`.
+Type: `Object`<br>
 
-See [Node.js documentation](http://nodejs.org/api/zlib.html#zlib_memory_usage_tuning)
-regarding the usage.
+Handles the configurations for each encoding. Setting options.encodings[encoding] = false will disable that encoding.
+
+Example:
+
+```js
+const compression = require('compression')
+const express = require('express')
+
+const app = express()
+
+app.use(
+  compression({
+    encodings: {
+      br: {
+        params: {
+          [zlib.constants.BROTLI_PARAM_QUALITY]: 6,
+        },
+      },
+      gzip: {
+        level: zlib.constants.Z_BEST_SPEED,
+      },
+      deflate: false, // Disable Deflate compression
+    },
+  })
+)
+```
+
+###### Supported Encodings
+
+- **`br` (Brotli):**
+
+This specifies the options for configuring Brotli. See [Node.js documentation](https://nodejs.org/api/zlib.html#class-brotlioptions) for a complete list of available options.
+
+- **gzip:**
+
+This specifies the options for configuring gzip. See [Node.js documentation](https://nodejs.org/api/zlib.html#class-options) for a complete list of available options.
+
+- **deflate:**
+
+This specifies the options for configuring deflate. See [Node.js documentation](https://nodejs.org/api/zlib.html#class-options) for a complete list of available options.
 
 ##### filter
 
@@ -67,78 +101,6 @@ the response.
 
 The default filter function uses the [compressible](https://www.npmjs.com/package/compressible)
 module to determine if `res.getHeader('Content-Type')` is compressible.
-
-##### level
-
-Type: `Number`<br>
-Default: `zlib.constants.Z_DEFAULT_COMPRESSION`, or `-1`
-
-The level of zlib compression to apply to responses. A higher level will result
-in better compression, but will take longer to complete. A lower level will
-result in less compression, but will be much faster.
-
-This is an integer in the range of `0` (no compression) to `9` (maximum
-compression). The special value `-1` can be used to mean the "default
-compression level", which is a default compromise between speed and
-compression (currently equivalent to level 6).
-
-  - `-1` Default compression level (also `zlib.constants.Z_DEFAULT_COMPRESSION`).
-  - `0` No compression (also `zlib.constants.Z_NO_COMPRESSION`).
-  - `1` Fastest compression (also `zlib.constants.Z_BEST_SPEED`).
-  - `2`
-  - `3`
-  - `4`
-  - `5`
-  - `6` (currently what `zlib.constants.Z_DEFAULT_COMPRESSION` points to).
-  - `7`
-  - `8`
-  - `9` Best compression (also `zlib.constants.Z_BEST_COMPRESSION`).
-
-**Note** in the list above, `zlib` is from `zlib = require('zlib')`.
-
-##### memLevel
-
-Type: `Number`<br>
-Default: `zlib.constants.Z_DEFAULT_MEMLEVEL`, or `8`
-
-This specifies how much memory should be allocated for the internal compression
-state and is an integer in the range of `1` (minimum level) and `9` (maximum
-level).
-
-See [Node.js documentation](http://nodejs.org/api/zlib.html#zlib_memory_usage_tuning)
-regarding the usage.
-
-##### brotli
-
-Type: `Object`
-
-This specifies the options for configuring Brotli. See [Node.js documentation](https://nodejs.org/api/zlib.html#class-brotlioptions) for a complete list of available options.
-
-
-##### strategy
-
-Type: `Number`<br>
-Default: `zlib.constants.Z_DEFAULT_STRATEGY`
-
-This is used to tune the compression algorithm. This value only affects the
-compression ratio, not the correctness of the compressed output, even if it
-is not set appropriately.
-
-  - `zlib.constants.Z_DEFAULT_STRATEGY` Use for normal data.
-  - `zlib.constants.Z_FILTERED` Use for data produced by a filter (or predictor).
-    Filtered data consists mostly of small values with a somewhat random
-    distribution. In this case, the compression algorithm is tuned to
-    compress them better. The effect is to force more Huffman coding and less
-    string matching; it is somewhat intermediate between `zlib.constants.Z_DEFAULT_STRATEGY`
-    and `zlib.constants.Z_HUFFMAN_ONLY`.
-  - `zlib.constants.Z_FIXED` Use to prevent the use of dynamic Huffman codes, allowing
-    for a simpler decoder for special applications.
-  - `zlib.constants.Z_HUFFMAN_ONLY` Use to force Huffman encoding only (no string match).
-  - `zlib.constants.Z_RLE` Use to limit match distances to one (run-length encoding).
-    This is designed to be almost as fast as `zlib.constants.Z_HUFFMAN_ONLY`, but give
-    better compression for PNG image data.
-
-**Note** in the list above, `zlib` is from `zlib = require('zlib')`.
 
 ##### threshold
 
@@ -153,14 +115,6 @@ accepted by the [bytes](https://www.npmjs.com/package/bytes) module.
 at the time the response headers are written, then it is assumed the response is
 _over_ the threshold. To guarantee the response size can be determined, be sure
 set a `Content-Length` response header.
-
-##### windowBits
-
-Type: `Number`<br>
-Default: `zlib.constants.Z_DEFAULT_WINDOWBITS`, or `15`
-
-See [Node.js documentation](http://nodejs.org/api/zlib.html#zlib_memory_usage_tuning)
-regarding the usage.
 
 ##### enforceEncoding
 
