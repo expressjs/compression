@@ -454,7 +454,8 @@ describe('compression()', function () {
         .expect(200, done)
     })
 
-    it('should not leak event listeners when res.unpipe() is used (#135)', function (done) {
+    // https://github.com/expressjs/compression/issues/135
+    it('should not leak event listeners when res.unpipe()', function (done) {
       var hasWarned = false
       var onWarning = function () {
         hasWarned = true

@@ -318,7 +318,7 @@ function interceptAddListener (ee, fn) {
 }
 
 /**
- * Intercept add listener on event emitter.
+ * Intercept remove listener on event emitter.
  * @private
  */
 
