@@ -14,11 +14,12 @@
  * @private
  */
 
+var { finished } = require('node:stream')
 var Negotiator = require('negotiator')
-var Buffer = require('safe-buffer').Buffer
 var bytes = require('bytes')
 var compressible = require('compressible')
 var debug = require('debug')('compression')
+const isFinished = require('on-finished').isFinished
 var onHeaders = require('on-headers')
 var vary = require('vary')
 var zlib = require('zlib')
@@ -34,8 +35,11 @@ module.exports.filter = shouldCompress
  * Module variables.
  * @private
  */
-
 var cacheControlNoTransformRegExp = /(?:^|,)\s*?no-transform\s*?(?:,|$)/
+var SUPPORTED_ENCODING = ['br', 'gzip', 'deflate', 'identity']
+var PREFERRED_ENCODING = ['br', 'gzip']
+
+var encodingSupported = ['gzip', 'deflate', 'identity', 'br']
 
 /**
  * Compress response data with gzip / deflate.
@@ -47,10 +51,18 @@ var cacheControlNoTransformRegExp = /(?:^|,)\s*?no-transform\s*?(?:,|$)/
 
 function compression (options) {
   var opts = options || {}
+  var optsBrotli = {
+    ...opts.brotli,
+    params: {
+      [zlib.constants.BROTLI_PARAM_QUALITY]: 4, // set the default level to a reasonable value with balanced speed/ratio
+      ...opts.brotli?.params
+    }
+  }
 
   // options
   var filter = opts.filter || shouldCompress
   var threshold = bytes.parse(opts.threshold)
+  var enforceEncoding = opts.enforceEncoding || 'identity'
 
   if (threshold == null) {
     threshold = 1024
@@ -97,9 +109,9 @@ function compression (options) {
     })
 
     // flush
-    res.flush = function flush () {
+    res.flush = function flush (cb) {
       if (stream) {
-        stream.flush()
+        stream.flush(cb)
       }
     }
 
@@ -110,7 +122,7 @@ function compression (options) {
         return false
       }
 
-      if (!headersSent(res)) {
+      if (!res.headersSent) {
         this.writeHead(this.statusCode)
       }
 
@@ -124,7 +136,7 @@ function compression (options) {
         return false
       }
 
-      if (!headersSent(res)) {
+      if (!res.headersSent) {
         // estimate the length
         if (!this.getHeader('Content-Length')) {
           length = chunkLength(chunk, encoding)
@@ -190,7 +202,12 @@ function compression (options) {
 
       // compression method
       var negotiator = new Negotiator(req)
-      var method = negotiator.encoding(['gzip', 'deflate', 'identity'], ['gzip'])
+      var method = negotiator.encoding(SUPPORTED_ENCODING, PREFERRED_ENCODING)
+
+      // if no method is found, use the default encoding
+      if (!req.headers['accept-encoding'] && encodingSupported.indexOf(enforceEncoding) !== -1) {
+        method = enforceEncoding
+      }
 
       // negotiation failed
       if (!method || method === 'identity') {
@@ -202,7 +219,9 @@ function compression (options) {
       debug('%s compression', method)
       stream = method === 'gzip'
         ? zlib.createGzip(opts)
-        : zlib.createDeflate(opts)
+        : method === 'br'
+          ? zlib.createBrotliCompress(optsBrotli)
+          : zlib.createDeflate(opts)
 
       // add buffered listeners to stream
       addListeners(stream, stream.on, listeners)
@@ -213,7 +232,12 @@ function compression (options) {
 
       // compression
       stream.on('data', function onStreamData (chunk) {
+        if (isFinished(res)) {
+          debug('response finished')
+          return
+        }
         if (_write.call(res, chunk) === false) {
+          debug('pausing compression stream')
           stream.pause()
         }
       })
@@ -223,6 +247,15 @@ function compression (options) {
       })
 
       _addListener.call(res, 'drain', function onResponseDrain () {
+        stream.resume()
+      })
+
+      // In case the stream is paused when the response finishes (e.g.  because
+      // the client cuts the connection), its `drain` event may not get emitted.
+      // The following handler is here to ensure that the stream gets resumed so
+      // it ends up emitting its `end` event and calling the original
+      // `res.end()`.
+      finished(res, function onResponseFinished () {
         stream.resume()
       })
     })
@@ -382,18 +415,4 @@ function toBuffer (chunk, encoding) {
   return Buffer.isBuffer(chunk)
     ? chunk
     : Buffer.from(chunk, encoding)
-}
-
-/**
- * Determine if the response headers have been sent.
- *
- * @param {object} res
- * @returns {boolean}
- * @private
- */
-
-function headersSent (res) {
-  return typeof res.headersSent !== 'boolean'
-    ? Boolean(res._header)
-    : res.headersSent
 }

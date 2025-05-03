@@ -1,21 +1,12 @@
 var after = require('after')
 var assert = require('assert')
-var Buffer = require('safe-buffer').Buffer
 var bytes = require('bytes')
 var crypto = require('crypto')
 var http = require('http')
+var net = require('net')
 var request = require('supertest')
 var zlib = require('zlib')
-
-var describeHttp2 = describe.skip
-try {
-  var http2 = require('http2')
-  describeHttp2 = describe
-} catch (err) {
-  if (err) {
-    console.log('http2 tests disabled.')
-  }
-}
+var http2 = require('http2')
 
 var compression = require('..')
 
@@ -501,7 +492,7 @@ describe('compression()', function () {
       .expect(200, done)
   })
 
-  describeHttp2('http2', function () {
+  describe('http2', function () {
     it('should work with http2 server', function (done) {
       var server = createHttp2Server({ threshold: 0 }, function (req, res) {
         res.setHeader(http2.constants.HTTP2_HEADER_CONTENT_TYPE, 'text/plain')
@@ -696,6 +687,52 @@ describe('compression()', function () {
     })
   })
 
+  describe('when "Accept-Encoding: br"', function () {
+    it('should respond with br', function (done) {
+      var server = createServer({ threshold: 0 }, function (req, res) {
+        res.setHeader('Content-Type', 'text/plain')
+        res.end('hello, world')
+      })
+
+      request(server)
+        .get('/')
+        .set('Accept-Encoding', 'br')
+        .expect('Content-Encoding', 'br', done)
+    })
+  })
+
+  describe('when "Accept-Encoding: br" and passing compression level', function () {
+    it('should respond with br', function (done) {
+      var params = {}
+      params[zlib.constants.BROTLI_PARAM_QUALITY] = 11
+
+      var server = createServer({ threshold: 0, brotli: { params: params } }, function (req, res) {
+        res.setHeader('Content-Type', 'text/plain')
+        res.end('hello, world')
+      })
+
+      request(server)
+        .get('/')
+        .set('Accept-Encoding', 'br')
+        .expect('Content-Encoding', 'br', done)
+    })
+
+    it('shouldn\'t break compression when gzip is requested', function (done) {
+      var params = {}
+      params[zlib.constants.BROTLI_PARAM_QUALITY] = 8
+
+      var server = createServer({ threshold: 0, brotli: { params: params } }, function (req, res) {
+        res.setHeader('Content-Type', 'text/plain')
+        res.end('hello, world')
+      })
+
+      request(server)
+        .get('/')
+        .set('Accept-Encoding', 'gzip')
+        .expect('Content-Encoding', 'gzip', done)
+    })
+  })
+
   describe('when "Accept-Encoding: gzip, deflate"', function () {
     it('should respond with gzip', function (done) {
       var server = createServer({ threshold: 0 }, function (req, res) {
@@ -721,6 +758,102 @@ describe('compression()', function () {
         .get('/')
         .set('Accept-Encoding', 'deflate, gzip')
         .expect('Content-Encoding', 'gzip', done)
+    })
+  })
+
+  describe('when "Accept-Encoding: gzip, br"', function () {
+    it('should respond with br', function (done) {
+      var server = createServer({ threshold: 0 }, function (req, res) {
+        res.setHeader('Content-Type', 'text/plain')
+        res.end('hello, world')
+      })
+
+      request(server)
+        .get('/')
+        .set('Accept-Encoding', 'gzip, br')
+        .expect('Content-Encoding', 'br', done)
+    })
+
+    it.skip('should respond with gzip', function (done) {
+      var server = createServer({ threshold: 0 }, function (req, res) {
+        res.setHeader('Content-Type', 'text/plain')
+        res.end('hello, world')
+      })
+
+      request(server)
+        .get('/')
+        .set('Accept-Encoding', 'br, gzip')
+        .expect('Content-Encoding', 'gzip', done)
+    })
+  })
+
+  describe('when "Accept-Encoding: deflate, gzip, br"', function () {
+    it('should respond with br', function (done) {
+      var server = createServer({ threshold: 0 }, function (req, res) {
+        res.setHeader('Content-Type', 'text/plain')
+        res.end('hello, world')
+      })
+
+      request(server)
+        .get('/')
+        .set('Accept-Encoding', 'deflate, gzip, br')
+        .expect('Content-Encoding', 'br', done)
+    })
+  })
+
+  describe('when "Accept-Encoding: gzip;q=1, br;q=0.3"', function () {
+    it('should respond with gzip', function (done) {
+      var server = createServer({ threshold: 0 }, function (req, res) {
+        res.setHeader('Content-Type', 'text/plain')
+        res.end('hello, world')
+      })
+
+      request(server)
+        .get('/')
+        .set('Accept-Encoding', 'gzip;q=1, br;q=0.3')
+        .expect('Content-Encoding', 'gzip', done)
+    })
+  })
+
+  describe('when "Accept-Encoding: gzip, br;q=0.8"', function () {
+    it('should respond with gzip', function (done) {
+      var server = createServer({ threshold: 0 }, function (req, res) {
+        res.setHeader('Content-Type', 'text/plain')
+        res.end('hello, world')
+      })
+
+      request(server)
+        .get('/')
+        .set('Accept-Encoding', 'gzip, br;q=0.8')
+        .expect('Content-Encoding', 'gzip', done)
+    })
+  })
+
+  describe('when "Accept-Encoding: gzip;q=0.001"', function () {
+    it('should respond with gzip', function (done) {
+      var server = createServer({ threshold: 0 }, function (req, res) {
+        res.setHeader('Content-Type', 'text/plain')
+        res.end('hello, world')
+      })
+
+      request(server)
+        .get('/')
+        .set('Accept-Encoding', 'gzip;q=0.001')
+        .expect('Content-Encoding', 'gzip', done)
+    })
+  })
+
+  describe('when "Accept-Encoding: deflate, br"', function () {
+    it('should respond with br', function (done) {
+      var server = createServer({ threshold: 0 }, function (req, res) {
+        res.setHeader('Content-Type', 'text/plain')
+        res.end('hello, world')
+      })
+
+      request(server)
+        .get('/')
+        .set('Accept-Encoding', 'deflate, br')
+        .expect('Content-Encoding', 'br', done)
     })
   })
 
@@ -862,6 +995,143 @@ describe('compression()', function () {
         .end()
     })
 
+    it('should flush small chunks for brotli', function (done) {
+      var chunks = 0
+      var next
+      var server = createServer({ threshold: 0 }, function (req, res) {
+        next = writeAndFlush(res, 2, Buffer.from('..'))
+        res.setHeader('Content-Type', 'text/plain')
+        next()
+      })
+
+      function onchunk (chunk) {
+        assert.ok(chunks++ < 20)
+        assert.strictEqual(chunk.toString(), '..')
+        next()
+      }
+
+      request(server)
+        .get('/')
+        .set('Accept-Encoding', 'br')
+        .request()
+        .on('response', unchunk('br', onchunk, function (err) {
+          if (err) return done(err)
+          server.close(done)
+        }))
+        .end()
+    })
+
+    it('should invoke flush callback when supplied for gzip', function (done) {
+      var chunks = 0; var callbackInvoked = false
+      var resp
+      var server = createServer({ threshold: 0 }, function (req, res) {
+        resp = res
+        res.setHeader('Content-Type', 'text/plain')
+        write()
+      })
+
+      function flushCallback () {
+        callbackInvoked = true
+      }
+
+      function write () {
+        chunks++
+        if (chunks === 20) return resp.end()
+        if (chunks > 20) return chunks--
+        resp.write('..')
+        resp.flush(flushCallback)
+      }
+
+      request(server)
+        .get('/')
+        .set('Accept-Encoding', 'gzip')
+        .request()
+        .on('response', function (res) {
+          assert.equal(res.headers['content-encoding'], 'gzip')
+          res.on('data', write)
+          res.on('end', function () {
+            assert.equal(chunks, 20)
+            assert.equal(callbackInvoked, true)
+            done()
+          })
+        })
+        .end()
+    })
+
+    it('should invoke flush callback when supplied for brotli', function (done) {
+      var chunks = 0; var callbackInvoked = false
+      var resp
+      var server = createServer({ threshold: 0 }, function (req, res) {
+        resp = res
+        res.setHeader('Content-Type', 'text/plain')
+        write()
+      })
+
+      function flushCallback () {
+        callbackInvoked = true
+      }
+
+      function write () {
+        chunks++
+        if (chunks === 20) return resp.end()
+        if (chunks > 20) return chunks--
+        resp.write('..')
+        resp.flush(flushCallback)
+      }
+
+      request(server)
+        .get('/')
+        .set('Accept-Encoding', 'br')
+        .request()
+        .on('response', function (res) {
+          assert.equal(res.headers['content-encoding'], 'br')
+          res.on('data', write)
+          res.on('end', function () {
+            assert.equal(chunks, 20)
+            assert.equal(callbackInvoked, true)
+            done()
+          })
+        })
+        .end()
+    })
+
+    it('should invoke flush callback when supplied for deflate', function (done) {
+      var chunks = 0; var callbackInvoked = false
+      var resp
+      var server = createServer({ threshold: 0 }, function (req, res) {
+        resp = res
+        res.setHeader('Content-Type', 'text/plain')
+        write()
+      })
+
+      function flushCallback () {
+        callbackInvoked = true
+      }
+
+      function write () {
+        chunks++
+        if (chunks === 20) return resp.end()
+        if (chunks > 20) return chunks--
+        resp.write('..')
+        resp.flush(flushCallback)
+      }
+
+      request(server)
+        .get('/')
+        .set('Accept-Encoding', 'deflate')
+        .request()
+        .on('response', function (res) {
+          assert.equal(res.headers['content-encoding'], 'deflate')
+          res.on('data', write)
+          res.on('end', function () {
+            assert.equal(chunks, 20)
+            assert.equal(callbackInvoked, true)
+            done()
+          })
+        })
+        .end()
+    })
+
     it('should flush small chunks for deflate', function (done) {
       var chunks = 0
       var next
@@ -886,6 +1156,291 @@ describe('compression()', function () {
           server.close(done)
         }))
         .end()
+    })
+  })
+
+  describe('enforceEncoding', function () {
+    it('should compress the provided encoding and not the default encoding', function (done) {
+      var server = createServer({ threshold: 0, enforceEncoding: 'deflate' }, function (req, res) {
+        res.setHeader('Content-Type', 'text/plain')
+        res.end('hello, world')
+      })
+
+      request(server)
+        .get('/')
+        .set('Accept-Encoding', 'gzip')
+        .expect('Content-Encoding', 'gzip')
+        .expect(200, 'hello, world', done)
+    })
+
+    it('should not compress when enforceEncoding is identity', function (done) {
+      var server = createServer({ threshold: 0, enforceEncoding: 'identity' }, function (req, res) {
+        res.setHeader('Content-Type', 'text/plain')
+        res.end('hello, world')
+      })
+
+      request(server)
+        .get('/')
+        .set('Accept-Encoding', '')
+        .expect(shouldNotHaveHeader('Content-Encoding'))
+        .expect(200, 'hello, world', done)
+    })
+
+    it('should compress when enforceEncoding is gzip', function (done) {
+      var server = createServer({ threshold: 0, enforceEncoding: 'gzip' }, function (req, res) {
+        res.setHeader('Content-Type', 'text/plain')
+        res.end('hello, world')
+      })
+
+      request(server)
+        .get('/')
+        .set('Accept-Encoding', '')
+        .expect('Content-Encoding', 'gzip')
+        .expect(200, 'hello, world', done)
+    })
+
+    it('should compress when enforceEncoding is deflate', function (done) {
+      var server = createServer({ threshold: 0, enforceEncoding: 'deflate' }, function (req, res) {
+        res.setHeader('Content-Type', 'text/plain')
+        res.end('hello, world')
+      })
+
+      request(server)
+        .get('/')
+        .set('Accept-Encoding', '')
+        .expect('Content-Encoding', 'deflate')
+        .expect(200, 'hello, world', done)
+    })
+
+    it('should compress when enforceEncoding is brotli', function (done) {
+      var server = createServer({ threshold: 0, enforceEncoding: 'br' }, function (req, res) {
+        res.setHeader('Content-Type', 'text/plain')
+        res.end('hello, world')
+      })
+
+      request(server)
+        .get('/')
+        .set('Accept-Encoding', '')
+        .expect('Content-Encoding', 'br')
+        .expect(200, done)
+    })
+
+    it('should not compress when enforceEncoding is unknown', function (done) {
+      var server = createServer({ threshold: 0, enforceEncoding: 'bogus' }, function (req, res) {
+        res.setHeader('Content-Type', 'text/plain')
+        res.end('hello, world')
+      })
+
+      request(server)
+        .get('/')
+        .set('Accept-Encoding', '')
+        .expect(shouldNotHaveHeader('Content-Encoding'))
+        .expect(200, 'hello, world', done)
+    })
+
+    it('should not compress when enforceEnconding is *', function (done) {
+      var server = createServer({ threshold: 0, enforceEncoding: '*' }, function (req, res) {
+        res.setHeader('Content-Type', 'text/plain')
+        res.end('hello, world')
+      })
+
+      request(server)
+        .get('/')
+        .set('Accept-Encoding', '')
+        .expect(shouldNotHaveHeader('Content-Encoding'))
+        .expect(200, done)
+    })
+  })
+
+  describe('when the client closes the connection before consuming the response', function () {
+    it('should call the original res.end() if connection is cut early on', function (done) {
+      var server = http.createServer(function (req, res) {
+        var originalResEnd = res.end
+        var originalResEndCalledTimes = 0
+        res.end = function () {
+          originalResEndCalledTimes++
+          return originalResEnd.apply(this, arguments)
+        }
+
+        compression({ threshold: 0 })(req, res, function () {
+          socket.end()
+
+          res.setHeader('Content-Type', 'text/plain')
+          res.write('hello, ')
+          setTimeout(function () {
+            res.end('world!')
+
+            setTimeout(function () {
+              server.close(function () {
+                if (originalResEndCalledTimes === 1) {
+                  done()
+                } else {
+                  done(new Error('The original res.end() was called ' + originalResEndCalledTimes + ' times'))
+                }
+              })
+            }, 5)
+          }, 5)
+        })
+      })
+
+      server.listen()
+
+      var port = server.address().port
+      var socket = openSocketWithRequest(port)
+    })
+
+    it('should call the original res.end() if connection is cut right after setting headers', function (done) {
+      var server = http.createServer(function (req, res) {
+        var originalResEnd = res.end
+        var originalResEndCalledTimes = 0
+        res.end = function () {
+          originalResEndCalledTimes++
+          return originalResEnd.apply(this, arguments)
+        }
+
+        compression({ threshold: 0 })(req, res, function () {
+          res.setHeader('Content-Type', 'text/plain')
+          socket.end()
+
+          res.write('hello, ')
+          setTimeout(function () {
+            res.end('world!')
+
+            setTimeout(function () {
+              server.close(function () {
+                if (originalResEndCalledTimes === 1) {
+                  done()
+                } else {
+                  done(new Error('The original res.end() was called ' + originalResEndCalledTimes + ' times'))
+                }
+              })
+            }, 5)
+          }, 5)
+        })
+      })
+
+      server.listen()
+
+      var port = server.address().port
+      var socket = openSocketWithRequest(port)
+    })
+
+    it('should call the original res.end() if connection is cut after an initial write', function (done) {
+      var server = http.createServer(function (req, res) {
+        var originalResEnd = res.end
+        var originalResEndCalledTimes = 0
+        res.end = function () {
+          originalResEndCalledTimes++
+          return originalResEnd.apply(this, arguments)
+        }
+
+        compression({ threshold: 0 })(req, res, function () {
+          res.setHeader('Content-Type', 'text/plain')
+          res.write('hello, ')
+          socket.end()
+
+          setTimeout(function () {
+            res.end('world!')
+
+            setTimeout(function () {
+              server.close(function () {
+                if (originalResEndCalledTimes === 1) {
+                  done()
+                } else {
+                  done(new Error('The original res.end() was called ' + originalResEndCalledTimes + ' times'))
+                }
+              })
+            }, 5)
+          }, 5)
+        })
+      })
+
+      server.listen()
+
+      var port = server.address().port
+      var socket = openSocketWithRequest(port)
+    })
+
+    it('should call the original res.end() if connection is cut just after response body was generated', function (done) {
+      var server = http.createServer(function (req, res) {
+        var originalResEnd = res.end
+        var originalResEndCalledTimes = 0
+        res.end = function () {
+          originalResEndCalledTimes++
+          return originalResEnd.apply(this, arguments)
+        }
+
+        compression({ threshold: 0 })(req, res, function () {
+          res.setHeader('Content-Type', 'text/plain')
+          res.write('hello, ')
+          res.end('world!')
+          socket.end()
+
+          setTimeout(function () {
+            server.close(function () {
+              if (originalResEndCalledTimes === 1) {
+                done()
+              } else {
+                done(new Error('The original res.end() was called ' + originalResEndCalledTimes + ' times'))
+              }
+            })
+          }, 5)
+        })
+      })
+
+      server.listen()
+
+      var port = server.address().port
+      var socket = openSocketWithRequest(port)
+    })
+
+    it('should not trigger write errors if connection is cut just after response body was generated', function (done) {
+      var requestCount = 0
+
+      var server = http.createServer(function (req, res) {
+        requestCount += 1
+
+        var originalWrite = res.write
+        var writeError = null
+        res.write = function (chunk, callback) {
+          return originalWrite.call(this, chunk, function (error) {
+            if (error) {
+              writeError = error
+            }
+            return callback?.(error)
+          })
+        }
+
+        var originalResEnd = res.end
+        res.end = function () {
+          setTimeout(function () {
+            if (writeError !== null) {
+              server.close(function () {
+                done(new Error(`Write error occurred: ${writeError}`))
+              })
+            } else {
+              if (requestCount < 50) {
+                socket = openSocketWithRequest(port)
+              } else {
+                server.close(done)
+              }
+            }
+          }, 0)
+          return originalResEnd.apply(this, arguments)
+        }
+
+        compression({ threshold: 0 })(req, res, function () {
+          res.setHeader('Content-Type', 'text/plain')
+          res.write('hello, ')
+          res.end('world!')
+          socket.end()
+        })
+      })
+
+      server.listen()
+
+      var port = server.address().port
+      var socket = openSocketWithRequest(port)
     })
   })
 })
@@ -989,9 +1544,25 @@ function unchunk (encoding, onchunk, onend) {
       case 'gzip':
         stream = res.pipe(zlib.createGunzip())
         break
+      case 'br':
+        stream = res.pipe(zlib.createBrotliDecompress())
+        break
     }
 
     stream.on('data', onchunk)
     stream.on('end', onend)
   }
+}
+
+function openSocketWithRequest (port) {
+  var socket = net.connect(port, function onConnect () {
+    socket.write('GET / HTTP/1.1\r\n')
+    socket.write('Accept-Encoding: gzip\r\n')
+    socket.write('Host: localhost:' + port + '\r\n')
+    socket.write('Content-Type: text/plain\r\n')
+    socket.write('Content-Length: 0\r\n')
+    socket.write('Connection: keep-alive\r\n')
+    socket.write('\r\n')
+  })
+  return socket
 }
