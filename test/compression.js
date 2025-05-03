@@ -368,9 +368,6 @@ describe('compression()', function () {
     })
 
     it('should support off("drain") after addListener("drain")', function (done) {
-      if (!require('events').EventEmitter.prototype.off) { // off was added in Node.js v10
-        this.skip()
-      }
       var hasWarned = false
       var onWarning = function () {
         hasWarned = true
@@ -458,12 +455,6 @@ describe('compression()', function () {
     })
 
     it('should not leak event listeners when res.unpipe() is used (#135)', function (done) {
-      // unpipe and stream.Readable were added in v0.9.4
-      var stream = require('stream')
-      if (!(stream.Readable && stream.Readable.prototype.unpipe)) {
-        this.skip()
-      }
-
       var hasWarned = false
       var onWarning = function () {
         hasWarned = true
@@ -1455,13 +1446,6 @@ function createServer (opts, fn) {
         res.statusCode = err.status || 500
         res.end(err.message)
         return
-      }
-
-      if (typeof res.getMaxListeners !== 'function') {
-        // Added in v0.11.2
-        res.getMaxListeners = function getMaxListeners () {
-          return 10
-        }
       }
 
       fn(req, res)

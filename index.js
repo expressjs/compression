@@ -299,34 +299,22 @@ function interceptAddListener (ee, fn) {
   var _on = ee.on
 
   if (_addListener) {
-    Object.defineProperty(ee, 'addListener', {
-      configurable: true,
-      value: addListener,
-      writable: true
-    })
+    ee.addListener = function addListener (type, listener) {
+      return fn.call(this, type, listener) === false
+        ? _addListener.call(this, type, listener)
+        : this
+    }
   }
 
   if (_on) {
-    Object.defineProperty(ee, 'on', {
-      configurable: true,
-      value: on,
-      writable: true
-    })
+    ee.on = function on (type, listener) {
+      return fn.call(this, type, listener) === false
+        ? _on.call(this, type, listener)
+        : this
+    }
   }
 
   return _addListener || _on || noop
-
-  function addListener (type, listener) {
-    return fn.call(this, type, listener) === false
-      ? _addListener.call(this, type, listener)
-      : this
-  }
-
-  function on (type, listener) {
-    return fn.call(this, type, listener) === false
-      ? _on.call(this, type, listener)
-      : this
-  }
 }
 
 /**
@@ -339,34 +327,22 @@ function interceptRemoveListener (ee, fn) {
   var _off = ee.off
 
   if (_removeListener) {
-    Object.defineProperty(ee, 'removeListener', {
-      configurable: true,
-      value: removeListener,
-      writable: true
-    })
+    ee.removeListener = function removeListener (type, listener) {
+      return fn.call(this, type, listener) === false
+        ? _removeListener.call(this, type, listener)
+        : this
+    }
   }
 
   if (_off) {
-    Object.defineProperty(ee, 'off', {
-      configurable: true,
-      value: off,
-      writable: true
-    })
+    ee.off = function off (type, listener) {
+      return fn.call(this, type, listener) === false
+        ? _off.call(this, type, listener)
+        : this
+    }
   }
 
   return _removeListener || _off || noop
-
-  function removeListener (type, listener) {
-    return fn.call(this, type, listener) === false
-      ? _removeListener.call(this, type, listener)
-      : this
-  }
-
-  function off (type, listener) {
-    return fn.call(this, type, listener) === false
-      ? _off.call(this, type, listener)
-      : this
-  }
 }
 
 /**
