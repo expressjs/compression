@@ -51,7 +51,7 @@ describe('compression()', function () {
       .expect(200, 'hello, world', done)
   })
 
-  it('should skip if content-encondig is identity', function (done) {
+  it('should skip if content-encoding is identity', function (done) {
     var server = createServer({ threshold: 0 }, function (req, res) {
       res.setHeader('Content-Type', 'text/plain')
       res.end('hello, world')
@@ -527,7 +527,7 @@ describe('compression()', function () {
           .expect('Content-Encoding', 'deflate', done)
       })
 
-      it('when deflate is disable', function (done) {
+      it('when deflate is disabled', function (done) {
         var server = createServer({ threshold: 0, encodings: { deflate: false } }, function (req, res) {
           res.setHeader('Content-Type', 'text/plain')
           res.end('hello, world')
@@ -542,7 +542,7 @@ describe('compression()', function () {
     })
 
     describe('when "Accept-Encoding: br"', function () {
-      it('when brotli is disable should not compress', function (done) {
+      it('when brotli is disabled should not compress', function (done) {
         var server = createServer({ threshold: 0, encodings: { br: false } }, function (req, res) {
           res.setHeader('Content-Type', 'text/plain')
           res.end('hello, world')
@@ -601,7 +601,7 @@ describe('compression()', function () {
     })
 
     describe('when "Accept-Encoding: gzip, deflate"', function () {
-      it('should respond with deflate when gzip is disable', function (done) {
+      it('should respond with deflate when gzip is disabled', function (done) {
         var server = createServer({ threshold: 0, encodings: { gzip: false } }, function (req, res) {
           res.setHeader('Content-Type', 'text/plain')
           res.end('hello, world')
@@ -667,7 +667,7 @@ describe('compression()', function () {
     })
 
     describe('when "Accept-Encoding: deflate, gzip, br"', function () {
-      it('should respond with gzip when brotli is disable', function (done) {
+      it('should respond with gzip when brotli is disabled', function (done) {
         var server = createServer({ threshold: 0, encodings: { br: false } }, function (req, res) {
           res.setHeader('Content-Type', 'text/plain')
           res.end('hello, world')
@@ -679,7 +679,7 @@ describe('compression()', function () {
           .expect('Content-Encoding', 'gzip', done)
       })
 
-      it('should respond with deflate when brotli and gzip is disable', function (done) {
+      it('should respond with deflate when brotli and gzip is disabled', function (done) {
         var server = createServer({ threshold: 0, encodings: { br: false, gzip: false } }, function (req, res) {
           res.setHeader('Content-Type', 'text/plain')
           res.end('hello, world')
@@ -747,7 +747,7 @@ describe('compression()', function () {
     })
 
     describe('when "Accept-Encoding: deflate, br"', function () {
-      it('should respond with deflate when brotli is disable', function (done) {
+      it('should respond with deflate when brotli is disabled', function (done) {
         var server = createServer({ threshold: 0, encodings: { br: false } }, function (req, res) {
           res.setHeader('Content-Type', 'text/plain')
           res.end('hello, world')
