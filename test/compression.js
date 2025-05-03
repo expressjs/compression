@@ -1102,43 +1102,88 @@ describe('compression()', function () {
         .expect(200, 'hello, world', done)
     })
 
-    it('should compress when enforceEncoding is gzip', function (done) {
-      var server = createServer({ threshold: 0, enforceEncoding: 'gzip' }, function (req, res) {
-        res.setHeader('Content-Type', 'text/plain')
-        res.end('hello, world')
+    describe('gzip', function () {
+      it('should compress when enforceEncoding is gzip', function (done) {
+        var server = createServer({ threshold: 0, enforceEncoding: 'gzip' }, function (req, res) {
+          res.setHeader('Content-Type', 'text/plain')
+          res.end('hello, world')
+        })
+
+        request(server)
+          .get('/')
+          .set('Accept-Encoding', '')
+          .expect('Content-Encoding', 'gzip')
+          .expect(200, 'hello, world', done)
       })
 
-      request(server)
-        .get('/')
-        .set('Accept-Encoding', '')
-        .expect('Content-Encoding', 'gzip')
-        .expect(200, 'hello, world', done)
+      it('should skip when gzip is disabled', function (done) {
+        var server = createServer({ threshold: 0, enforceEncoding: 'gzip', encodings: { gzip: false } }, function (req, res) {
+          res.setHeader('Content-Type', 'text/plain')
+          res.end('hello, world')
+        })
+
+        request(server)
+          .get('/')
+          .set('Accept-Encoding', '')
+          .expect(shouldNotHaveHeader('Content-Encoding'))
+          .expect(200, 'hello, world', done)
+      })
     })
 
-    it('should compress when enforceEncoding is deflate', function (done) {
-      var server = createServer({ threshold: 0, enforceEncoding: 'deflate' }, function (req, res) {
-        res.setHeader('Content-Type', 'text/plain')
-        res.end('hello, world')
+    describe('deflate', function () {
+      it('should compress when enforceEncoding is deflate', function (done) {
+        var server = createServer({ threshold: 0, enforceEncoding: 'deflate' }, function (req, res) {
+          res.setHeader('Content-Type', 'text/plain')
+          res.end('hello, world')
+        })
+
+        request(server)
+          .get('/')
+          .set('Accept-Encoding', '')
+          .expect('Content-Encoding', 'deflate')
+          .expect(200, 'hello, world', done)
       })
 
-      request(server)
-        .get('/')
-        .set('Accept-Encoding', '')
-        .expect('Content-Encoding', 'deflate')
-        .expect(200, 'hello, world', done)
+      it('should skip when defalte is disabled', function (done) {
+        var server = createServer({ threshold: 0, enforceEncoding: 'deflate', encodings: { deflate: false } }, function (req, res) {
+          res.setHeader('Content-Type', 'text/plain')
+          res.end('hello, world')
+        })
+
+        request(server)
+          .get('/')
+          .set('Accept-Encoding', '')
+          .expect(shouldNotHaveHeader('Content-Encoding'))
+          .expect(200, 'hello, world', done)
+      })
     })
 
-    it('should compress when enforceEncoding is brotli', function (done) {
-      var server = createServer({ threshold: 0, enforceEncoding: 'br' }, function (req, res) {
-        res.setHeader('Content-Type', 'text/plain')
-        res.end('hello, world')
+    describe('brotli', function () {
+      it('should skip when brotli is disabled', function (done) {
+        var server = createServer({ threshold: 0, enforceEncoding: 'br', encodings: { br: false } }, function (req, res) {
+          res.setHeader('Content-Type', 'text/plain')
+          res.end('hello, world')
+        })
+
+        request(server)
+          .get('/')
+          .set('Accept-Encoding', '')
+          .expect(shouldNotHaveHeader('Content-Encoding'))
+          .expect(200, 'hello, world', done)
       })
 
-      request(server)
-        .get('/')
-        .set('Accept-Encoding', '')
-        .expect('Content-Encoding', 'br')
-        .expect(200, done)
+      it('should compress when enforceEncoding is brotli', function (done) {
+        var server = createServer({ threshold: 0, enforceEncoding: 'br' }, function (req, res) {
+          res.setHeader('Content-Type', 'text/plain')
+          res.end('hello, world')
+        })
+
+        request(server)
+          .get('/')
+          .set('Accept-Encoding', '')
+          .expect('Content-Encoding', 'br')
+          .expect(200, done)
+      })
     })
 
     it('should not compress when enforceEncoding is unknown', function (done) {

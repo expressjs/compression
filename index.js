@@ -190,7 +190,7 @@ function compression (options) {
       var method = negotiator.encoding(encodingSupported, PREFERRED_ENCODING)
 
       // if no method is found, use the default encoding
-      if (!req.headers['accept-encoding'] && encodingSupported.indexOf(enforceEncoding) !== -1) {
+      if (!req.headers['accept-encoding'] && encodingSupported.includes(enforceEncoding)) {
         method = enforceEncoding
       }
 
