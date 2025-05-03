@@ -306,6 +306,186 @@ describe('compression()', function () {
       .expect(200, done)
   })
 
+  describe('listeners', function () {
+    it('should support removeListener("drain") after on("drain"); stream present', function (done) {
+      // compression doesn't proxy listenerCount() to the compression stream, so
+      // instead watch for a MaxListenersExceededWarning
+      var hasWarned = false
+      var onWarning = function () {
+        hasWarned = true
+      }
+      process.on('warning', onWarning)
+      var server = createServer({ threshold: 0 }, function (req, res) {
+        res.setHeader('Content-Type', 'text/plain')
+        var len = bytes('40kb')
+        var buf = Buffer.alloc(len, '.')
+        res.write(buf)
+        for (var times = 0; times < res.getMaxListeners() + 1; times++) {
+          var listener = function () {}
+          res.on('drain', listener)
+          res.removeListener('drain', listener)
+        }
+        res.end()
+      })
+
+      request(server)
+        .get('/')
+        .set('Accept-Encoding', 'gzip')
+        .expect(function () {
+          process.removeListener('warning', onWarning)
+          assert.ok(!hasWarned)
+        })
+        .expect(200, done)
+    })
+
+    it('should support removeListener("drain") after addListener("drain")', function (done) {
+      var hasWarned = false
+      var onWarning = function () {
+        hasWarned = true
+      }
+      process.on('warning', onWarning)
+      var server = createServer({ threshold: 0 }, function (req, res) {
+        res.setHeader('Content-Type', 'text/plain')
+        var len = bytes('40kb')
+        var buf = Buffer.alloc(len, '.')
+        res.write(buf)
+        for (var times = 0; times < res.getMaxListeners() + 1; times++) {
+          var listener = function () {}
+          res.addListener('drain', listener)
+          res.removeListener('drain', listener)
+        }
+        res.end()
+      })
+
+      request(server)
+        .get('/')
+        .set('Accept-Encoding', 'gzip')
+        .expect(function () {
+          process.removeListener('warning', onWarning)
+          assert.ok(!hasWarned)
+        })
+        .expect(200, done)
+    })
+
+    it('should support off("drain") after addListener("drain")', function (done) {
+      var hasWarned = false
+      var onWarning = function () {
+        hasWarned = true
+      }
+      process.on('warning', onWarning)
+      var server = createServer({ threshold: 0 }, function (req, res) {
+        res.setHeader('Content-Type', 'text/plain')
+        var len = bytes('40kb')
+        var buf = Buffer.alloc(len, '.')
+        res.write(buf)
+        for (var times = 0; times < res.getMaxListeners() + 1; times++) {
+          var listener = function () {}
+          res.addListener('drain', listener)
+          res.off('drain', listener)
+        }
+        res.end()
+      })
+
+      request(server)
+        .get('/')
+        .set('Accept-Encoding', 'gzip')
+        .expect(function () {
+          process.removeListener('warning', onWarning)
+          assert.ok(!hasWarned)
+        })
+        .expect(200, done)
+    })
+
+    it('should support removeListener("drain"); buffered', function (done) {
+      // Variant of above tests for scenario when the listener is buffered (stream
+      // is not yet present).
+      var hasWarned = false
+      var onWarning = function () {
+        hasWarned = true
+      }
+      process.on('warning', onWarning)
+      var server = createServer({ threshold: 0 }, function (req, res) {
+        res.setHeader('Content-Type', 'text/plain')
+        res.on('end', function () {})
+        for (var times = 0; times < res.getMaxListeners() + 1; times++) {
+          var listener = function () {}
+          res.on('drain', listener)
+          res.removeListener('drain', listener)
+        }
+        res.end()
+      })
+
+      request(server)
+        .get('/')
+        .set('Accept-Encoding', 'gzip')
+        .expect(function () {
+          process.removeListener('warning', onWarning)
+          assert.ok(!hasWarned)
+        })
+        .expect(200, done)
+    })
+
+    it('should support removeListener("drain"); multiple bindings of same listener, buffered', function (done) {
+      // Variant of above test for scenario when the listener is buffered (stream
+      // is not yet present) and the same listener is added two or more times.
+      var hasWarned = false
+      var onWarning = function () {
+        hasWarned = true
+      }
+      process.on('warning', onWarning)
+      var server = createServer({ threshold: 0 }, function (req, res) {
+        res.setHeader('Content-Type', 'text/plain')
+        for (var times = 0; times < res.getMaxListeners() + 1; times++) {
+          var listener = function () {}
+          res.on('drain', listener)
+          res.on('drain', listener)
+          res.removeListener('drain', listener)
+        }
+        res.end()
+      })
+
+      request(server)
+        .get('/')
+        .set('Accept-Encoding', 'gzip')
+        .expect(function () {
+          process.removeListener('warning', onWarning)
+          assert.ok(!hasWarned)
+        })
+        .expect(200, done)
+    })
+
+    // https://github.com/expressjs/compression/issues/135
+    it('should not leak event listeners when res.unpipe()', function (done) {
+      var hasWarned = false
+      var onWarning = function () {
+        hasWarned = true
+      }
+      var server = createServer({ threshold: 0 }, function (req, res) {
+        var times = 0
+        var int = setInterval(function () {
+          var rs = require('fs').createReadStream('does not exist')
+          rs.on('error', function (e) {
+            rs.unpipe(res)
+          })
+          rs.pipe(res)
+          if (times++ > res.getMaxListeners()) {
+            clearInterval(int)
+            res.end('hello, world')
+          }
+        })
+      })
+
+      request(server)
+        .get('/')
+        .set('Accept-Encoding', 'gzip')
+        .expect(function () {
+          process.removeListener('warning', onWarning)
+          assert.ok(!hasWarned)
+        })
+        .expect(200, done)
+    })
+  })
+
   describe('http2', function () {
     it('should work with http2 server', function (done) {
       var server = createHttp2Server({ threshold: 0 }, function (req, res) {

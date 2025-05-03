@@ -75,8 +75,38 @@ function compression (options) {
     var stream
 
     var _end = res.end
-    var _on = res.on
     var _write = res.write
+
+    // proxy drain events from stream
+    var _addListener = interceptAddListener(res, function (type, listener) {
+      if (!listeners || type !== 'drain') {
+        // skip intercept
+        return false
+      } else if (stream) {
+        // add listener to stream instead
+        stream.on(type, listener)
+      } else {
+        // buffer listeners for future stream
+        listeners.push([type, listener])
+      }
+    })
+
+    interceptRemoveListener(res, function (type, listener) {
+      if (!listeners || type !== 'drain') {
+        // skip intercept
+        return false
+      } else if (stream) {
+        // remove listener from stream
+        stream.removeListener(type, listener)
+      } else {
+        // remove buffered listener
+        for (var i = listeners.length - 1; i >= 0; i--) {
+          if (listeners[i][0] === type && listeners[i][1] === listener) {
+            listeners.splice(i, 1)
+          }
+        }
+      }
+    })
 
     // flush
     res.flush = function flush (cb) {
@@ -128,24 +158,9 @@ function compression (options) {
         : stream.end()
     }
 
-    res.on = function on (type, listener) {
-      if (!listeners || type !== 'drain') {
-        return _on.call(this, type, listener)
-      }
-
-      if (stream) {
-        return stream.on(type, listener)
-      }
-
-      // buffer listeners for future stream
-      listeners.push([type, listener])
-
-      return this
-    }
-
     function nocompress (msg) {
       debug('no compression: %s', msg)
-      addListeners(res, _on, listeners)
+      addListeners(res, _addListener, listeners)
       listeners = null
     }
 
@@ -231,7 +246,7 @@ function compression (options) {
         _end.call(res)
       })
 
-      _on.call(res, 'drain', function onResponseDrain () {
+      _addListener.call(res, 'drain', function onResponseDrain () {
         stream.resume()
       })
 
@@ -254,9 +269,9 @@ function compression (options) {
  * @private
  */
 
-function addListeners (stream, on, listeners) {
+function addListeners (stream, addListener, listeners) {
   for (var i = 0; i < listeners.length; i++) {
-    on.apply(stream, listeners[i])
+    addListener.apply(stream, listeners[i])
   }
 }
 
@@ -273,6 +288,69 @@ function chunkLength (chunk, encoding) {
     ? chunk.length
     : Buffer.byteLength(chunk, encoding)
 }
+
+/**
+ * Intercept add listener on event emitter.
+ * @private
+ */
+
+function interceptAddListener (ee, fn) {
+  var _addListener = ee.addListener
+  var _on = ee.on
+
+  if (_addListener) {
+    ee.addListener = function addListener (type, listener) {
+      return fn.call(this, type, listener) === false
+        ? _addListener.call(this, type, listener)
+        : this
+    }
+  }
+
+  if (_on) {
+    ee.on = function on (type, listener) {
+      return fn.call(this, type, listener) === false
+        ? _on.call(this, type, listener)
+        : this
+    }
+  }
+
+  return _addListener || _on || noop
+}
+
+/**
+ * Intercept remove listener on event emitter.
+ * @private
+ */
+
+function interceptRemoveListener (ee, fn) {
+  var _removeListener = ee.removeListener
+  var _off = ee.off
+
+  if (_removeListener) {
+    ee.removeListener = function removeListener (type, listener) {
+      return fn.call(this, type, listener) === false
+        ? _removeListener.call(this, type, listener)
+        : this
+    }
+  }
+
+  if (_off) {
+    ee.off = function off (type, listener) {
+      return fn.call(this, type, listener) === false
+        ? _off.call(this, type, listener)
+        : this
+    }
+  }
+
+  return _removeListener || _off || noop
+}
+
+/**
+ * Reusable no-op function.
+ * @private
+ */
+
+function noop () {}
 
 /**
  * Default filter function.
