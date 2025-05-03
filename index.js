@@ -36,7 +36,7 @@ module.exports.filter = shouldCompress
  * @private
  */
 var cacheControlNoTransformRegExp = /(?:^|,)\s*?no-transform\s*?(?:,|$)/
-var ENCONDING_OPTIONS = ['br', 'gzip', 'deflate']
+var ENCODING_OPTIONS = ['br', 'gzip', 'deflate']
 var PREFERRED_ENCODING = ['br', 'gzip']
 
 /**
@@ -50,7 +50,7 @@ var PREFERRED_ENCODING = ['br', 'gzip']
 function compression (options) {
   const opts = options || {}
   const encodingOpts = opts?.encodings
-  const encodingSupported = ENCONDING_OPTIONS.filter(enc => encodingOpts?.[enc] !== false)
+  const encodingSupported = ENCODING_OPTIONS.filter(enc => encodingOpts?.[enc] !== false)
   const optsBrotli = {
     ...encodingOpts?.br,
     params: {

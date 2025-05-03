@@ -472,9 +472,9 @@ describe('compression()', function () {
     })
   })
 
-  describe('encondigs', function () {
+  describe('encodings', function () {
     describe('when "Accept-Encoding: gzip"', function () {
-      it('when gzip is disable', function (done) {
+      it('when gzip is disabled', function (done) {
         var server = createServer({ threshold: 0, encodings: { gzip: false } }, function (req, res) {
           res.setHeader('Content-Type', 'text/plain')
           res.end('hello, world')
@@ -641,7 +641,7 @@ describe('compression()', function () {
     })
 
     describe('when "Accept-Encoding: gzip, br"', function () {
-      it('should respond with gzip when brotli is disable', function (done) {
+      it('should respond with gzip when brotli is disabled', function (done) {
         var server = createServer({ threshold: 0, encodings: { br: false } }, function (req, res) {
           res.setHeader('Content-Type', 'text/plain')
           res.end('hello, world')
