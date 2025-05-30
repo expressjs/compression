@@ -89,6 +89,10 @@ function compression (options) {
     // proxy
 
     res.write = function write (chunk, encoding, callback) {
+      if (isFinished(res) || ended) {
+        return _write.apply(this, arguments)
+      }
+
       if (!res.headersSent) {
         this.writeHead(this.statusCode)
       }
@@ -103,6 +107,10 @@ function compression (options) {
     }
 
     res.end = function end (chunk, encoding, callback) {
+      if (isFinished(res) || ended) {
+        return _end.apply(this, arguments)
+      }
+
       if (!callback) {
         if (typeof chunk === 'function') {
           callback = chunk
@@ -226,11 +234,6 @@ function compression (options) {
       res.setHeader('Content-Encoding', method)
       res.removeHeader('Content-Length')
 
-      // emit error on response
-      stream.on('error', function (err) {
-        res.emit('error', err)
-      })
-      
       // compression
       stream.on('data', function onStreamData (chunk) {
         if (isFinished(res)) {
