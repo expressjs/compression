@@ -36,6 +36,7 @@ module.exports.filter = shouldCompress
  * @private
  */
 var cacheControlNoTransformRegExp = /(?:^|,)\s*?no-transform\s*?(?:,|$)/
+
 var SUPPORTED_ENCODING = ['br', 'gzip', 'deflate', 'identity']
 var PREFERRED_ENCODING = ['br', 'gzip']
 
@@ -87,23 +88,37 @@ function compression (options) {
 
     // proxy
 
-    res.write = function write (chunk, encoding) {
-      if (ended) {
-        return false
+    res.write = function write (chunk, encoding, callback) {
+      if (isFinished(res) || ended) {
+        return _write.apply(this, arguments)
       }
 
       if (!res.headersSent) {
         this.writeHead(this.statusCode)
       }
 
+      if (chunk) {
+        chunk = toBuffer(chunk, encoding)
+      }
+
       return stream
-        ? stream.write(toBuffer(chunk, encoding))
-        : _write.call(this, chunk, encoding)
+        ? stream.write.apply(stream, arguments)
+        : _write.apply(this, arguments)
     }
 
-    res.end = function end (chunk, encoding) {
-      if (ended) {
-        return false
+    res.end = function end (chunk, encoding, callback) {
+      if (isFinished(res) || ended) {
+        return _end.apply(this, arguments)
+      }
+
+      if (!callback) {
+        if (typeof chunk === 'function') {
+          callback = chunk
+          chunk = encoding = undefined
+        } else if (typeof encoding === 'function') {
+          callback = encoding
+          encoding = undefined
+        }
       }
 
       if (!res.headersSent) {
@@ -116,16 +131,20 @@ function compression (options) {
       }
 
       if (!stream) {
-        return _end.call(this, chunk, encoding)
+        return _end.apply(this, arguments)
       }
 
       // mark ended
       ended = true
 
+      if (chunk) {
+        chunk = toBuffer(chunk, encoding)
+      }
+
       // write Buffer for Node.js 0.8
       return chunk
-        ? stream.end(toBuffer(chunk, encoding))
-        : stream.end()
+        ? stream.end(chunk, encoding, callback)
+        : stream.end(chunk, callback)
     }
 
     res.on = function on (type, listener) {
