@@ -14,7 +14,7 @@
     "compressible": "~2.0.18",
     "debug": "2.6.9",
     "negotiator": "~0.6.4",
-    "on-headers": "~1.0.2",
+    "on-headers": "~1.1.0",
     "safe-buffer": "5.2.1",
     "vary": "~1.1.2"
   },
