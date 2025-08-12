@@ -14,8 +14,9 @@ The following compression codings are supported:
   - deflate
   - gzip
   - br (brotli)
+  - zstd (Zstandard)
 
-**Note** Brotli is supported only since Node.js versions v11.7.0 and v10.16.0.
+**Note** Brotli is supported only since Node.js versions v11.7.0 and v10.16.0. Zstd is supported only since Node.js v23.8.0 and v22.15.0.
 
 ## Install
 
@@ -46,9 +47,10 @@ as compressing will transform the body.
 #### Options
 
 `compression()` accepts these properties in the options object. In addition to
-those listed below, [zlib](https://nodejs.org/api/zlib.html) options may be
-passed in to the options object or
-[brotli](https://nodejs.org/api/zlib.html#zlib_class_brotlioptions) options.
+those listed below, [zlib](https://nodejs.org/api/zlib.html),
+[brotli](https://nodejs.org/api/zlib.html#zlib_class_brotlioptions), or
+[zstd](https://nodejs.org/api/zlib.html#class-zstdoptions) options may be
+passed in to the options object.
 
 ##### chunkSize
 
@@ -116,6 +118,11 @@ Type: `Object`
 
 This specifies the options for configuring Brotli. See [Node.js documentation](https://nodejs.org/api/zlib.html#class-brotlioptions) for a complete list of available options.
 
+##### zstd
+
+Type: `Object`
+
+This specifies the options for configuring Zstd. See [Node.js documentation](https://nodejs.org/api/zlib.html#class-zstdoptions) for a complete list of available options.
 
 ##### strategy
 
