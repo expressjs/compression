@@ -219,6 +219,16 @@ app.use(compression())
 // add all routes
 ```
 
+Per-route usage:
+
+```js
+var router = express.Router()
+
+router.get('/your-route', compression(), function (req, res) {
+  res.json({ message: 'This response is compressed' })
+})
+```
+
 ### Node.js HTTP server
 
 ```js
