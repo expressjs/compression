@@ -68,6 +68,8 @@ jobs:
         - Node.js 21.x
         - Node.js 22.x
         - Node.js 23.x
+        - Node.js 24.x
+        - Node.js 25.x
 
         include:
         - name: Node.js 0.8
@@ -165,6 +167,12 @@ jobs:
 
         - name: Node.js 23.x
           node-version: "23"
+
+        - name: Node.js 24.x
+          node-version: "24"
+
+        - name: Node.js 25.x
+          node-version: "25"
 
     steps:
     - uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
