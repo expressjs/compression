@@ -101,7 +101,9 @@ function compression (options) {
         return false
       }
 
-      if (!headersSent(res)) {
+      // Don't overwrite headers if already set via writeHead (e.g., with custom statusText)
+      // Check res._header to detect if writeHead was already called with headers
+      if (!headersSent(res) && !res._header) {
         this.writeHead(this.statusCode)
       }
 
@@ -115,7 +117,9 @@ function compression (options) {
         return false
       }
 
-      if (!headersSent(res)) {
+      // Don't overwrite headers if already set via writeHead (e.g., with custom statusText)
+      // Check res._header to detect if writeHead was already called with headers
+      if (!headersSent(res) && !res._header) {
         // estimate the length
         if (!this.getHeader('Content-Length')) {
           length = chunkLength(chunk, encoding)
