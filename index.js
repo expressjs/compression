@@ -40,10 +40,10 @@ var hasBrotliSupport = 'createBrotliCompress' in zlib
  * Module variables.
  * @private
  */
+
 var cacheControlNoTransformRegExp = /(?:^|,)\s*?no-transform\s*?(?:,|$)/
 var SUPPORTED_ENCODING = hasBrotliSupport ? ['br', 'gzip', 'deflate', 'identity'] : ['gzip', 'deflate', 'identity']
 var PREFERRED_ENCODING = hasBrotliSupport ? ['br', 'gzip'] : ['gzip']
-
 var encodingSupported = ['gzip', 'deflate', 'identity', 'br']
 
 /**
@@ -60,10 +60,8 @@ function compression (options) {
 
   if (hasBrotliSupport) {
     Object.assign(optsBrotli, opts.brotli)
-
     var brotliParams = {}
     brotliParams[zlib.constants.BROTLI_PARAM_QUALITY] = 4
-
     // set the default level to a reasonable value with balanced speed/ratio
     optsBrotli.params = Object.assign(brotliParams, optsBrotli.params)
   }
@@ -86,6 +84,21 @@ function compression (options) {
     var _end = res.end
     var _on = res.on
     var _write = res.write
+    var _writeHead = res.writeHead
+
+    // track whether user explicitly called writeHead with custom statusText/headers
+    var userWriteHeadArgs = null
+
+    // intercept writeHead to capture user-supplied statusText and headers
+    // this is needed because on-headers drops the headers object when statusText is undefined
+    // see: https://github.com/expressjs/compression/issues/254
+    res.writeHead = function writeHead (statusCode) {
+      // only capture on first explicit user call (before on-headers patches it further)
+      if (arguments.length >= 2 && userWriteHeadArgs === null) {
+        userWriteHeadArgs = Array.prototype.slice.call(arguments)
+      }
+      return _writeHead.apply(this, arguments)
+    }
 
     // flush
     res.flush = function flush () {
@@ -95,14 +108,19 @@ function compression (options) {
     }
 
     // proxy
-
     res.write = function write (chunk, encoding) {
       if (ended) {
         return false
       }
 
       if (!headersSent(res)) {
-        this.writeHead(this.statusCode)
+        // If user explicitly called writeHead, let those headers be applied via on-headers
+        // otherwise trigger writeHead ourselves to fire the on-headers listener
+        if (!userWriteHeadArgs) {
+          this.writeHead(this.statusCode)
+        } else {
+          this.writeHead.apply(this, userWriteHeadArgs)
+        }
       }
 
       return stream
@@ -121,7 +139,14 @@ function compression (options) {
           length = chunkLength(chunk, encoding)
         }
 
-        this.writeHead(this.statusCode)
+        // If user explicitly called writeHead, replay those args so statusText
+        // and custom headers are preserved (works around on-headers bug with
+        // undefined statusText: https://github.com/expressjs/compression/issues/254)
+        if (!userWriteHeadArgs) {
+          this.writeHead(this.statusCode)
+        } else {
+          this.writeHead.apply(this, userWriteHeadArgs)
+        }
       }
 
       if (!stream) {
