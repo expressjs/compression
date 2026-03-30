@@ -245,7 +245,7 @@ function compression (options) {
 }
 
 /**
- * Add bufferred listeners to stream
+ * Add buffered listeners to stream
  * @private
  */
 
