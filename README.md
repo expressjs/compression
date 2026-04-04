@@ -15,13 +15,13 @@ The following compression codings are supported:
   - gzip
   - br (brotli)
 
-**Note** Brotli is supported only since Node.js versions v11.7.0 and v10.16.0.
+**Note** Brotli is available in all currently supported Node.js LTS versions (v18+).
 
 ## Install
 
 This is a [Node.js](https://nodejs.org/en/) module available through the
 [npm registry](https://www.npmjs.com/). Installation is done using the
-[`npm install` command](https://docs.npmjs.com/getting-started/installing-npm-packages-locally):
+[`npm install` command](https://docs.npmjs.com/downloading-and-installing-packages-locally):
 
 ```bash
 $ npm install compression
