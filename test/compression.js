@@ -173,6 +173,68 @@ describe('compression()', function () {
       .end(function () {})
   })
 
+  it('should destroy the compression stream on response close', function (done) {
+    var originalCreateGzip = zlib.createGzip
+    var gzip
+    var server
+    var completed = false
+
+    Object.defineProperty(zlib, 'createGzip', {
+      configurable: true,
+      value: function createGzip () {
+        gzip = originalCreateGzip.apply(this, arguments)
+        return gzip
+      }
+    })
+
+    server = createServer({ threshold: 0 }, function (req, res) {
+      res.setHeader('Content-Type', 'text/plain')
+      var timer = setInterval(function () {
+        res.write(Buffer.alloc(128 * 1024))
+      }, 5)
+      res.once('close', function () {
+        clearInterval(timer)
+        setImmediate(function () {
+          try {
+            assert.ok(gzip)
+            assert.strictEqual(gzip.destroyed, true)
+            finish()
+          } catch (err) {
+            finish(err)
+          }
+        })
+      })
+    })
+
+    server.listen(function () {
+      var address = server.address()
+      var req = http.get({
+        hostname: '127.0.0.1',
+        port: address.port,
+        headers: { 'Accept-Encoding': 'gzip' }
+      }, function (res) {
+        res.once('data', function () {
+          res.destroy()
+        })
+      })
+      req.once('error', function (err) {
+        if (err.code !== 'ECONNRESET') finish(err)
+      })
+    })
+
+    function finish (err) {
+      if (completed) return
+      completed = true
+      Object.defineProperty(zlib, 'createGzip', {
+        configurable: true,
+        value: originalCreateGzip
+      })
+      server.close(function () {
+        done(err)
+      })
+    }
+  })
+
   it('should back-pressure when compressed', function (done) {
     var buf
     var cb = after(2, done)

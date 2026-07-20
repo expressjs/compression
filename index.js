@@ -235,6 +235,12 @@ function compression (options) {
         _end.call(res)
       })
 
+      _on.call(res, 'close', function onResponseClose () {
+        if (stream) {
+          stream.destroy()
+        }
+      })
+
       _on.call(res, 'drain', function onResponseDrain () {
         stream.resume()
       })
