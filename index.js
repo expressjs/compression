@@ -240,6 +240,15 @@ function compression (options) {
       })
     })
 
+    var _writeHead = res.writeHead
+    res.writeHead = function writeHead (statusCode, reason, headers) {
+      if (arguments.length > 2 && typeof reason !== 'string') {
+        return _writeHead.call(this, statusCode, headers)
+      }
+
+      return _writeHead.apply(this, arguments)
+    }
+
     next()
   }
 }

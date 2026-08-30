@@ -973,6 +973,93 @@ describe('compression()', function () {
         .expect(200, done)
     })
   })
+
+  describe('res.writeHead', function () {
+    it('should support headers with undefined statusMessage', function (done) {
+      var server = createServer({ threshold: 0 }, function (req, res) {
+        res.writeHead(200, undefined, {
+          'Content-Type': 'text/plain',
+          'X-Custom': 'header'
+        })
+        res.end('hello, world')
+      })
+
+      request(server)
+        .get('/')
+        .set('Accept-Encoding', 'gzip')
+        .expect('X-Custom', 'header')
+        .expect('Content-Encoding', 'gzip')
+        .expect(200, 'hello, world', done)
+    })
+
+    it('should support headers with string statusMessage', function (done) {
+      var server = createServer({ threshold: 0 }, function (req, res) {
+        res.writeHead(200, 'OK', {
+          'Content-Type': 'text/plain',
+          'X-Custom': 'header'
+        })
+        res.end('hello, world')
+      })
+
+      request(server)
+        .get('/')
+        .set('Accept-Encoding', 'gzip')
+        .expect('X-Custom', 'header')
+        .expect('Content-Encoding', 'gzip')
+        .expect(200, 'hello, world', done)
+    })
+
+    it('should support array headers with undefined statusMessage', function (done) {
+      var server = createServer({ threshold: 0 }, function (req, res) {
+        res.writeHead(200, undefined, [
+          ['Content-Type', 'text/plain'],
+          ['X-Custom', 'array']
+        ])
+        res.end('hello, world')
+      })
+
+      request(server)
+        .get('/')
+        .set('Accept-Encoding', 'gzip')
+        .expect('X-Custom', 'array')
+        .expect('Content-Encoding', 'gzip')
+        .expect(200, 'hello, world', done)
+    })
+
+    it('should support array headers with string statusMessage', function (done) {
+      var server = createServer({ threshold: 0 }, function (req, res) {
+        res.writeHead(200, 'OK', [
+          ['Content-Type', 'text/plain'],
+          ['X-Custom', 'array']
+        ])
+        res.end('hello, world')
+      })
+
+      request(server)
+        .get('/')
+        .set('Accept-Encoding', 'gzip')
+        .expect('X-Custom', 'array')
+        .expect('Content-Encoding', 'gzip')
+        .expect(200, 'hello, world', done)
+    })
+
+    it('should support uncompressed response with undefined statusMessage', function (done) {
+      var server = createServer({ filter: function () { return false } }, function (req, res) {
+        res.writeHead(200, undefined, {
+          'Content-Type': 'text/plain',
+          'X-Custom': 'header'
+        })
+        res.end('hello, world')
+      })
+
+      request(server)
+        .get('/')
+        .set('Accept-Encoding', 'gzip')
+        .expect('X-Custom', 'header')
+        .expect(shouldNotHaveHeader('Content-Encoding'))
+        .expect(200, 'hello, world', done)
+    })
+  })
 })
 
 function createServer (opts, fn) {
