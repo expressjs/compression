@@ -40,7 +40,7 @@ var hasBrotliSupport = 'createBrotliCompress' in zlib
  * Module variables.
  * @private
  */
-var cacheControlNoTransformRegExp = /(?:^|,)\s*?no-transform\s*?(?:,|$)/
+var cacheControlNoTransformRegExp = /(?:^|,)\s*?no-transform\s*?(?:,|$)/i
 var SUPPORTED_ENCODING = hasBrotliSupport ? ['br', 'gzip', 'deflate', 'identity'] : ['gzip', 'deflate', 'identity']
 var PREFERRED_ENCODING = hasBrotliSupport ? ['br', 'gzip'] : ['gzip']
 

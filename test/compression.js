@@ -706,6 +706,36 @@ describe('compression()', function () {
         .expect(200, 'hello, world', done)
     })
 
+    it('should not compress response when casing is "No-Transform"', function (done) {
+      var server = createServer({ threshold: 0 }, function (req, res) {
+        res.setHeader('Cache-Control', 'No-Transform')
+        res.setHeader('Content-Type', 'text/plain')
+        res.end('hello, world')
+      })
+
+      request(server)
+        .get('/')
+        .set('Accept-Encoding', 'gzip')
+        .expect('Cache-Control', 'No-Transform')
+        .expect(shouldNotHaveHeader('Content-Encoding'))
+        .expect(200, 'hello, world', done)
+    })
+
+    it('should not compress response when casing is "NO-TRANSFORM"', function (done) {
+      var server = createServer({ threshold: 0 }, function (req, res) {
+        res.setHeader('Cache-Control', 'NO-TRANSFORM')
+        res.setHeader('Content-Type', 'text/plain')
+        res.end('hello, world')
+      })
+
+      request(server)
+        .get('/')
+        .set('Accept-Encoding', 'gzip')
+        .expect('Cache-Control', 'NO-TRANSFORM')
+        .expect(shouldNotHaveHeader('Content-Encoding'))
+        .expect(200, 'hello, world', done)
+    })
+
     it('should not set Vary headerh', function (done) {
       var server = createServer({ threshold: 0 }, function (req, res) {
         res.setHeader('Cache-Control', 'no-transform')
