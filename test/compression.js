@@ -706,34 +706,21 @@ describe('compression()', function () {
         .expect(200, 'hello, world', done)
     })
 
-    it('should not compress response when casing is "No-Transform"', function (done) {
-      var server = createServer({ threshold: 0 }, function (req, res) {
-        res.setHeader('Cache-Control', 'No-Transform')
-        res.setHeader('Content-Type', 'text/plain')
-        res.end('hello, world')
+    ;['No-Transform', 'NO-TRANSFORM', 'public, No-Transform, max-age=60'].forEach(function (value) {
+      it('should not compress response when "Cache-Control: ' + value + '"', function (done) {
+        var server = createServer({ threshold: 0 }, function (req, res) {
+          res.setHeader('Cache-Control', value)
+          res.setHeader('Content-Type', 'text/plain')
+          res.end('hello, world')
+        })
+
+        request(server)
+          .get('/')
+          .set('Accept-Encoding', 'gzip')
+          .expect('Cache-Control', value)
+          .expect(shouldNotHaveHeader('Content-Encoding'))
+          .expect(200, 'hello, world', done)
       })
-
-      request(server)
-        .get('/')
-        .set('Accept-Encoding', 'gzip')
-        .expect('Cache-Control', 'No-Transform')
-        .expect(shouldNotHaveHeader('Content-Encoding'))
-        .expect(200, 'hello, world', done)
-    })
-
-    it('should not compress response when casing is "NO-TRANSFORM"', function (done) {
-      var server = createServer({ threshold: 0 }, function (req, res) {
-        res.setHeader('Cache-Control', 'NO-TRANSFORM')
-        res.setHeader('Content-Type', 'text/plain')
-        res.end('hello, world')
-      })
-
-      request(server)
-        .get('/')
-        .set('Accept-Encoding', 'gzip')
-        .expect('Cache-Control', 'NO-TRANSFORM')
-        .expect(shouldNotHaveHeader('Content-Encoding'))
-        .expect(200, 'hello, world', done)
     })
 
     it('should not set Vary headerh', function (done) {
