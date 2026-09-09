@@ -37,14 +37,32 @@ module.exports.filter = shouldCompress
 var hasBrotliSupport = 'createBrotliCompress' in zlib
 
 /**
+ * @const
+ * whether current node version has zstd support
+ */
+var hasZstdSupport = 'createZstdCompress' in zlib
+
+/**
  * Module variables.
  * @private
  */
 var cacheControlNoTransformRegExp = /(?:^|,)\s*?no-transform\s*?(?:,|$)/
-var SUPPORTED_ENCODING = hasBrotliSupport ? ['br', 'gzip', 'deflate', 'identity'] : ['gzip', 'deflate', 'identity']
-var PREFERRED_ENCODING = hasBrotliSupport ? ['br', 'gzip'] : ['gzip']
 
-var encodingSupported = ['gzip', 'deflate', 'identity', 'br']
+var SUPPORTED_ENCODING = (function () {
+  var supported = ['gzip', 'deflate', 'identity']
+  if (hasZstdSupport) supported.unshift('zstd')
+  if (hasBrotliSupport) supported.unshift('br')
+  return supported
+})()
+
+var PREFERRED_ENCODING = (function () {
+  var preferred = ['gzip']
+  if (hasZstdSupport) preferred.unshift('zstd') // prefer zstd over gzip
+  if (hasBrotliSupport) preferred.unshift('br') // prefer br over zstd or gzip
+  return preferred
+})()
+
+var encodingSupported = ['gzip', 'deflate', 'identity', 'br', 'zstd']
 
 /**
  * Compress response data with gzip / deflate.
@@ -57,6 +75,7 @@ var encodingSupported = ['gzip', 'deflate', 'identity', 'br']
 function compression (options) {
   var opts = options || {}
   var optsBrotli = {}
+  var optsZstd = {}
 
   if (hasBrotliSupport) {
     Object.assign(optsBrotli, opts.brotli)
@@ -66,6 +85,10 @@ function compression (options) {
 
     // set the default level to a reasonable value with balanced speed/ratio
     optsBrotli.params = Object.assign(brotliParams, optsBrotli.params)
+  }
+
+  if (hasZstdSupport) {
+    Object.assign(optsZstd, opts.zstd)
   }
 
   // options
@@ -215,7 +238,9 @@ function compression (options) {
         ? zlib.createGzip(opts)
         : method === 'br'
           ? zlib.createBrotliCompress(optsBrotli)
-          : zlib.createDeflate(opts)
+          : method === 'zstd'
+            ? zlib.createZstdCompress(optsZstd)
+            : zlib.createDeflate(opts)
 
       // add buffered listeners to stream
       addListeners(stream, stream.on, listeners)

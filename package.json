@@ -12,7 +12,7 @@
     "type": "opencollective",
     "url": "https://opencollective.com/express"
   },
-  "keywords": ["compression", "gzip", "deflate", "middleware", "express", "brotli", "http", "stream"],
+  "keywords": ["compression", "gzip", "deflate", "middleware", "express", "brotli", "zstd", "http", "stream"],
   "dependencies": {
     "bytes": "3.1.2",
     "compressible": "~2.0.18",
