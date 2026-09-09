@@ -41,7 +41,9 @@ the middleware, based on the given `options`.
 
 This middleware will never compress responses that include a `Cache-Control`
 header with the [`no-transform` directive](https://tools.ietf.org/html/rfc7234#section-5.2.2.4),
-as compressing will transform the body.
+as compressing will transform the body. It will also never compress
+[`206 Partial Content`](https://www.rfc-editor.org/rfc/rfc9110#section-15.3.7)
+responses, as the `Content-Range` header describes the uncompressed body.
 
 #### Options
 

@@ -171,6 +171,12 @@ function compression (options) {
         return
       }
 
+      // response is partial content
+      if (res.statusCode === 206) {
+        nocompress('partial content')
+        return
+      }
+
       // vary
       vary(res, 'Accept-Encoding')
 
