@@ -79,10 +79,28 @@ describe('compression()', function () {
     request(server)
       .get('/')
       .set('Accept-Encoding', 'gzip')
-      .set('Range', 'bytes=0-4')
       .expect(shouldNotHaveHeader('Content-Encoding'))
+      .expect(shouldNotHaveHeader('Vary'))
       .expect('Content-Range', 'bytes 0-4/12')
       .expect('Content-Length', '5')
+      .expect(206, 'hello', done)
+  })
+
+  it('should skip partial content responses set via writeHead', function (done) {
+    var server = createServer({ threshold: 0 }, function (req, res) {
+      res.writeHead(206, {
+        'Content-Type': 'text/plain',
+        'Content-Range': 'bytes 0-4/12',
+        'Content-Length': '5'
+      })
+      res.end('hello')
+    })
+
+    request(server)
+      .get('/')
+      .set('Accept-Encoding', 'gzip')
+      .expect(shouldNotHaveHeader('Content-Encoding'))
+      .expect('Content-Range', 'bytes 0-4/12')
       .expect(206, 'hello', done)
   })
 
