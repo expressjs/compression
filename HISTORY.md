@@ -1,3 +1,8 @@
+unreleased
+==========
+
+  * Skip compression for `206 Partial Content` responses
+
 1.8.1 / 2025-07-17
 ==========
 
