@@ -1,25 +1,26 @@
-unreleased
-==========
+1.8.2
+=====
 
+  * Fix [CVE-2026-87776](https://www.cve.org/CVERecord?id=CVE-2026-87776) ([GHSA-vc2v-76pw-4v95](https://github.com/expressjs/compression/security/advisories/GHSA-vc2v-76pw-4v95))
   * deps: add destroy@1.2.0
   * Match `Cache-Control: no-transform` directive case-insensitively
 
-1.8.1 / 2025-07-17
-==========
+1.8.1
+=====
 
   * deps: on-headers@~1.1.0
     - Fix [CVE-2025-7339](https://www.cve.org/CVERecord?id=CVE-2025-7339) ([GHSA-76c9-3jph-rj3q](https://github.com/expressjs/on-headers/security/advisories/GHSA-76c9-3jph-rj3q))
 
-1.8.0 / 2025-02-10
-==================
+1.8.0
+=====
 
   * Use `res.headersSent` when available
   * Replace `_implicitHeader` with `writeHead` property
   * add brotli support for versions of node that support it
   * Add the enforceEncoding option for requests without `Accept-Encoding` header
 
-1.7.5 / 2024-10-31
-==================
+1.7.5
+=====
 
   * deps: Replace accepts with negotiator@~0.6.4
     - Add preference option
@@ -33,8 +34,8 @@ unreleased
     - deps: mime-db@'>= 1.43.0 < 2'
   * deps: safe-buffer@5.2.1
 
-1.7.4 / 2019-03-18
-==================
+1.7.4
+=====
 
   * deps: compressible@~2.0.16
     - Mark `text/less` as compressible
@@ -43,8 +44,8 @@ unreleased
     - Fix `res.writeHead` patch missing return value
   * perf: prevent unnecessary buffer copy
 
-1.7.3 / 2018-07-15
-==================
+1.7.3
+=====
 
   * deps: accepts@~1.3.5
     - deps: mime-types@~2.1.18
@@ -53,14 +54,14 @@ unreleased
     - deps: mime-db@'>= 1.34.0 < 2'
   * deps: safe-buffer@5.1.2
 
-1.7.2 / 2018-02-18
-==================
+1.7.2
+=====
 
   * deps: compressible@~2.0.13
     - deps: mime-db@'>= 1.33.0 < 2'
 
-1.7.1 / 2017-09-26
-==================
+1.7.1
+=====
 
   * deps: accepts@~1.3.4
     - deps: mime-types@~2.1.16
@@ -71,8 +72,8 @@ unreleased
   * deps: vary@~1.1.2
     - perf: improve header token parsing speed
 
-1.7.0 / 2017-07-10
-==================
+1.7.0
+=====
 
   * Use `safe-buffer` for improved Buffer API
   * deps: bytes@2.5.0
@@ -89,8 +90,8 @@ unreleased
   * deps: vary@~1.1.1
     - perf: hoist regular expression
 
-1.6.2 / 2016-05-12
-==================
+1.6.2
+=====
 
   * deps: accepts@~1.3.3
     - deps: mime-types@~2.1.11
@@ -102,8 +103,8 @@ unreleased
   * deps: compressible@~2.0.8
     - deps: mime-db@'>= 1.23.0 < 2'
 
-1.6.1 / 2016-01-19
-==================
+1.6.1
+=====
 
   * deps: bytes@2.2.0
   * deps: compressible@~2.0.7
@@ -111,8 +112,8 @@ unreleased
   * deps: accepts@~1.3.1
     - deps: mime-types@~2.1.9
 
-1.6.0 / 2015-09-29
-==================
+1.6.0
+=====
 
   * Skip compression when response has `Cache-Control: no-transform`
   * deps: accepts@~1.3.0
@@ -125,8 +126,8 @@ unreleased
   * deps: vary@~1.1.0
     - Only accept valid field names in the `field` argument
 
-1.5.2 / 2015-07-30
-==================
+1.5.2
+=====
 
   * deps: accepts@~1.2.12
     - deps: mime-types@~2.1.4
@@ -137,8 +138,8 @@ unreleased
     - perf: enable strict mode
     - perf: remove argument reassignments
 
-1.5.1 / 2015-07-05
-==================
+1.5.1
+=====
 
   * deps: accepts@~1.2.10
     - deps: mime-types@~2.1.2
@@ -146,8 +147,8 @@ unreleased
     - deps: mime-db@'>= 1.14.0 < 2'
     - perf: enable strict mode
 
-1.5.0 / 2015-06-09
-==================
+1.5.0
+=====
 
   * Fix return value from `.end` and `.write` after end
   * Improve detection of zero-length body without `Content-Length`
@@ -169,8 +170,8 @@ unreleased
   * perf: remove flush reassignment
   * perf: simplify threshold detection
 
-1.4.4 / 2015-05-11
-==================
+1.4.4
+=====
 
   * deps: accepts@~1.2.7
     - deps: mime-types@~2.0.11
@@ -178,8 +179,8 @@ unreleased
   * deps: debug@~2.2.0
     - deps: ms@0.7.1
 
-1.4.3 / 2015-03-14
-==================
+1.4.3
+=====
 
   * deps: accepts@~1.2.5
     - deps: mime-types@~2.0.10
@@ -187,37 +188,37 @@ unreleased
     - Fix high intensity foreground color for bold
     - deps: ms@0.7.0
 
-1.4.2 / 2015-03-11
-==================
+1.4.2
+=====
 
   * Fix error when code calls `res.end(str, encoding)`
     - Specific to Node.js 0.8
   * deps: debug@~2.1.2
     - deps: ms@0.7.0
 
-1.4.1 / 2015-02-15
-==================
+1.4.1
+=====
 
   * deps: accepts@~1.2.4
     - deps: mime-types@~2.0.9
     - deps: negotiator@0.5.1
 
-1.4.0 / 2015-02-01
-==================
+1.4.0
+=====
 
   * Prefer `gzip` over `deflate` on the server
     - Not all clients agree on what "deflate" coding means
 
-1.3.1 / 2015-01-31
-==================
+1.3.1
+=====
 
   * deps: accepts@~1.2.3
     - deps: mime-types@~2.0.8
   * deps: compressible@~2.0.2
     - deps: mime-db@'>= 1.1.2 < 2'
 
-1.3.0 / 2014-12-30
-==================
+1.3.0
+=====
 
   * Export the default `filter` function for wrapping
   * deps: accepts@~1.2.2
@@ -225,35 +226,35 @@ unreleased
     - deps: negotiator@0.5.0
   * deps: debug@~2.1.1
 
-1.2.2 / 2014-12-10
-==================
+1.2.2
+=====
 
   * Fix `.end` to only proxy to `.end`
     - Fixes an issue with Node.js 0.11.14
   * deps: accepts@~1.1.4
     - deps: mime-types@~2.0.4
 
-1.2.1 / 2014-11-23
-==================
+1.2.1
+=====
 
   * deps: accepts@~1.1.3
     - deps: mime-types@~2.0.3
 
-1.2.0 / 2014-10-16
-==================
+1.2.0
+=====
 
   * deps: debug@~2.1.0
     - Implement `DEBUG_FD` env variable support
 
-1.1.2 / 2014-10-15
-==================
+1.1.2
+=====
 
   * deps: accepts@~1.1.2
     - Fix error when media type has invalid parameter
     - deps: negotiator@0.4.9
 
-1.1.1 / 2014-10-12
-==================
+1.1.1
+=====
 
   * deps: accepts@~1.1.1
     - deps: mime-types@~2.0.2
@@ -261,80 +262,80 @@ unreleased
   * deps: compressible@~2.0.1
     - deps: mime-db@1.x
 
-1.1.0 / 2014-09-07
-==================
+1.1.0
+=====
 
   * deps: accepts@~1.1.0
   * deps: compressible@~2.0.0
   * deps: debug@~2.0.0
 
-1.0.11 / 2014-08-10
-===================
+1.0.11
+======
 
   * deps: on-headers@~1.0.0
   * deps: vary@~1.0.0
 
-1.0.10 / 2014-08-05
-===================
+1.0.10
+======
 
   * deps: compressible@~1.1.1
     - Fix upper-case Content-Type characters prevent compression
 
-1.0.9 / 2014-07-20
-==================
+1.0.9
+=====
 
   * Add `debug` messages
   * deps: accepts@~1.0.7
     - deps: negotiator@0.4.7
 
-1.0.8 / 2014-06-20
-==================
+1.0.8
+=====
 
   * deps: accepts@~1.0.5
     - use `mime-types`
 
-1.0.7 / 2014-06-11
-==================
+1.0.7
+=====
 
  * use vary module for better `Vary` behavior
  * deps: accepts@1.0.3
  * deps: compressible@1.1.0
 
-1.0.6 / 2014-06-03
-==================
+1.0.6
+=====
 
  * fix regression when negotiation fails
 
-1.0.5 / 2014-06-03
-==================
+1.0.5
+=====
 
  * fix listeners for delayed stream creation
    - fixes regression for certain `stream.pipe(res)` situations
 
-1.0.4 / 2014-06-03
-==================
+1.0.4
+=====
 
  * fix adding `Vary` when value stored as array
  * fix back-pressure behavior
  * fix length check for `res.end`
 
-1.0.3 / 2014-05-29
-==================
+1.0.3
+=====
 
  * use `accepts` for negotiation
  * use `on-headers` to handle header checking
  * deps: bytes@1.0.0
 
-1.0.2 / 2014-04-29
-==================
+1.0.2
+=====
 
  * only version compatible with node.js 0.8
  * support headers given to `res.writeHead`
  * deps: bytes@0.3.0
  * deps: negotiator@0.4.3
 
-1.0.1 / 2014-03-08
-==================
+1.0.1
+=====
 
  * bump negotiator
  * use compressible
