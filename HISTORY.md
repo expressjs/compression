@@ -1,6 +1,8 @@
 1.8.2
 =====
+
   * Fix [CVE-2026-87776](https://www.cve.org/CVERecord?id=CVE-2026-87776) ([GHSA-vc2v-76pw-4v95](https://github.com/expressjs/compression/security/advisories/GHSA-vc2v-76pw-4v95))
+  * deps: add destroy@1.2.0
   * Match `Cache-Control: no-transform` directive case-insensitively
 
 1.8.1

@@ -19,6 +19,7 @@ var Buffer = require('safe-buffer').Buffer
 var bytes = require('bytes')
 var compressible = require('compressible')
 var debug = require('debug')('compression')
+var destroy = require('destroy')
 var onHeaders = require('on-headers')
 var vary = require('vary')
 var zlib = require('zlib')
@@ -82,6 +83,7 @@ function compression (options) {
     var length
     var listeners = []
     var stream
+    var closed = false
 
     var _end = res.end
     var _on = res.on
@@ -158,6 +160,17 @@ function compression (options) {
       listeners = null
     }
 
+    // Release the compression stream when the response closes, freeing native
+    // zlib resources even if the client disconnected before it finished.
+    // Registered before onHeaders so a close before the stream exists is not
+    // missed; destroy() no-ops safely when no stream was created, and is used
+    // rather than stream.destroy() because destroy() alone leaks the zlib
+    // handle on some Node.js versions.
+    _on.call(res, 'close', function onResponseClose () {
+      closed = true
+      destroy(stream)
+    })
+
     onHeaders(res, function onResponseHeaders () {
       // determine if request is filtered
       if (!filter(req, res)) {
@@ -216,6 +229,15 @@ function compression (options) {
         : method === 'br'
           ? zlib.createBrotliCompress(optsBrotli)
           : zlib.createDeflate(opts)
+
+      // the response already closed before the stream was created, so the
+      // close listener above has already run. Release the stream now and drop
+      // the reference so later writes fall back to the raw response.
+      if (closed) {
+        destroy(stream)
+        stream = null
+        return
+      }
 
       // add buffered listeners to stream
       addListeners(stream, stream.on, listeners)
