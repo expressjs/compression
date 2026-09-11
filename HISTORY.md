@@ -1,6 +1,7 @@
 unreleased
 ==========
 
+  * deps: add destroy@1.2.0
   * Match `Cache-Control: no-transform` directive case-insensitively
 
 1.8.1 / 2025-07-17

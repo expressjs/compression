@@ -173,6 +173,74 @@ describe('compression()', function () {
       .end(function () {})
   })
 
+  // @see https://github.com/expressjs/compression/security/advisories/GHSA-vc2v-76pw-4v95
+  it('should destroy the compression stream on response close (gzip)', function (done) {
+    assertDestroyedOnClose('createGzip', 'gzip', done)
+  })
+
+  // @see https://github.com/expressjs/compression/security/advisories/GHSA-vc2v-76pw-4v95
+  it('should destroy the compression stream on response close (deflate)', function (done) {
+    assertDestroyedOnClose('createDeflate', 'deflate', done)
+  })
+
+  // @see https://github.com/expressjs/compression/security/advisories/GHSA-vc2v-76pw-4v95
+  brotli('should destroy the compression stream on response close (brotli)', function (done) {
+    assertDestroyedOnClose('createBrotliCompress', 'br', done)
+  })
+
+  // @see https://github.com/expressjs/compression/security/advisories/GHSA-vc2v-76pw-4v95
+  it('should destroy a compression stream created after the response closed', function (done) {
+    var original = zlib.createGzip
+    var stream
+    var cleaned = false
+    // finish once both the server-side assertion has run and the aborted
+    // request has errored; supertest closes the server after the latter
+    var cb = after(2, done)
+
+    Object.defineProperty(zlib, 'createGzip', {
+      configurable: true,
+      value: function () {
+        stream = original.apply(this, arguments)
+        wrapCleanup(stream, function () {
+          cleaned = true
+        })
+        return stream
+      }
+    })
+
+    var server = createServer({ threshold: 0 }, function (req, res) {
+      res.setHeader('Content-Type', 'text/plain')
+      res.once('close', function () {
+        // start an eligible compressed response after the client already left,
+        // so the stream is created after the only close event
+        res.write(Buffer.alloc(128 * 1024))
+        res.end()
+        setImmediate(function () {
+          var err = null
+          try {
+            assert.ok(stream)
+            assert.strictEqual(cleaned, true)
+          } catch (e) {
+            err = e
+          }
+          Object.defineProperty(zlib, 'createGzip', {
+            configurable: true,
+            value: original
+          })
+          cb(err)
+        })
+      })
+      res.destroy()
+    })
+
+    request(server)
+      .get('/')
+      .set('Accept-Encoding', 'gzip')
+      .end(function () {
+        cb()
+      })
+  })
+
   it('should back-pressure when compressed', function (done) {
     var buf
     var cb = after(2, done)
@@ -1004,6 +1072,86 @@ function createServer (opts, fn) {
 
       fn(req, res)
     })
+  })
+}
+
+// Assert that the compression stream is destroyed when the response closes
+// prematurely (client disconnects mid-response), so the native zlib resources
+// are released. The stream is captured by wrapping the zlib factory, as its
+// destroyed state is not observable from the client.
+// @see https://github.com/expressjs/compression/security/advisories/GHSA-vc2v-76pw-4v95
+function assertDestroyedOnClose (createName, acceptEncoding, done) {
+  var original = zlib[createName]
+  var stream
+  var cleaned = false
+
+  Object.defineProperty(zlib, createName, {
+    configurable: true,
+    value: function () {
+      stream = original.apply(this, arguments)
+      // Record whichever cleanup method the middleware invokes, so the
+      // assertion holds on old Node.js versions that expose close() but not
+      // destroy()/destroyed.
+      wrapCleanup(stream, function () {
+        cleaned = true
+      })
+      return stream
+    }
+  })
+
+  var server = createServer({ threshold: 0 }, function (req, res) {
+    res.setHeader('Content-Type', 'text/plain')
+    var timer = setInterval(function () {
+      res.write(Buffer.alloc(128 * 1024))
+    }, 5)
+    res.once('close', function () {
+      clearInterval(timer)
+      setImmediate(function () {
+        var err = null
+        try {
+          assert.ok(stream)
+          assert.strictEqual(cleaned, true)
+        } catch (e) {
+          err = e
+        }
+        Object.defineProperty(zlib, createName, {
+          configurable: true,
+          value: original
+        })
+        server.close(function () {
+          done(err)
+        })
+      })
+    })
+  })
+
+  request(server)
+    .get('/')
+    .set('Accept-Encoding', acceptEncoding)
+    .request()
+    .on('response', function (res) {
+      res.once('data', function () {
+        res.destroy()
+      })
+    })
+    .on('error', function () {})
+    .end()
+}
+
+// Wrap the stream's cleanup methods so a test can observe that the middleware
+// released it. destroy() exists from Node.js 8.0.0; older versions (0.8 to
+// 7.x) expose close() instead, so wrap whichever is present.
+function wrapCleanup (stream, onCleanup) {
+  var methods = ['destroy', 'close']
+  methods.forEach(function (name) {
+    var original = stream[name]
+    if (typeof original !== 'function') {
+      return
+    }
+    stream[name] = function () {
+      onCleanup()
+      return original.apply(this, arguments)
+    }
   })
 }
 
