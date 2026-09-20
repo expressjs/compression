@@ -1,3 +1,8 @@
+unreleased
+==========
+
+  * Fix `res.writeHead(status, undefined, headers)` dropping headers
+
 1.8.2
 =====
 

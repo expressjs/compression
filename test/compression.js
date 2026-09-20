@@ -1058,6 +1058,185 @@ describe('compression()', function () {
         .expect(200, done)
     })
   })
+
+  describe('res.writeHead', function () {
+    it('should set headers when statusMessage is undefined', function (done) {
+      var server = createServer({ threshold: 0 }, function (req, res) {
+        res.writeHead(200, undefined, {
+          'Content-Type': 'text/plain',
+          'X-Custom': 'header'
+        })
+        res.end('hello, world')
+      })
+
+      request(server)
+        .get('/')
+        .set('Accept-Encoding', 'gzip')
+        .expect('X-Custom', 'header')
+        .expect('Content-Encoding', 'gzip')
+        .expect(200, 'hello, world', done)
+    })
+
+    it('should set headers when statusMessage is null', function (done) {
+      var server = createServer({ threshold: 0 }, function (req, res) {
+        res.writeHead(200, null, {
+          'Content-Type': 'text/plain',
+          'X-Custom': 'header'
+        })
+        res.end('hello, world')
+      })
+
+      request(server)
+        .get('/')
+        .set('Accept-Encoding', 'gzip')
+        .expect('X-Custom', 'header')
+        .expect('Content-Encoding', 'gzip')
+        .expect(200, 'hello, world', done)
+    })
+
+    it('should keep headers when the 3rd argument is undefined', function (done) {
+      var server = createServer({ threshold: 0 }, function (req, res) {
+        res.writeHead(200, {
+          'Content-Type': 'text/plain',
+          'X-Custom': 'header'
+        }, undefined)
+        res.end('hello, world')
+      })
+
+      request(server)
+        .get('/')
+        .set('Accept-Encoding', 'gzip')
+        .expect('X-Custom', 'header')
+        .expect('Content-Encoding', 'gzip')
+        .expect(200, 'hello, world', done)
+    })
+
+    it('should keep headers when the 3rd argument is null', function (done) {
+      var server = createServer({ threshold: 0 }, function (req, res) {
+        res.writeHead(200, {
+          'Content-Type': 'text/plain',
+          'X-Custom': 'header'
+        }, null)
+        res.end('hello, world')
+      })
+
+      request(server)
+        .get('/')
+        .set('Accept-Encoding', 'gzip')
+        .expect('X-Custom', 'header')
+        .expect('Content-Encoding', 'gzip')
+        .expect(200, 'hello, world', done)
+    })
+
+    it('should set headers with a string statusMessage', function (done) {
+      var server = createServer({ threshold: 0 }, function (req, res) {
+        res.writeHead(200, 'OK', {
+          'Content-Type': 'text/plain',
+          'X-Custom': 'header'
+        })
+        res.end('hello, world')
+      })
+
+      request(server)
+        .get('/')
+        .set('Accept-Encoding', 'gzip')
+        .expect('X-Custom', 'header')
+        .expect('Content-Encoding', 'gzip')
+        .expect(200, 'hello, world', done)
+    })
+
+    it('should set headers when filter skips compression', function (done) {
+      var server = createServer({ filter: function () { return false } }, function (req, res) {
+        res.writeHead(200, undefined, {
+          'Content-Type': 'text/plain',
+          'X-Custom': 'header'
+        })
+        res.end('hello, world')
+      })
+
+      request(server)
+        .get('/')
+        .set('Accept-Encoding', 'gzip')
+        .expect('X-Custom', 'header')
+        .expect(shouldNotHaveHeader('Content-Encoding'))
+        .expect(200, 'hello, world', done)
+    })
+
+    it('should set headers when write() follows writeHead', function (done) {
+      var server = createServer({ threshold: 0 }, function (req, res) {
+        res.writeHead(200, undefined, {
+          'Content-Type': 'text/plain',
+          'X-Custom': 'header'
+        })
+        res.write('hello, ')
+        res.end('world')
+      })
+
+      request(server)
+        .get('/')
+        .set('Accept-Encoding', 'gzip')
+        .expect('X-Custom', 'header')
+        .expect('Content-Encoding', 'gzip')
+        .expect(200, 'hello, world', done)
+    })
+
+    it('should match native statusMessage when statusMessage is undefined', function (done) {
+      assertWriteHeadParity(201, undefined, { 'X-Custom': 'header' }, function (err, nativeRes, compressedRes) {
+        if (err) return done(err)
+        assert.strictEqual(compressedRes.statusCode, nativeRes.statusCode)
+        assert.strictEqual(compressedRes.statusMessage, nativeRes.statusMessage)
+        if (nativeRes.statusMessage != null) {
+          assert.strictEqual(nativeRes.statusMessage, 'Created')
+        }
+        assert.strictEqual(compressedRes.headers['x-custom'], 'header')
+        done()
+      })
+    })
+
+    it('should match native statusMessage when statusMessage is null', function (done) {
+      assertWriteHeadParity(201, null, { 'X-Custom': 'header' }, function (err, nativeRes, compressedRes) {
+        if (err) return done(err)
+        assert.strictEqual(compressedRes.statusCode, nativeRes.statusCode)
+        assert.strictEqual(compressedRes.statusMessage, nativeRes.statusMessage)
+        if (nativeRes.statusMessage != null) {
+          assert.strictEqual(nativeRes.statusMessage, 'Created')
+        }
+        assert.strictEqual(compressedRes.headers['x-custom'], 'header')
+        done()
+      })
+    })
+
+    it('should preserve a custom string statusMessage', function (done) {
+      assertWriteHeadParity(200, 'Custom', { 'X-Custom': 'header' }, function (err, nativeRes, compressedRes) {
+        if (err) return done(err)
+        assert.strictEqual(compressedRes.statusMessage, nativeRes.statusMessage)
+        if (compressedRes.statusMessage != null) {
+          assert.strictEqual(compressedRes.statusMessage, 'Custom')
+        }
+        assert.strictEqual(compressedRes.headers['x-custom'], 'header')
+        done()
+      })
+    })
+
+    it('should not stringify an undefined statusMessage', function (done) {
+      var server = createServer({ filter: function () { return false } }, function (req, res) {
+        res.writeHead(200, undefined, { 'Content-Type': 'text/plain' })
+        res.end('hello, world')
+      })
+
+      request(server)
+        .get('/')
+        .expect(200)
+        .end(function (err, res) {
+          if (err) return done(err)
+          if (res.res.statusMessage != null) {
+            assert.strictEqual(res.res.statusMessage, 'OK')
+            assert.notStrictEqual(res.res.statusMessage, 'undefined')
+          }
+          done()
+        })
+    })
+  })
 })
 
 function createServer (opts, fn) {
@@ -1071,6 +1250,44 @@ function createServer (opts, fn) {
       }
 
       fn(req, res)
+    })
+  })
+}
+
+function writeHeadHandler (statusCode, statusMessage, headers) {
+  return function (req, res) {
+    res.writeHead(statusCode, statusMessage, headers)
+    res.end('hello, world')
+  }
+}
+
+function requestOnce (server, callback) {
+  server.listen(0, '127.0.0.1', function () {
+    http.get({ host: '127.0.0.1', port: server.address().port, path: '/' }, function (res) {
+      res.resume()
+      res.on('end', function () {
+        server.close(function () {
+          callback(null, res)
+        })
+      })
+    }).on('error', function (err) {
+      server.close(function () {
+        callback(err)
+      })
+    })
+  })
+}
+
+function assertWriteHeadParity (statusCode, statusMessage, headers, callback) {
+  var handler = writeHeadHandler(statusCode, statusMessage, headers)
+  var native = http.createServer(handler)
+  var compressed = createServer({ filter: function () { return false } }, handler)
+
+  requestOnce(native, function (err, nativeRes) {
+    if (err) return callback(err)
+    requestOnce(compressed, function (err, compressedRes) {
+      if (err) return callback(err)
+      callback(null, nativeRes, compressedRes)
     })
   })
 }

@@ -262,6 +262,11 @@ function compression (options) {
       })
     })
 
+    // on-headers must wrap writeHead first; this wrapper sits outside it so
+    // writeHead(code, undefined, headers) is rewritten before on-headers
+    // mis-reads a non-string 2nd argument as the headers object (#254).
+    patchWriteHead(res)
+
     next()
   }
 }
@@ -330,6 +335,31 @@ function toBuffer (chunk, encoding) {
   return Buffer.isBuffer(chunk)
     ? chunk
     : Buffer.from(chunk, encoding)
+}
+
+/**
+ * Adapt writeHead() so a 3-argument call with a non-string statusMessage
+ * matches Node.js `http.ServerResponse` (`obj ??= reason`).
+ *
+ * on-headers@1.1.x chooses the headers argument only by
+ * `typeof arguments[1] === 'string'`. When the statusMessage is `undefined`
+ * or `null`, it reads arguments[1] as headers and never sees arguments[2],
+ * so writeHead(200, undefined, headers) silently drops the headers.
+ *
+ * @param {object} res
+ * @private
+ */
+
+function patchWriteHead (res) {
+  var writeHead = res.writeHead
+
+  res.writeHead = function patchedWriteHead (statusCode, reason, headers) {
+    if (arguments.length > 2 && typeof reason !== 'string') {
+      return writeHead.call(this, statusCode, headers != null ? headers : reason)
+    }
+
+    return writeHead.apply(this, arguments)
+  }
 }
 
 /**
