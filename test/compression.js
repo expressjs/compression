@@ -67,6 +67,43 @@ describe('compression()', function () {
       .expect(200, 'hello, world', done)
   })
 
+  it('should skip partial content responses', function (done) {
+    var server = createServer({ threshold: 0 }, function (req, res) {
+      res.statusCode = 206
+      res.setHeader('Content-Type', 'text/plain')
+      res.setHeader('Content-Range', 'bytes 0-4/12')
+      res.setHeader('Content-Length', '5')
+      res.end('hello')
+    })
+
+    request(server)
+      .get('/')
+      .set('Accept-Encoding', 'gzip')
+      .expect(shouldNotHaveHeader('Content-Encoding'))
+      .expect(shouldNotHaveHeader('Vary'))
+      .expect('Content-Range', 'bytes 0-4/12')
+      .expect('Content-Length', '5')
+      .expect(206, 'hello', done)
+  })
+
+  it('should skip partial content responses set via writeHead', function (done) {
+    var server = createServer({ threshold: 0 }, function (req, res) {
+      res.writeHead(206, {
+        'Content-Type': 'text/plain',
+        'Content-Range': 'bytes 0-4/12',
+        'Content-Length': '5'
+      })
+      res.end('hello')
+    })
+
+    request(server)
+      .get('/')
+      .set('Accept-Encoding', 'gzip')
+      .expect(shouldNotHaveHeader('Content-Encoding'))
+      .expect('Content-Range', 'bytes 0-4/12')
+      .expect(206, 'hello', done)
+  })
+
   it('should set Vary', function (done) {
     var server = createServer({ threshold: 0 }, function (req, res) {
       res.setHeader('Content-Type', 'text/plain')
