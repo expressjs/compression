@@ -807,6 +807,24 @@ describe('compression()', function () {
     })
   })
 
+  describe('when "Cache-Control" response header without "no-transform"', function () {
+    ;['no-cache', 'public, max-age=60'].forEach(function (value) {
+      it('should compress response when "Cache-Control: ' + value + '"', function (done) {
+        var server = createServer({ threshold: 0 }, function (req, res) {
+          res.setHeader('Cache-Control', value)
+          res.setHeader('Content-Type', 'text/plain')
+          res.end('hello, world')
+        })
+
+        request(server)
+          .get('/')
+          .set('Accept-Encoding', 'gzip')
+          .expect('Cache-Control', value)
+          .expect('Content-Encoding', 'gzip', done)
+      })
+    })
+  })
+
   describe('.filter', function () {
     it('should be a function', function () {
       assert.strictEqual(typeof compression.filter, 'function')
