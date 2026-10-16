@@ -166,9 +166,19 @@ function compression (options) {
     // missed; destroy() no-ops safely when no stream was created, and is used
     // rather than stream.destroy() because destroy() alone leaks the zlib
     // handle on some Node.js versions.
+    //
+    // The stream is only destroyed when the socket is dead (or detached): if
+    // 'close' fires while the socket is still alive, the stream may be
+    // mid-flush, and destroying it would drop the remaining bytes without
+    // terminating the response, corrupting the framing for this and every
+    // subsequent response on the keep-alive socket. Letting the stream finish
+    // naturally frees its resources without the leak.
     _on.call(res, 'close', function onResponseClose () {
       closed = true
-      destroy(stream)
+      var socket = res.socket
+      if (!socket || socket.destroyed) {
+        destroy(stream)
+      }
     })
 
     onHeaders(res, function onResponseHeaders () {
