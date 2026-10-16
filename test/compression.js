@@ -188,6 +188,76 @@ describe('compression()', function () {
     assertDestroyedOnClose('createBrotliCompress', 'br', done)
   })
 
+  // @see https://github.com/expressjs/compression/issues/296
+  it('should not destroy the compression stream when close fires on a live socket', function (done) {
+    var total = 512 * 1024
+    var server = createServer({ threshold: 0 }, function (req, res) {
+      res.setHeader('Content-Type', 'application/octet-stream')
+      var sent = 0
+      var closedEmitted = false
+      var chunk = Buffer.alloc(16384, 'f')
+      ;(function writeNext () {
+        if (sent >= total) return res.end()
+        sent += 16384
+        res.write(chunk)
+        // simulate the race from #296: 'close' fires while the zlib stream
+        // is still flushing and the socket is alive; the stream must survive
+        // so the response completes intact instead of being truncated
+        if (!closedEmitted && sent >= 5 * 16384) {
+          closedEmitted = true
+          if (!res.writableEnded && !res.destroyed && res.socket && !res.socket.destroyed) {
+            res.emit('close')
+          }
+        }
+        setImmediate(writeNext)
+      })()
+    })
+
+    server.listen(0, function () {
+      var chunks = []
+      var timedOut = false
+      var req = http.get({
+        port: server.address().port,
+        headers: { 'Accept-Encoding': 'gzip' }
+      }, function (res) {
+        res.on('data', function (c) { chunks.push(c) })
+        res.on('end', function () {
+          if (timedOut) return
+          clearTimeout(timer)
+          var err = null
+          try {
+            // the full body must survive gunzip; a destroyed stream would
+            // truncate it and gunzipSync would throw 'unexpected end of file'
+            var body = zlib.gunzipSync(Buffer.concat(chunks))
+            assert.strictEqual(body.length, total)
+          } catch (e) {
+            err = e
+          }
+          server.close(function () { done(err) })
+        })
+        res.on('error', function (e) {
+          if (timedOut) return
+          clearTimeout(timer)
+          server.close(function () { done(e) })
+        })
+      })
+      // fail cleanly (instead of hanging) if the response never terminates,
+      // which is what a destroyed mid-flush stream causes
+      var timer = setTimeout(function () {
+        timedOut = true
+        req.destroy()
+        server.close(function () {
+          done(new Error('response never completed: stream was destroyed mid-flush'))
+        })
+      }, 5000)
+      req.on('error', function (e) {
+        if (timedOut) return
+        clearTimeout(timer)
+        server.close(function () { done(e) })
+      })
+    })
+  })
+
   // @see https://github.com/expressjs/compression/security/advisories/GHSA-vc2v-76pw-4v95
   it('should destroy a compression stream created after the response closed', function (done) {
     var original = zlib.createGzip
