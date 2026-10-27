@@ -20,6 +20,7 @@ var bytes = require('bytes')
 var compressible = require('compressible')
 var debug = require('debug')('compression')
 var destroy = require('destroy')
+var onFinished = require('on-finished')
 var onHeaders = require('on-headers')
 var vary = require('vary')
 var zlib = require('zlib')
@@ -84,6 +85,7 @@ function compression (options) {
     var listeners = []
     var stream
     var closed = false
+    var originalEnded = false
 
     var _end = res.end
     var _on = res.on
@@ -169,6 +171,13 @@ function compression (options) {
     _on.call(res, 'close', function onResponseClose () {
       closed = true
       destroy(stream)
+
+      // a destroyed stream never emits `end`, so make sure the original
+      // `res.end()` still gets called
+      if (stream && !originalEnded) {
+        originalEnded = true
+        _end.call(res)
+      }
     })
 
     onHeaders(res, function onResponseHeaders () {
@@ -248,16 +257,32 @@ function compression (options) {
 
       // compression
       stream.on('data', function onStreamData (chunk) {
+        if (onFinished.isFinished(res)) {
+          debug('response finished')
+          return
+        }
         if (_write.call(res, chunk) === false) {
+          debug('pausing compression stream')
           stream.pause()
         }
       })
 
       stream.on('end', function onStreamEnd () {
+        if (originalEnded) return
+        originalEnded = true
         _end.call(res)
       })
 
       _on.call(res, 'drain', function onResponseDrain () {
+        stream.resume()
+      })
+
+      // In case the stream is paused when the response finishes (e.g.  because
+      // the client cuts the connection), its `drain` event may not get emitted.
+      // The following handler is here to ensure that the stream gets resumed so
+      // it ends up emitting its `end` event and calling the original
+      // `res.end()`.
+      onFinished(res, function onResponseFinished () {
         stream.resume()
       })
     })
