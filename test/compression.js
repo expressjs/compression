@@ -1224,7 +1224,7 @@ describe('compression()', function () {
           setTimeout(function () {
             if (writeError !== null) {
               server.close(function () {
-                done(new Error(`Write error occurred: ${writeError}`))
+                done(new Error('Write error occurred: ' + writeError))
               })
             } else {
               if (requestCount < 50) {
